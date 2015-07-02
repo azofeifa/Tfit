@@ -15,17 +15,9 @@
 #================================================================================================
 
 import sys, load, parse_argv
-
-def run(argv):
+def hardcode():
 	SI 	= True
-	if len(argv)>1:
-		G 		= parse_argv.run(argv)
-		data 	= G["-i"]
-		density = float(G["-d"])
-		max_c 	= int(G["-b"])
-
-
-	elif SI: #single isoform genes that overlap a single FStitch call
+	if SI: #single isoform genes that overlap a single FStitch call
 		#===================
 		#union of forward and reverse strand FStitch calls
 		#BELOW is hardcoding
@@ -53,6 +45,40 @@ def run(argv):
 
 
 
+def run(argv):
+	
+	aw 		= parse_argv.run(argv)
+	if aw.exit:
+		aw.printErrors()
+		print "exiting..."
+		return False
+	if aw.mod == "formatData":
+		if aw.mod2=="FStitchSingleIsoform":
+			#====================================
+			refseqFILE 		= aw.G["-ref"]
+			FS_forward 		= aw.G["-ffs"]
+			FS_reverse 		= aw.G["-rfs"]
+			forward_file_bg = aw.G["-fbg"]
+			reverse_file_bg = aw.G["-rbg"]
+			write_out_dir 	= aw.G["-wo"]
+			pad 			= float(aw.G["-pad"])
+			#====================================			
+			RF 		= load.gene_annotations(refseqFILE)
+			FS 		= load.FStitch_annotations(FS_forward, FS_reverse, merge=True)
+			filtered= load.filter_single_overlaps(FS, RF)
+			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
+				filtered, SHOW=False, test=False,
+				write_out=write_out)
+
+		elif aw.mod2=="RefSeqOnly":
+			print "refseq only currently not supported"
+		elif aw.mod2=="FStitchMerged":
+			print "FStitch merged currently not supported"
+	else: #run MODEL! 
+		print "run model, currently not supported"
+	
+
+
 
 
 
@@ -61,6 +87,5 @@ def run(argv):
 
 if __name__ == "__main__":
 
-	run(sys.argv)
-
+	hardcode()
 	pass

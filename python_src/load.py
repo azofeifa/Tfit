@@ -192,13 +192,11 @@ def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True
 					for o in range(o_st, o_sp):
 						IS[i].insert(o,coverage, s)
 				prev 	= chrom
-
 	print "finished reading in FILES"
 	if write_out is not None:
 		print "writing out intervals/data for future parsing"
-		FHW	= open(write_out, "w")
+		FHW	= open(write_out+"/out_format_file.tsv", "w")
 	for chrom in intervals:
-		print chrom
 		for I in intervals[chrom]:
 			if SHOW:
 				I.show()

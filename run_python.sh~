@@ -1,0 +1,12 @@
+
+root=/Users/joeyazo/Desktop/Lab/gro_seq_files/
+ref=${root}
+ffs=
+rfs=
+fbg=
+rbg=
+wo=
+pad=
+
+
+python python_src/ 
