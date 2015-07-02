@@ -1,8 +1,6 @@
 #Name the job
 #PBS -N EMG_Formatter
 
-### Choose the queue ('short' = <24hrs, 'long' = >24hrs)
-#PBS -q short
 
 ### Specify the number of nodes/cores
 #PBS -l nodes=1:ppn=1
