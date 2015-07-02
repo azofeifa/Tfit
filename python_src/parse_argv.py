@@ -8,6 +8,7 @@ def checkFile(f):
 
 def checkNumber(vl):
 	text 	= ""
+	
 	try:
 		a 	= float(vl)
 		b 	= int(vl)

@@ -112,11 +112,6 @@ def gene_annotations(FILE, SI=True, pad=0):
 						single[chrom]=list()
 					single[chrom].append(I)			
 					t+=1
-	root 			= "/Users/joeyazo/Desktop/Lab/gro_seq_files"
-	FHW 			= open(root+"/single_isoform.bed", "w")
-	for chrom in single:
-		for i in single[chrom]:
-			FHW.write(chrom+"\t" + str(i.tot_st) + "\t" + str(i.tot_sp) + "\n")		
 	
 	return IS
 def FStitch_annotations(forward, reverse, merge=True, pad=1000):
@@ -158,17 +153,13 @@ def filter_single_overlaps(FS, RF):
 						filtered[chrom] 	= list()
 					if float(o_sp - o_st) / float(rf[j-1].tot_sp - rf[j-1].tot_st) > 0.5:
 						filtered[chrom].append((I, j))
-	root 			= "/Users/joeyazo/Desktop/Lab/gro_seq_files"
-	FHW 			= open(root+"/HCT116/FStitch/filtered_set.bed", "w")
 	final 			= {}
 	for chrom in filtered:
 		final[chrom] 	= list()
 		for j,(I,i) in enumerate(filtered[chrom]):
 			if j == 0 or j == len(filtered[chrom])-1:
-				FHW.write(chrom+"\t" + str(I.tot_st) + "\t" + str(I.tot_sp) + "\n")
 				final[chrom].append(I)
 			elif i!=filtered[chrom][j-1][1] and i!=filtered[chrom][j+1]:
-				FHW.write(chrom+"\t" + str(I.tot_st) + "\t" + str(I.tot_sp) + "\n")
 				final[chrom].append(I)
 	return final
 def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True,SHOW=False):

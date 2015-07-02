@@ -55,20 +55,21 @@ def run(argv):
 	if aw.mod == "formatData":
 		if aw.mod2=="FStitchSingleIsoform":
 			#====================================
-			refseqFILE 		= aw.G["-ref"]
-			FS_forward 		= aw.G["-ffs"]
-			FS_reverse 		= aw.G["-rfs"]
-			forward_file_bg = aw.G["-fbg"]
-			reverse_file_bg = aw.G["-rbg"]
-			write_out_dir 	= aw.G["-wo"]
-			pad 			= float(aw.G["-pad"])
+			refseqFILE 		= aw.G["-ref"][0]
+			FS_forward 		= aw.G["-ffs"][0]
+			FS_reverse 		= aw.G["-rfs"][0]
+			forward_file_bg = aw.G["-fbg"][0]
+			reverse_file_bg = aw.G["-rbg"][0]
+			write_out_dir 	= aw.G["-wo"][0]
+			
+			pad 			= float(aw.G["-pad"][0])
 			#====================================			
 			RF 		= load.gene_annotations(refseqFILE)
 			FS 		= load.FStitch_annotations(FS_forward, FS_reverse, merge=True)
 			filtered= load.filter_single_overlaps(FS, RF)
 			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
 				filtered, SHOW=False, test=False,
-				write_out=write_out)
+				write_out=write_out_dir)
 
 		elif aw.mod2=="RefSeqOnly":
 			print "refseq only currently not supported"
