@@ -174,8 +174,11 @@ def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True
 					if test and i!= 0:
 						break
 					i 	= 0
-					IS 	= intervals[chrom]
-					N 	= len(IS)
+					if chrom in intervals:
+						IS 	= intervals[chrom]
+						N 	= len(IS)
+					else:
+						N       = 0
 				while i < N and IS[i].tot_sp < start:
 					i+=1
 				if i < N and IS[i].tot_st < stop:
