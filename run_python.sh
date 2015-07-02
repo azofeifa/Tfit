@@ -1,6 +1,5 @@
 #Name the job
 #PBS -N EMG_Formatter
-
 ### Choose the queue ('short' = <24hrs, 'long' = >24hrs)
 #PBS -q short
 
@@ -29,6 +28,7 @@ module load numpy_1.9.2
 module load scipy_0.12.0
 
 root=/Users/azofeifa/Lab/
+src=/Users/azofeifa/Lab/EMG/
 ref=${root}genome_files/RefSeqHG19.txt
 ffs=${root}gro_seq_files/HCT116/FStitch/DMSO2_3.sorted.fiveprime.pos_segs_IGV.bed
 rfs=${root}gro_seq_files/HCT116/FStitch/DMSO2_3.sorted.fiveprime.neg_segs_IGV.bed
@@ -38,4 +38,5 @@ wo=${root}gro_seq_files/HCT116/EMG_out_files
 pad=100
 
 
-python python_src/ formatData FStitchSingleIsoform  -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
+
+python ${src}python_src/ formatData FStitchSingleIsoform  -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo

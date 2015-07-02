@@ -34,6 +34,6 @@ fbg=${root}gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph
 rbg=${root}gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph
 wo=${root}gro_seq_files/HCT116/EMG_out_files
 pad=100
+src=/Users/azofeifa/EMG/
 
-
-python python_src/ formatData FStitchSingleIsoform  -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
+python ${src}python_src/ formatData FStitchSingleIsoform  -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
