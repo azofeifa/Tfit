@@ -207,20 +207,6 @@ def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True
 		FHW.close()
 
 
-
-
-
-
-	
-
-
-				
-
-
-
-
-
-
 if __name__=="__main__":
 	import main
 	main.run([])
