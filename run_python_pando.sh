@@ -9,7 +9,7 @@
 #PBS -l mem=64mb
 
 ### Set your expected walltime
-#PBS -l walltime=00:05:00
+#PBS -l walltime=05:00:00
 
 ### Setting to mail when the job is complete
 #PBS -e /Users/azofeifa/qsub_errors/EMG/
