@@ -12,7 +12,8 @@
 #PBS -l walltime=00:05:00
 
 ### Setting to mail when the job is complete
-#PBS -m ae
+#PBS -e /Users/azofeifa/qsub_errors/EMG/
+#PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
 ### Set your email address
 #PBS -M jgazofeifa@gmail.com
