@@ -1,0 +1,43 @@
+#***************************************************************************/
+#**    Author: Joey Azofeifa                                               */
+#**    Date:   1/2/2015	                                                   */
+#**    Description: Makefile for FastReadStitcher                          */
+#***************************************************************************/
+
+CXX             = g++
+CXXFLAGS        = -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11  -fopenmp -Wno-write-strings
+
+EXEC            = ${PWD}/NU_FIT
+ARCH  			= getconf LONG_BIT
+
+CPP_FLAGS_32  	= -D32_BIT
+CPP_FLAGS_64  	= -D64_BIT
+
+GCCVERSION 		= $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
+
+NU_FIT: main.o read_in_parameters.o split.o
+	@${CXX} ${CXXFLAGS} ${PWD}/main.o  ${PWD}/read_in_parameters.o ${PWD}/split.o -o ${EXEC}
+	@echo "========================================="
+	@echo Sucessfully Compiled
+
+
+
+main.o: 
+		@echo "========================="
+		
+		@${CXX} -c ${CXXFLAGS} ${PWD}/main.cpp 
+		@echo Compiled main
+
+split.o: 
+		@@${CXX} -c ${CXXFLAGS} ${PWD}/split.cpp
+		@echo Compiled split
+read_in_parameters.o:
+		@@${CXX} -c ${CXXFLAGS} ${PWD}/read_in_parameters.cpp
+		@echo Compiled read_in_parameters
+
+clean:
+	@rm -f *.o
+
+
+		
+
