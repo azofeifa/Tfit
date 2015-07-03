@@ -14,7 +14,7 @@
 #(-p) pad; default set to 0
 #================================================================================================
 
-import sys, load, parse_argv
+import sys, load, parse_argv, model_across
 def hardcode():
 	SI 	= True
 	if SI: #single isoform genes that overlap a single FStitch call
@@ -61,7 +61,6 @@ def run(argv):
 			forward_file_bg = aw.G["-fbg"][0]
 			reverse_file_bg = aw.G["-rbg"][0]
 			write_out_dir 	= aw.G["-wo"][0]
-			
 			pad 			= float(aw.G["-pad"][0])
 			#====================================			
 			RF 		= load.gene_annotations(refseqFILE)
@@ -69,16 +68,30 @@ def run(argv):
 			filtered= load.filter_single_overlaps(FS, RF)
 			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
 				filtered, SHOW=False, test=False,
-				write_out=write_out_dir)
+				write_out=write_out)
 
 		elif aw.mod2=="RefSeqOnly":
 			print "refseq only currently not supported"
 		elif aw.mod2=="FStitchMerged":
 			print "FStitch merged currently not supported"
 	else: #run MODEL! 
-		print "run model, currently not supported"
-	
-
+		#====================================
+		formatted_file 		= aw.G["-i"][0]
+		write_out_dir 		= aw.G["-wo"][0]
+		max_k 				= int(aw.G["-k"][0])
+		rounds 				= int(aw.G["-it"][0])
+		bins 				= int(aw.G["-b"][0])
+		specific_chromosome = aw.G["-sc"][0]
+		bic 				= float(aw.G["-bic"][0])
+		standardize 		= float(aw.G["-st"][0])
+		convergence_thresh 	= float(aw.G["-mc"][0])
+		max_iterations 		= int(aw.G["-mt"][0])
+		move_uniform 		= int(aw.G["-mu"][0])
+		#====================================
+		D 					= load.formatted_file(formatted_file, bins,specific_chromosome)		
+		model_across.run(D, bic, rounds, 
+			max_k, standardize, convergence_thresh,
+			max_iterations,move_uniform, write_out_dir)
 
 
 

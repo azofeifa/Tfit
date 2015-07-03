@@ -6,45 +6,64 @@ def checkFile(f):
 		text 	= " does not exist..."
 	return vl, text
 
-def checkNumber(vl):
+def checkInt(vl):
 	text 	= ""
-	
 	try:
-		a 	= float(vl)
 		b 	= int(vl)
 	except:
-		text = " is not a number..."
+		text = " is not an integer..."
 		return False, text
 	return True,text
+def checkFloat(vl):
+	text 	= ""
+	try:
+		b 	= float(vl)
+	except:
+		text = " is not a floating point..."
+		return False, text
+	return True,text
+
+
 	
 def checkDir(path):
 	vl, text 	= os.path.isdir(path), ""
 	if not vl:
 		text 	= " is not a valid path..."
 	return vl, text
+def checkChrom(vl):
+	chroms 	=["all"] + ["chr" + str(i) for i in range(1, 24)] + ["chrX", "chrY", "chrM"]
+	if vl in chroms:
+		return True, ""
+	return False, "this not a valid chromosome identifier"
 
 
 class argv_wrapper:
 	def __init__(self):
-		self.G_rm 	= {	"-i":("", True),
-			"-c":("all", False),
-			"-d":("0.", False),
-			"-b":("3", False),
-			"-r":("300", False),
-			"-t":("5", False)
-			}
+		self.G_rm 	= {	"-i"  : ("", True, checkFile),
+						"-wo" : ("", True, checkDir), 
+						"-k"  : ("3",True, checkInt ),
+						"-it" : ("5", True, checkInt),
+						"-b"  : ("300", True, checkInt),
+						"-sc" : ("all", True, checkChrom),
+						"-bic": ("0", True, checkFloat ),
+						"-st" : ("100", True, checkFloat),
+						"-mc" : ("0.0001", True, checkFloat),
+						"-mt" : ("300", True, checkInt),
+						"-mu" : ("0", True, checkInt)
+
+					}
 		self.G_FSI 	= {	"-ref": ("", True, checkFile),
 						"-ffs": ("", True, checkFile),
 						"-rfs": ("", True, checkFile),
 						"-fbg": ("", True, checkFile), 
 						"-rbg": ("", True, checkFile), 
 						"-wo" : ("", True, checkDir),
-						"-pad": ("0", False, checkNumber) }
+						"-pad": ("0", False, checkFloat) }
 		self.G_RSO 	= { "-ref": ("", True, checkFile),
 						"-fbg": ("", True, checkFile), 
 						"-rbg": ("", True, checkFile), 
 						"-wo" : ("", True, checkDir),
-						"-pad": ("0", False, checkNumber)
+						"-pad": ("0", False, checkFloat)
 						}
 		self.G_FSO 	= {	
 						"-ffs": ("", True, checkFile),
@@ -52,7 +71,7 @@ class argv_wrapper:
 						"-fbg": ("", True, checkFile), 
 						"-rbg": ("", True, checkFile), 
 						"-wo" : ("", True, checkDir),
-						"-pad": ("0", False, checkNumber) }
+						"-pad": ("0", False, checkFloat) }
 		
 
 		self.modules = ["formatData", "runModel"]
@@ -135,8 +154,7 @@ class argv_wrapper:
 				error, text 	= f(vl)
 				self.errors.append(str(vl) + text)
 				self.exit 		= True
-		pass
-
+		
 
 
 def run(argv):

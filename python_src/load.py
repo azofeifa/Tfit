@@ -5,19 +5,20 @@ import matplotlib.pyplot as plt
 import simulate,re
 import time
 class info:
-	def __init__(self, st, sp, unit):
+	def __init__(self, st, sp, unit, chrom=""):
 		self.tot_st, self.tot_sp	= st, sp
 		self.units 					= [unit]
 		self.forward, self.reverse 	= list(), list()
 		self.X  					= None
 		self.okay 					= False
+		self.chrom 					= chrom
 	def update_bounds(self, st, sp, unit):				
 		if st!=self.tot_st and sp != self.tot_sp:
 			self.tot_st, self.tot_sp	= min(self.tot_st, st), max(self.tot_sp, sp)
 			self.units.append(unit)
 	def check(self):
 		if len(self.forward) and len(self.reverse):
-			self.okay 	= True
+			self.okay 	= True 
 		return self.okay
 	def insert(self, x,y, strand):
 		if strand == 0:
@@ -28,6 +29,7 @@ class info:
 		self.check()
 		if self.okay:
 			self.X 		= simulate.BIN(self.forward, self.reverse, bins)
+		self.forward, self.reverse 	= None, None
 	def show(self):
 		if self.okay:
 			F 	= plt.figure(figsize=(15,10))
@@ -35,7 +37,13 @@ class info:
 			ax.set_title(str(self.tot_st) + "-" + str(self.tot_sp))
 			ax.bar(self.X[:,0], self.X[:,1])
 			ax.bar(self.X[:,0], -self.X[:,2])
-			plt.show()		
+			plt.show()	
+	def print_info(self):
+		txt 	= self.chrom + ":" + str(self.tot_st) + "-" + str(self.tot_sp) + "\n"
+		return txt
+	def __str__(self):
+		txt 	= self.chrom + ":" + str(self.tot_st) + "-" + str(self.tot_sp)
+		return txt
 
 def grab_specific_region(chrom_spec,start_spec, stop_spec, 
 	pos_file="/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
@@ -205,10 +213,62 @@ def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True
 					
 	if write_out is not None:
 		FHW.close()
+def formatted_file(FILE, bins, sc):
+	I  	= None	
+	D 	= list()
+	with open(FILE) as FH:
+		for i,line in enumerate(FH):
+
+			if line[0]=="#":
+				if I is not None:
+					I.bin(bins=bins)
+					D.append(I)
+				
+				chrom, st, sp 	= line[1:].strip("\n").split(",")
+
+				st, sp 	= int(st), int(sp)
+
+				if chrom == sc or sc == "all":
+					I 		= info(st, sp, None, chrom=chrom)
+				else:
+					I 		= None
+				forward, reverse 	= False, False
+			elif "forward" in line:
+				forward = True
+				reverse = False
+			elif "reverse" in line:
+				forward = False
+				reverse = True
+			elif forward and I is not None:
+				x,y 	= line.strip("\n").split(",")
+				x,y 	= float(x), float(y)
+				I.insert(x, y, 0)
+			elif reverse and I is not None:
+				x,y 	= line.strip("\n").split(",")
+				x,y 	= float(x), float(y)
+				I.insert(x, y, 1)
+	return D
 
 
-if __name__=="__main__":
-	import main
-	main.run([])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
