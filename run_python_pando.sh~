@@ -1,16 +1,14 @@
 #Name the job
 #PBS -N EMG_Formatter
-### Choose the queue ('short' = <24hrs, 'long' = >24hrs)
-#PBS -q short
 
 ### Specify the number of nodes/cores
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=48
 
 ### Allocate the amount of memory needed
-#PBS -l mem=64mb
+#PBS -l mem=10gb
 
 ### Set your expected walltime
-#PBS -l walltime=05:00:00
+#PBS -l walltime=48:00:00
 
 ### Setting to mail when the job is complete
 #PBS -e /Users/azofeifa/qsub_errors/EMG/                                                                                              
@@ -24,11 +22,12 @@
 ### Pass enviroment variables to the job
 #PBS -V
 
+
 ### ===================
 ### what machine?
 ### ===================
-vieques_pando=false ###unix compute clusters
-mac=true ###macOS
+vieques_pando=true ###unix compute clusters
+mac=false ###macOS
 if [ "$vieques_pando" = true ] ; then ###load modules 
     module load matplotlib_1.3.1
     module load numpy_1.9.2
@@ -63,16 +62,17 @@ if [ "$format" = true ] ; then
 fi
 
 if [ "$runModel" = true ] ; then 
+   
     echo "EMG: model option"
-    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/100000_out_format_file.tsv
+    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/fs_si_merged.tsv
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
     k=3
-    it=5
+    it=32
     bins=300
     sc=all ###specific chromosome
     bic=0 ###perform model selection?
     st=100 ###standardize, numerical stability
-    mc=0.0001 ###EM convergence threshold
+    mc=0.001 ###EM convergence threshold
     mt=300 ###EM max number of iterations, before we give up
     mu=0
     python ${src}python_src/ runModel -i $formatted_file -wo $wo -k $k -it $it -b $bins -sc $sc -bic $bic -st $st -mc $mc -mt $mt -mu $mu

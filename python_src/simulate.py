@@ -44,7 +44,6 @@ def BIN(forward, reverse, bins, SHOW=False):
 		if X[i,1] or X[i,2]:
 			N+=1
 	nX 				= np.zeros((N,3))
-	print X.shape[0], N
 	j 				= 0
 	for i in range(X.shape[0]):
 		if X[i,1] or X[i,2]:
