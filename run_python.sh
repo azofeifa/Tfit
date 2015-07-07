@@ -24,9 +24,6 @@
 ### Pass enviroment variables to the job
 #PBS -V
 
-###Job Array for running across different chromosomes
-#PBS -t 1-23
-
 ### ===================
 ### what machine?
 ### ===================
@@ -48,8 +45,8 @@ fi
 ### ====================
 ### EMG MODULE TYPE
 ### ====================
-format=false
-runModel=true
+format=true
+runModel=false
 
 if [ "$format" = true ] ; then
 
@@ -72,7 +69,8 @@ fi
 if [ "$runModel" = true ] ; then 
     echo "EMG: model option"
     formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/out_format_file.tsv
-    
+    ###Job Array for running across different chromosomes                                                                      
+    #PBS -t 1-23 
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
     k=3
     it=16

@@ -10,6 +10,7 @@ import multiprocessing as mp
 import matplotlib as mpl
 import matplotlib.cm as cm
 import load 
+import template_window_matching as twm
 
 class component_elongation:
 	def __init__(self, a,b, w, pi, bidir_component, ty, classifier, j):
@@ -192,8 +193,8 @@ class component_bidir:
 
 class EMGU:
 	def __init__(self, max_ct=pow(10, -4), max_it=200, K=2, bayes=False, noise=True, 
-		noise_max=0.1, moveUniformSupport=5, cores=4,
-		peaks=None):
+		noise_max=0.1, moveUniformSupport=5, cores=1,
+		seed=False):
 		self.max_ct 	= max_ct
 		self.max_it 	= max_it
 		self.K 			= K
@@ -211,7 +212,8 @@ class EMGU:
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
 		self.alpha_1, self.beta_1 	= 100, 100 #priors for component sigmas
 		self.alpha_2, self.beta_2 	= 1, 10 #priors for component 
-		self.peaks 					= peaks #prior on where the bidirectionals are from our template/bayes factor analysis
+		self.peaks 					= None #prior on where the bidirectionals are from our template/bayes factor analysis
+		self.seed 					= seed
 		#=================================
 		self.rvs,self.ll 			= None, None #final group of components
 	def pdf(self, x,s):
@@ -278,9 +280,40 @@ class EMGU:
 				c.b 	+= sum([move_b[i] for ell, move_b in keepers_b ])
 		newll 	= self.compute_log_likelihood(X, components,move_as=None,move_bs=None)
 		return newll			
-		
+	def moveLS_not_pp(self, X, ll, components):
+		move 				= np.random.normal(0, self.move)
+		move_bs 			= np.array([[move if c.type=="forward" else 0. for c in components ]  ] + [[-move if c.type=="forward" else 0. for c in components ]   ])
+		move_as 			= np.array([[move if c.type=="reverse" else 0. for c in components ]  ] + [[-move if c.type=="reverse" else 0. for c in components ]   ])
+		keepers_a, keepers_b= list(),list()
+		def likelihoodWrapper(X, components, output, move_as=None, move_bs=None):
+			newll 			= self.compute_log_likelihood(X, components,move_as=move_as, move_bs=move_bs)
+			if newll > ll:
+				if move_as is not None:
+					output.append((newll, move_as ))
+				else:
+					output.append((newll, move_bs ))
+			output.append((-np.inf, np.zeros(len(components)) ))
+		for i in range(len(move_as)):
+			likelihoodWrapper(X, components, keepers_a, move_as=move_as[i])
+		for i in range(len(move_bs)):
+			likelihoodWrapper(X, components, keepers_b, move_bs=move_bs[i])
+		for i,c in enumerate(components):
+			if c.type=="forward" or c.type=="reverse":
+				c.a 	+= sum([move_a[i] for ell, move_a in keepers_a ])
+				c.b 	+= sum([move_b[i] for ell, move_b in keepers_b ])
+		newll 	= self.compute_log_likelihood(X, components,move_as=None,move_bs=None)
+		return newll
+
+
+
 
 	def fit(self, X):
+		if self.seed:
+			self.peaks 	= twm.sample(X, self.K,std=1, lam=.1)
+
+
+
+
 		#=======================================
 		#randomally initialize parameters
 		minX, maxX 	= X[0,0], X[-1,0]
@@ -298,7 +331,7 @@ class EMGU:
 		if self.peaks is None:
 			mus 		= np.random.uniform(minX, maxX, self.K)
 		else:
-			mus 		= [x for x ,y in self.peaks[:self.K]]
+			mus 		= [x for x  in self.peaks]
 		sigmas 		= np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
@@ -354,8 +387,10 @@ class EMGU:
 				converged=True
 				self.converged=True
 			#move LLs...unfortunately this is brute - force...
-			if self.move:
+			if self.move and self.cores>1:
 				ll 		= self.moveLs(X, ll, components)
+			elif self.move:
+				ll 		= self.moveLS_not_pp(X, ll, components)
 			prevll 	= ll
 
 			t+=1
@@ -389,7 +424,8 @@ if __name__ == "__main__":
 	# X[:,0]/=500.
 	# print max(X[:,0])
 
-	clf = EMGU(noise=True, K=1,noise_max=0.3,moveUniformSupport=3,max_it=200)
+	clf = EMGU(noise=True, K=1,noise_max=0.3,moveUniformSupport=3,max_it=200, cores=1, 
+		seed=True)
 	clf.fit(X)
 	clf.draw(X)
 	#==================================
