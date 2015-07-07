@@ -2,7 +2,7 @@
 #PBS -N EMG_Formatter
 
 ### Specify the number of nodes/cores
-#PBS -l nodes=1:ppn=32
+#PBS -l nodes=1:ppn=48
 
 ### Allocate the amount of memory needed
 #PBS -l mem=10gb
@@ -64,12 +64,12 @@ fi
 if [ "$runModel" = true ] ; then 
    
     echo "EMG: model option"
-    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/fs_only_merged.tsv
+    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/fs_si_merged.tsv
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
-    k=5
-    it=16
-    bins=500
-    sc=chr1 ###specific chromosome
+    k=3
+    it=32
+    bins=300
+    sc=all ###specific chromosome
     bic=0 ###perform model selection?
     st=100 ###standardize, numerical stability
     mc=0.001 ###EM convergence threshold
