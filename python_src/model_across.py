@@ -11,7 +11,7 @@ def wrapper_fit_function(X, k,
 max_iterations=200, convergence_thresh=0.0001,
 move_uniform=0):
 	clf 	= EMGU(max_ct=convergence_thresh, max_it=max_iterations, K=k, bayes=False, noise=True, 
-			noise_max=0.1, moveUniformSupport=0, cores=4)
+			noise_max=0.1, moveUniformSupport=0, cores=1, seed=True)
 	clf.fit(X)
 	return clf.ll , clf.rvs, clf.converged, clf.resets,clf
 
@@ -20,10 +20,10 @@ move_uniform=0):
 def run(D, bic, rounds, max_k, 
 	standardize, convergence_thresh,
 			max_iterations, move_uniform, 
-			write_out_dir):
+			write_out_dir, specific_chromosome):
 	#if BIC is 0 don't perform model selection and output each model 
 	#from 1  to max_k individually
-	FILE 	= write_out_dir+"EMG_model_fits_"
+	FILE 	= write_out_dir+"EMG_model_fits_" + specific_chromosome + "_"
 	FILE 	= checkFileExists(FILE, 0)
 	FHW 	= open(FILE, "w")
 	for d in D:

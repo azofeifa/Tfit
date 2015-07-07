@@ -8,7 +8,7 @@
 #PBS -l mem=10gb
 
 ### Set your expected walltime
-#PBS -l walltime=24:00:00
+#PBS -l walltime=48:00:00
 
 ### Setting to mail when the job is complete
 #PBS -e /Users/azofeifa/qsub_errors/EMG/                                                                                              
@@ -21,6 +21,7 @@
 #PBS -S /bin/sh
 ### Pass enviroment variables to the job
 #PBS -V
+
 
 ### ===================
 ### what machine?
@@ -61,16 +62,17 @@ if [ "$format" = true ] ; then
 fi
 
 if [ "$runModel" = true ] ; then 
+   
     echo "EMG: model option"
-    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/out_format_file.tsv
+    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/fs_only_merged.tsv
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
     k=3
     it=16
-    bins=300
-    sc=all ###specific chromosome
+    bins=500
+    sc=chr1 ###specific chromosome
     bic=0 ###perform model selection?
     st=100 ###standardize, numerical stability
-    mc=0.0001 ###EM convergence threshold
+    mc=0.001 ###EM convergence threshold
     mt=300 ###EM max number of iterations, before we give up
     mu=0
     python ${src}python_src/ runModel -i $formatted_file -wo $wo -k $k -it $it -b $bins -sc $sc -bic $bic -st $st -mc $mc -mt $mt -mu $mu
