@@ -13,6 +13,7 @@ class info:
 		self.X  					= None
 		self.okay 					= False
 		self.chrom 					= chrom
+		self.N 						= 0
 	def update_bounds(self, st, sp, unit):				
 		if st!=self.tot_st and sp != self.tot_sp:
 			self.tot_st, self.tot_sp	= min(self.tot_st, st), max(self.tot_sp, sp)
@@ -30,7 +31,9 @@ class info:
 		self.check()
 		if self.okay:
 			self.X 		= simulate.BIN(self.forward, self.reverse, bins)
+			self.N 		= np.sum(self.X[:,1:])
 		self.forward, self.reverse 	= None, None
+
 	def show(self):
 		if self.okay:
 			F 	= plt.figure(figsize=(15,10))
@@ -40,10 +43,10 @@ class info:
 			ax.bar(self.X[:,0], -self.X[:,2])
 			plt.show()	
 	def print_info(self):
-		txt 	= self.chrom + ":" + str(self.tot_st) + "-" + str(self.tot_sp) + "\n"
+		txt 	= self.chrom + ":" + str(self.tot_st) + "-" + str(self.tot_sp) + ":" + str(self.N) + "\n"
 		return txt
 	def __str__(self):
-		txt 	= self.chrom + ":" + str(self.tot_st) + "-" + str(self.tot_sp)
+		txt 	= self.chrom + ":" + str(self.tot_st) + "-" + str(self.tot_sp) + ":" + str(self.N) 
 		return txt
 
 def grab_specific_region(chrom_spec,start_spec, stop_spec, 
