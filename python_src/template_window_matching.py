@@ -83,8 +83,6 @@ def draw(X, coverage_scores, bayes_ks, hybrid,starts):
 	ax2.grid()
 	
 	plt.show()
-def draw_fit(X, coverage_scores, bayes_ks, hybrid,starts):
-	pass
 
 def compute_possible_EM_starts(X, std=1, lam=0.1):
 	coverage_scores 	= window(X,std=std,lam=lam,step_size=1)
