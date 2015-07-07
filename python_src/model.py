@@ -20,6 +20,7 @@ class component_elongation:
 		self.ri 		= {1:0., -1:0.}
 		self.type 	 	= ty
 		self.bidir 		= bidir_component #bidirectional component to which this belongs
+		setattr(self.bidir, self.type, self) 	
 		self.c 			= classifier #larger classifier wrapper, which has the hyperparameters
 		self.j 			= j #index of data from which b came from
 		self.remove 	= False
@@ -54,18 +55,22 @@ class component_elongation:
 
 		if self.type=="forward" :
 			self.a 			= self.bidir.mu
+			if abs(self.b - self.a) < 2:
+				self.b 		= self.a + min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
 		elif self.type=="reverse" :
 			self.b 			= self.bidir.mu
+			if abs(self.b - self.a) < 2:
+				self.a 			= self.b - min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
+
 	def check(self):
-		if math.isnan(self.w) or math.isnan(self.a) or math.isnan(self.b) or abs(self.b - self.a) < 5:
+		if math.isnan(self.w) or math.isnan(self.a) or math.isnan(self.b):
 			return True
 		return False
 	def reset(self):
-		self.w 	= 0.
+		self.remove 		= False
 
 	
 	def add_stats(self,z, forward_ct, reverse_ct, norm_forward, norm_reverse):
-
 		if forward_ct and norm_forward and (self.type=="forward" or self.type=="noise"):
 			r 	= forward_ct*self.ri[1]/norm_forward
 			self.r[1]+=r
@@ -91,9 +96,15 @@ class component_bidir:
 		self.type 					= "EMGU"
 		self.c 						= classifier #larger classifier wrapper, which has the hyperparameters
 		self.remove 				= False
+		self.forward  				= None #elongation component to the right
+		self.reverse 		 		= None #elongation component to the left
+
+
 
 	def __str__(self):
-		return "N: " + str(self.mu) + "," +str(self.si) + "," +str(self.l) + "," + str(self.w) + "," + str(self.pi)
+		return ("N: " + str(self.mu) + "," +str(self.si) + "," +str(self.l) + "," + str(self.w) + "," + str(self.pi) + "\n" +
+			self.forward.__str__() + "\n" + 
+			self.reverse.__str__())
 
 	def IN(self, x):
 		return m.exp(-pow(x,2)*0.5)/m.sqrt(2*m.pi)
@@ -125,8 +136,10 @@ class component_bidir:
 		return p*self.w*pow(self.pi, max(0, s) )*pow(1-self.pi, max(0, -s) )
 	def check(self):
 		if self.remove:
+			self.forward.remove, self.reverse.remove 	= True, True
 			return True
 		if math.isnan(self.mu) or math.isnan(self.l) or math.isnan(self.si):
+			self.forward.remove, self.reverse.remove 	= True, True
 			return True
 		return False 
 
@@ -183,12 +196,27 @@ class component_bidir:
 		self.E_X, self.E_Y,self.E_X2 	= 0.,0.,0.
 		
 	def reset(self):
+		#=======================================
+		#new parameters for the Bidirectional
 		self.mu 		= np.random.uniform(self.c.minX, self.c.maxX)
 		self.l 			= 1.0/np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
-		self.si 	= np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
+		self.si 		= np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
 		self.pi,self.w 	= 0.5, 1.0 / (self.c.K*3) 
-		self.remove 	= False
+		#=======================================
+		#new parameters for the forward uniform
+		self.forward.a 	= self.mu
+		self.forward.b 	= self.mu + min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
+		self.w 			= 1.0 / self.c.K
+		#=======================================
+		#new parameters for the reverse uniform
+		self.reverse.b 	= self.mu
+		self.reverse.a 	= self.mu - max(np.random.gamma(self.c.uniform_rate, 1), self.c.minX)
+		self.reverse.w 	= 1.0 / self.c.K
+		
+		
 
+		self.remove 	= False
+		
 
 
 
@@ -215,6 +243,7 @@ class EMGU:
 		self.alpha_2, self.beta_2 	= 1, 10 #priors for component 
 		self.peaks 					= None #prior on where the bidirectionals are from our template/bayes factor analysis
 		self.seed 					= seed
+		self.uniform_rate 			= None
 		#=================================
 		self.rvs,self.ll 			= None, None #final group of components
 	def pdf(self, x,s):
@@ -338,11 +367,11 @@ class EMGU:
 		#=======================================
 		#assign to components
 
-		uniform_rate= (maxX-minX)/(2*self.K)
+		self.uniform_rate= (maxX-minX)/(2*self.K)
 
 		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self) for k in range(self.K)] 
-		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(uniform_rate, 1), minX), mus[k], ws[k][1], pis[k][1], bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
-		uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(uniform_rate, 1), maxX), ws[k][2], pis[k][2], bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
+		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], pis[k][1], bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
+		uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], pis[k][2], bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
 		if self.noise:
 			uniforms+=[component_elongation(minX, maxX, self.noise_max, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
@@ -373,10 +402,12 @@ class EMGU:
 			
 			N 	= sum([sum(c.r.values()) for c in components])
 			for k,c in enumerate(components):
-				c.set_new_parameters(N)
-				if c.remove or c.check():
+				if  c.check():
 					c.reset()
 					self.resets+=1
+				else:
+					c.set_new_parameters(N)
+				
 				
 			#check which components blew up and reset
 			i  	= 0
@@ -393,7 +424,6 @@ class EMGU:
 			elif self.move:
 				ll 		= self.moveLS_not_pp(X, ll, components)
 			prevll 	= ll
-
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
