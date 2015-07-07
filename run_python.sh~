@@ -1,13 +1,13 @@
 #Name the job
 #PBS -N EMG_Formatter
 ### Choose the queue ('short' = <24hrs, 'long' = >24hrs)
-#PBS -q short
+#PBS -q long
 
 ### Specify the number of nodes/cores
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=16
 
 ### Allocate the amount of memory needed
-#PBS -l mem=64mb
+#PBS -l mem=10gb
 
 ### Set your expected walltime
 #PBS -l walltime=05:00:00
@@ -45,9 +45,12 @@ fi
 ### ====================
 ### EMG MODULE TYPE
 ### ====================
-format=false
-runModel=true
+format=true
+runModel=false
 if [ "$format" = true ] ; then
+
+    format_option=FStitchMerged
+
     echo "EMG: formatting option"
     ref=${root}genome_files/RefSeqHG19.txt
     ffs=${root}gro_seq_files/HCT116/FStitch/DMSO2_3.sorted.fiveprime.pos_segs_IGV.bed
@@ -59,7 +62,7 @@ if [ "$format" = true ] ; then
 
 
 
-    python ${src}python_src/ formatData FStitchSingleIsoform  -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
+    python ${src}python_src/ formatData $format_option -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
 fi
 
 if [ "$runModel" = true ] ; then 

@@ -172,7 +172,7 @@ class component_bidir:
 		r  								= self.r[1] + self.r[-1]
 		self.pi, self.w 				=(self.r[1] + self.c.beta_0) / (r+ self.c.beta_0*2), (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
 		self.mu 						= self.E_X  / (r+ 0.1)
-		self.si 						= m.sqrt(abs((1./ (r + 3 + self.c.alpha_1)  )*(self.E_X2 - 2*self.mu*self.E_X + r*pow(self.mu, 2) + 2*self.c.beta_1 + self.c.tau*pow(self.mu-self.c.m_0, 2)   )))
+		self.si 						= pow(abs((1./ (r + 3 + self.c.alpha_1)  )*(self.E_X2 - 2*self.mu*self.E_X + r*pow(self.mu, 2) + 2*self.c.beta_1 + self.c.tau*pow(self.mu-self.c.m_0, 2)   )),0.5)
 		self.l 							= 1.0 /((self.E_Y + self.c.beta_2) / (r + self.c.alpha_2))
 		self.l 							= min(2,self.l)
 		#====================================================
@@ -192,7 +192,8 @@ class component_bidir:
 
 class EMGU:
 	def __init__(self, max_ct=pow(10, -4), max_it=200, K=2, bayes=False, noise=True, 
-		noise_max=0.1, moveUniformSupport=5, cores=4):
+		noise_max=0.1, moveUniformSupport=5, cores=4,
+		peaks=None):
 		self.max_ct 	= max_ct
 		self.max_it 	= max_it
 		self.K 			= K
@@ -208,8 +209,9 @@ class EMGU:
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
 		self.beta_0 				= 1. #symmetric prior for strand probabilities
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
-		self.alpha_1, self.beta_1 	= 1, 1 #priors for component sigmas
+		self.alpha_1, self.beta_1 	= 100, 100 #priors for component sigmas
 		self.alpha_2, self.beta_2 	= 1, 10 #priors for component 
+		self.peaks 					= peaks #prior on where the bidirectionals are from our template/bayes factor analysis
 		#=================================
 		self.rvs,self.ll 			= None, None #final group of components
 	def pdf(self, x,s):
@@ -293,14 +295,20 @@ class EMGU:
 
 		ws 			= np.random.dirichlet([self.alpha_0]*self.K*3).reshape(self.K, 3)
 		pis 		= np.random.beta(self.beta_0, self.beta_0, self.K*3).reshape(self.K,3)
-		mus 		= np.random.uniform(minX, maxX, self.K)
-		sigmas 		= np.random.gamma((maxX-minX)/(10*self.K), 1, self.K)
-		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(10*self.K), 1, self.K)
+		if self.peaks is None:
+			mus 		= np.random.uniform(minX, maxX, self.K)
+		else:
+			mus 		= [x for x ,y in self.peaks[:self.K]]
+		sigmas 		= np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
+		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
 		#assign to components
+
+		uniform_rate= (maxX-minX)/(2*self.K)
+
 		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self) for k in range(self.K)] 
-		uniforms    = [component_elongation(minX, mus[k], ws[k][1], pis[k][1], bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
-		uniforms   += [component_elongation(mus[k],maxX, ws[k][2], pis[k][2], bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
+		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(uniform_rate, 1), minX), mus[k], ws[k][1], pis[k][1], bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
+		uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(uniform_rate, 1), maxX), ws[k][2], pis[k][2], bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
 		if self.noise:
 			uniforms+=[component_elongation(minX, maxX, self.noise_max, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
@@ -348,8 +356,8 @@ class EMGU:
 			#move LLs...unfortunately this is brute - force...
 			if self.move:
 				ll 		= self.moveLs(X, ll, components)
-
 			prevll 	= ll
+
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
@@ -376,7 +384,7 @@ if __name__ == "__main__":
 	X 	= simulate.runOne(mu=0, s=0.1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
 		N=1000, SHOW=False, bins=200, noise=True )
 
-	# X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
+	#X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
 	# X[:,0]-=min(X[:,0])
 	# X[:,0]/=500.
 	# print max(X[:,0])

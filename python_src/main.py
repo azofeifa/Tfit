@@ -68,12 +68,25 @@ def run(argv):
 			filtered= load.filter_single_overlaps(FS, RF)
 			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
 				filtered, SHOW=False, test=False,
-				write_out=write_out)
+				write_out=write_out_dir)
 
 		elif aw.mod2=="RefSeqOnly":
-			print "refseq only currently not supported"
+			print "RefSeq only option not supported yet"
+			
 		elif aw.mod2=="FStitchMerged":
-			print "FStitch merged currently not supported"
+			FS_forward 		= aw.G["-ffs"][0]
+			FS_reverse 		= aw.G["-rfs"][0]
+			forward_file_bg = aw.G["-fbg"][0]
+			reverse_file_bg = aw.G["-rbg"][0]
+			write_out_dir 	= aw.G["-wo"][0]
+			pad 			= float(aw.G["-pad"][0])
+			FS 				= load.FStitch_annotations(FS_forward, FS_reverse, merge=True)
+			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
+				FS, SHOW=False, test=True,
+				write_out=write_out_dir)
+			
+
+
 	else: #run MODEL! 
 		#====================================
 		formatted_file 		= aw.G["-i"][0]
@@ -91,7 +104,7 @@ def run(argv):
 		D 					= load.formatted_file(formatted_file, bins,specific_chromosome)		
 		model_across.run(D, bic, rounds, 
 			max_k, standardize, convergence_thresh,
-			max_iterations,move_uniform, write_out_dir)
+			max_iterations,move_uniform, write_out_dir, specific_chromosome)
 
 
 

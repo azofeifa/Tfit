@@ -48,6 +48,9 @@ fi
 format=false
 runModel=true
 if [ "$format" = true ] ; then
+
+    format_option=FStitchMerged
+
     echo "EMG: formatting option"
     ref=${root}genome_files/RefSeqHG19.txt
     ffs=${root}gro_seq_files/HCT116/FStitch/DMSO2_3.sorted.fiveprime.pos_segs_IGV.bed
@@ -59,12 +62,12 @@ if [ "$format" = true ] ; then
 
 
 
-    python ${src}python_src/ formatData FStitchSingleIsoform  -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
+    python ${src}python_src/ formatData $format_option -ref $ref -ffs $ffs -rfs $rfs -fbg $fbg -rbg $rbg -pad $pad -wo $wo
 fi
 
 if [ "$runModel" = true ] ; then 
     echo "EMG: model option"
-    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/100000_out_format_file.tsv
+    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/out_format_file_1
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
     k=3
     it=5

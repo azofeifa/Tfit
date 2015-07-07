@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import simulate,re
 import time
+import model_across
 class info:
 	def __init__(self, st, sp, unit, chrom=""):
 		self.tot_st, self.tot_sp	= st, sp
@@ -178,9 +179,10 @@ def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True
 			for line in FH:
 				chrom,start, stop, coverage 	= re.split("\s+", line.strip("\n"))
 				start, stop, coverage 			= int(start), int(stop), abs(float(coverage))
+				if test and i>10:
+					break
+					
 				if chrom != prev:
-					if test and i!= 0:
-						break
 					i 	= 0
 					if chrom in intervals:
 						IS 	= intervals[chrom]
@@ -197,7 +199,12 @@ def bedGraphFile(forward_file, reverse_file,intervals, write_out=True, test=True
 	print "finished reading in FILES"
 	if write_out is not None:
 		print "writing out intervals/data for future parsing"
-		FHW	= open(write_out+"/out_format_file.tsv", "w")
+		print write_out
+		out_file 	= write_out+"/out_format_file_"
+
+		out_file 	= model_across.checkFileExists(out_file, 1)
+		print out_file
+		FHW			= open(out_file, "w")
 	for chrom in intervals:
 		for I in intervals[chrom]:
 			if SHOW:
