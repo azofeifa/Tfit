@@ -112,7 +112,7 @@ if __name__=="__main__":
 
 	coverage_scores, bayes_ks, hybrid, starts 	= compute_possible_EM_starts(X,std=1,lam=0.1)
 	#draw(X, coverage_scores, bayes_ks, hybrid,starts)
-	clf = model.EMGU(noise=True, K=3,noise_max=0.01,
+	clf = model.EMGU(noise=True, K=6,noise_max=0.01,
 		moveUniformSupport=5,
 		max_it=50,seed=True)
 	clf.fit(X)
