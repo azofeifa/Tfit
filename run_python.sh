@@ -10,7 +10,7 @@
 #PBS -l mem=10gb
 
 ### Set your expected walltime
-#PBS -l walltime=05:00:00
+#PBS -l walltime=24:00:00
 
 ### Setting to mail when the job is complete
 #PBS -e /Users/azofeifa/qsub_errors/EMG/                                                                                              
@@ -27,8 +27,8 @@
 ### ===================
 ### what machine?
 ### ===================
-vieques_pando=false ###unix compute clusters
-mac=true ###macOS
+vieques_pando=true ###unix compute clusters
+mac=false ###macOS
 if [ "$vieques_pando" = true ] ; then ###load modules 
     module load matplotlib_1.3.1
     module load numpy_1.9.2
@@ -45,8 +45,9 @@ fi
 ### ====================
 ### EMG MODULE TYPE
 ### ====================
-format=false
-runModel=true
+format=true
+runModel=false
+
 if [ "$format" = true ] ; then
 
     format_option=FStitchMerged
@@ -67,12 +68,14 @@ fi
 
 if [ "$runModel" = true ] ; then 
     echo "EMG: model option"
-    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/out_format_file_1
+    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/out_format_file.tsv
+    ###Job Array for running across different chromosomes                                                                      
+    #PBS -t 1-23 
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
     k=3
-    it=5
+    it=16
     bins=300
-    sc=all ###specific chromosome
+    sc=chr$PBS_ARRAYID ###specific chromosome
     bic=0 ###perform model selection?
     st=100 ###standardize, numerical stability
     mc=0.0001 ###EM convergence threshold

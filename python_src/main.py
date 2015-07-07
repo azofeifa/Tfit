@@ -83,7 +83,7 @@ def run(argv):
 			FS 				= load.FStitch_annotations(FS_forward, FS_reverse, 
 				merge=True, pad=pad)
 			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
-				FS, SHOW=False, test=True,
+				FS, SHOW=False, test=False,
 				write_out=write_out_dir)
 			
 
