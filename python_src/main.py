@@ -80,7 +80,8 @@ def run(argv):
 			reverse_file_bg = aw.G["-rbg"][0]
 			write_out_dir 	= aw.G["-wo"][0]
 			pad 			= float(aw.G["-pad"][0])
-			FS 				= load.FStitch_annotations(FS_forward, FS_reverse, merge=True)
+			FS 				= load.FStitch_annotations(FS_forward, FS_reverse, 
+				merge=True, pad=pad)
 			load.bedGraphFile(forward_file_bg, reverse_file_bg, 
 				FS, SHOW=False, test=True,
 				write_out=write_out_dir)

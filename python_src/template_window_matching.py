@@ -92,18 +92,32 @@ def compute_possible_EM_starts(X, std=1, lam=0.1):
 	hybrid 				= center(coverage_scores, bayes_ks)
 	starts 				= find_peaks([(x,y) for x,y in zip(np.linspace(X[0,0], X[-1,0], len(hybrid)), hybrid)])
 	return coverage_scores, bayes_ks, hybrid, starts
+def sample(X, k, std=1, lam=0.1):
+	coverage_scores, bayes_ks, hybrid, starts 	= compute_possible_EM_starts(X,std=std, lam=lam)
+	keeps 			= list()
+	for i in range(k):
+		j 			= np.random.geometric(0.8)-1
+		keeps.append(starts[j][0])
+		starts 		= starts[:j] + starts[j+1:]
+	return keeps
+
+
+
 
 	
 	
 
 if __name__=="__main__":
-	X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
+	X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=500 )
 	X[:,0]/=100.
 	X[:,0]-=X[0,0]
 
 	coverage_scores, bayes_ks, hybrid, starts 	= compute_possible_EM_starts(X,std=1,lam=0.1)
-	clf = model.EMGU(noise=True, K=3,noise_max=0.01,moveUniformSupport=5,max_it=50,peaks=starts)
+	#draw(X, coverage_scores, bayes_ks, hybrid,starts)
+	clf = model.EMGU(noise=True, K=3,noise_max=0.01,
+		moveUniformSupport=5,
+		max_it=50,seed=True)
 	clf.fit(X)
 	clf.draw(X)
 	
-	#draw(X, coverage_scores, bayes_ks, hybrid,starts)
+	
