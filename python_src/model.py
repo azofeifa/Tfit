@@ -187,6 +187,7 @@ class component_bidir:
 		self.l 			= 1.0/np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
 		self.si 	= np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
 		self.pi,self.w 	= 0.5, 1.0 / (self.c.K*3) 
+		self.remove 	= False
 
 
 
