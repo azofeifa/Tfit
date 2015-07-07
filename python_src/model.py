@@ -59,6 +59,8 @@ class component_elongation:
 		if math.isnan(self.w) or math.isnan(self.a) or math.isnan(self.b) or abs(self.b - self.a) < 5:
 			return True
 		return False
+	def reset(self):
+		self.w 	= 0.
 
 	
 	def add_stats(self,z, forward_ct, reverse_ct, norm_forward, norm_reverse):
@@ -126,6 +128,7 @@ class component_bidir:
 		if math.isnan(self.mu) or math.isnan(self.l) or math.isnan(self.si):
 			return True
 		return False 
+
 	
 	def add_stats(self, z, forward_ct, reverse_ct, norm_forward, norm_reverse):
 				
@@ -168,7 +171,7 @@ class component_bidir:
 	def set_new_parameters(self, N): #M-step
 		r  								= self.r[1] + self.r[-1]
 		self.pi, self.w 				=(self.r[1] + self.c.beta_0) / (r+ self.c.beta_0*2), (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
-		self.mu 						= self.E_X  / r
+		self.mu 						= self.E_X  / (r+ 0.1)
 		self.si 						= m.sqrt(abs((1./ (r + 3 + self.c.alpha_1)  )*(self.E_X2 - 2*self.mu*self.E_X + r*pow(self.mu, 2) + 2*self.c.beta_1 + self.c.tau*pow(self.mu-self.c.m_0, 2)   )))
 		self.l 							= 1.0 /((self.E_Y + self.c.beta_2) / (r + self.c.alpha_2))
 		self.l 							= min(2,self.l)
@@ -178,7 +181,11 @@ class component_bidir:
 		#====================================================
 		self.E_X, self.E_Y,self.E_X2 	= 0.,0.,0.
 		
-
+	def reset(self):
+		self.mu 		= np.random.uniform(self.c.minX, self.c.maxX)
+		self.l 			= 1.0/np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
+		self.si 	= np.random.gamma((self.c.maxX-self.c.minX)/(10*self.c.K), 1)
+		self.pi,self.w 	= 0.5, 1.0 / (self.c.K*3) 
 
 
 
@@ -194,6 +201,8 @@ class EMGU:
 		self.noise_max 	= noise_max
 		self.move 		= moveUniformSupport
 		self.cores 		= cores
+		self.converged 	= False
+		self.resets 	= 0.
 		#=================================
 		#prior parameters
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
@@ -228,7 +237,7 @@ class EMGU:
 			x,forward_ct, reverse_ct 	= X[i,:]
 			reverse+=self.LOG(sum([c.pdf(x,-1, move_a=move_as[i], move_b=move_bs[i]) for i,c in enumerate(components)]))*reverse_ct
 		return forward + reverse
-	def moveLs(self, ll, components):
+	def moveLs(self, X, ll, components):
 		#lets parrallelize this....
 		output_a 			= mp.Queue()
 		output_b 			= mp.Queue()
@@ -273,6 +282,15 @@ class EMGU:
 		#=======================================
 		#randomally initialize parameters
 		minX, maxX 	= X[0,0], X[-1,0]
+		self.minX, self.maxX 	= minX, maxX
+		if self.K==0: #testing if the data fits a uniform distribution only
+			pi 			= np.sum(X[:,1]) / np.sum(X[:,1:])
+			vl 			= 1.0 / float(maxX-minX)
+			self.ll 	= sum([self.LOG(vl*pi) * y for y in X[:,1]]) + sum([self.LOG(vl*(1-pi))*y for y in X[:,2]])
+			self.rvs 	= [component_elongation(minX, maxX, 1.0, pi, None, "uniform_model", self, X.shape[0])]
+			return self.rvs, self.ll
+
+
 		ws 			= np.random.dirichlet([self.alpha_0]*self.K*3).reshape(self.K, 3)
 		pis 		= np.random.beta(self.beta_0, self.beta_0, self.K*3).reshape(self.K,3)
 		mus 		= np.random.uniform(minX, maxX, self.K)
@@ -314,32 +332,25 @@ class EMGU:
 			N 	= sum([sum(c.r.values()) for c in components])
 			for k,c in enumerate(components):
 				c.set_new_parameters(N)
-			#check which components blew up and remove
+				if c.remove or c.check():
+					c.reset()
+					self.resets+=1
+				
+			#check which components blew up and reset
 			i  	= 0
-			while i < len(components):
-				if components[i].remove or components[i].check():
-					print "remove!"
-					components 	= components[:i] + components[i+1:]
-				else:
-					i+=1
-
+			
 			st 	= time.clock()
 			ll 					= self.compute_log_likelihood(X, components)
 			#check for convergence
 			if abs(ll-prevll) < self.max_ct:
 				converged=True
+				self.converged=True
 			#move LLs...unfortunately this is brute - force...
-			ll 		= self.moveLs(ll, components)
+			if self.move:
+				ll 		= self.moveLs(X, ll, components)
 
 			prevll 	= ll
-			for c in components:
-				print c
-			print "---------------------------"
-			print t, prevll
-			self.rvs 	= [c for c in components if c.type!="noise"]
-			self.draw(X)
 			t+=1
-		print time.clock()-st
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
 		assert self.rvs is not None, "need to run fit before drawing"
@@ -355,6 +366,7 @@ class EMGU:
 		ax.plot(xs, ys_reverse, linewidth=3.5,  color="red")
 		ax.grid()
 		plt.show()
+	
 
 
 
@@ -364,12 +376,12 @@ if __name__ == "__main__":
 	X 	= simulate.runOne(mu=0, s=0.1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
 		N=1000, SHOW=False, bins=200, noise=True )
 
-	X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
-	X[:,0]-=min(X[:,0])
-	X[:,0]/=500.
-	print max(X[:,0])
+	# X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
+	# X[:,0]-=min(X[:,0])
+	# X[:,0]/=500.
+	# print max(X[:,0])
 
-	clf = EMGU(noise=True, K=10,noise_max=0.3c,moveUniformSupport=3,max_it=200)
+	clf = EMGU(noise=True, K=1,noise_max=0.3,moveUniformSupport=3,max_it=200)
 	clf.fit(X)
 	clf.draw(X)
 	#==================================
