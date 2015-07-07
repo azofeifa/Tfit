@@ -66,7 +66,7 @@ if [ "$runModel" = true ] ; then
     echo "EMG: model option"
     formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/fs_only_merged.tsv
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
-    k=3
+    k=5
     it=16
     bins=500
     sc=chr1 ###specific chromosome

@@ -69,13 +69,11 @@ fi
 if [ "$runModel" = true ] ; then 
     echo "EMG: model option"
     formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/out_format_file.tsv
-    ###Job Array for running across different chromosomes                                                                      
-    #PBS -t 1-23 
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
-    k=3
+    k=5
     it=16
     bins=300
-    sc=chr$PBS_ARRAYID ###specific chromosome
+    sc=chr1 ###specific chromosome
     bic=0 ###perform model selection?
     st=100 ###standardize, numerical stability
     mc=0.0001 ###EM convergence threshold
