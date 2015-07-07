@@ -448,8 +448,7 @@ if __name__ == "__main__":
 	#==================================
 	#testing MAP-EM procedure
 	X 	= simulate.runOne(mu=0, s=0.1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-		N=1000, SHOW=False, bins=200, noise=True )
-
+		N=1000, SHOW=False, bins=1000, noise=True )
 	#X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
 	# X[:,0]-=min(X[:,0])
 	# X[:,0]/=500.
