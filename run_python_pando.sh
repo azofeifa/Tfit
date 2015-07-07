@@ -22,11 +22,12 @@
 ### Pass enviroment variables to the job
 #PBS -V
 
+
 ### ===================
 ### what machine?
 ### ===================
-vieques_pando=false ###unix compute clusters
-mac=true ###macOS
+vieques_pando=true ###unix compute clusters
+mac=false ###macOS
 if [ "$vieques_pando" = true ] ; then ###load modules 
     module load matplotlib_1.3.1
     module load numpy_1.9.2
@@ -61,16 +62,17 @@ if [ "$format" = true ] ; then
 fi
 
 if [ "$runModel" = true ] ; then 
+   
     echo "EMG: model option"
-    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/100000_out_format_file.tsv
+    formatted_file=${root}gro_seq_files/HCT116/EMG_out_files/fs_only_merged.tsv
     wo=${root}gro_seq_files/HCT116/EMG_out_files/
     k=3
-    it=5
-    bins=300
-    sc=all ###specific chromosome
+    it=16
+    bins=500
+    sc=chr1 ###specific chromosome
     bic=0 ###perform model selection?
     st=100 ###standardize, numerical stability
-    mc=0.0001 ###EM convergence threshold
+    mc=0.001 ###EM convergence threshold
     mt=300 ###EM max number of iterations, before we give up
     mu=0
     python ${src}python_src/ runModel -i $formatted_file -wo $wo -k $k -it $it -b $bins -sc $sc -bic $bic -st $st -mc $mc -mt $mt -mu $mu
