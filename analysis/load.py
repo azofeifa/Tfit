@@ -17,12 +17,13 @@ class model:
 		self.rvs 		= list()
 
 class info:
-	def __init__(self, chrom, start, stop):
+	def __init__(self, chrom, start, stop, N):
 		self.chrom 	= chrom
 		self.start 	= start
 		self.stop 	= stop
 		self.models = {}
 		self.current= None
+		self.N 		= N
 	def add_model(self, line):
 		k,ll, converged, retries 	= line[1:].strip("\n").split(",")
 		k,ll, retries 				= int(k), float(ll), float(retries)
@@ -47,12 +48,12 @@ def EMG_out(FILE):
 	with open(FILE) as FH:
 		for line in FH:
 			if "#"==line[0]:
-				chrom, stsp 	= line[1:].strip("\n").split(":")
+				chrom, stsp,N 	= line[1:].strip("\n").split(":")
 				start, stop 	= stsp.split("-")
 				start, stop 	= int(start), int(stop)
 				if I is not None:
 					fits.append(I)
-				I 				= info(chrom,start, stop)
+				I 				= info(chrom,start, stop, float(N))
 			elif "~" == line[0]:
 				I.add_model(line)
 			elif I is not None:

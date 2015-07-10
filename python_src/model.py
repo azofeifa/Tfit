@@ -239,7 +239,7 @@ class EMGU:
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
 		self.beta_0 				= 1. #symmetric prior for strand probabilities
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
-		self.alpha_1, self.beta_1 	= 100, 100 #priors for component sigmas
+		self.alpha_1, self.beta_1 	= 5, 5 #priors for component sigmas
 		self.alpha_2, self.beta_2 	= 1, 10 #priors for component 
 		self.peaks 					= None #prior on where the bidirectionals are from our template/bayes factor analysis
 		self.seed 					= seed
@@ -424,6 +424,9 @@ class EMGU:
 			elif self.move:
 				ll 		= self.moveLS_not_pp(X, ll, components)
 			prevll 	= ll
+			for c in components:
+				print c
+			print "------------"
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
@@ -448,7 +451,7 @@ if __name__ == "__main__":
 	#==================================
 	#testing MAP-EM procedure
 	X 	= simulate.runOne(mu=0, s=0.1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-		N=1000, SHOW=False, bins=1000, noise=True )
+		N=1000, SHOW=False, bins=300, noise=True )
 	#X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
 	# X[:,0]-=min(X[:,0])
 	# X[:,0]/=500.

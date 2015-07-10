@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 def runOne(mu=0, s=1, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=1000, SHOW=False , bins=200, noise=False ):
+	print s
 	forward 	 = list(np.random.normal(mu, s, int(N*we*pie)) + np.random.exponential(l, int(N*we*pie) ))
 	forward 	+= list(np.random.uniform(mu, lr, int(N*wr*pir)))
 	

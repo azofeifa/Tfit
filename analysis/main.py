@@ -3,9 +3,9 @@ import look_at_parameters as lap
 import numpy as np
 import BIC
 def run(root):
-	EMG_out_FILE 	= root + "gro_seq_files/HCT116/EMG_out_files/EMG_model_fits_0"
-	parameters 		= False
-	BIC_analysis 	= True
+	EMG_out_FILE 	= root + "gro_seq_files/HCT116/EMG_out_files/EMG_model_fits_all_0"
+	parameters 		= True
+	BIC_analysis 	= False
 	#only supports loading one at a time
 	fits 			= load.EMG_out(EMG_out_FILE)
 	if parameters:

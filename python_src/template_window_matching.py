@@ -76,6 +76,7 @@ def draw(X, coverage_scores, bayes_ks, hybrid,starts):
 	ax1.grid()
 	
 	ax2 = F.add_subplot(2,1,2)
+	print starts[:3]
 	ax2.bar([x for x,y in starts[:3]], [y for x,y in starts[:3]] )
 	ax2.plot(np.linspace(X[0,0], X[-1,0], len(coverage_scores)), coverage_scores, label="Log Coverage Score" )
 	ax2.plot(np.linspace(X[0,0], X[-1,0], len(bayes_ks)), bayes_ks, label="Bayes Factor" )
@@ -108,11 +109,11 @@ if __name__=="__main__":
 	X[:,0]-=X[0,0]
 
 	coverage_scores, bayes_ks, hybrid, starts 	= compute_possible_EM_starts(X,std=1,lam=0.1)
-	#draw(X, coverage_scores, bayes_ks, hybrid,starts)
-	clf = model.EMGU(noise=True, K=3,noise_max=0.01,
-		moveUniformSupport=5,
-		max_it=50,seed=True)
-	clf.fit(X)
-	clf.draw(X)
+	draw(X, coverage_scores, bayes_ks, hybrid,starts)
+	# clf = model.EMGU(noise=True, K=3,noise_max=0.01,
+	# 	moveUniformSupport=5,
+	# 	max_it=50,seed=True)
+	# clf.fit(X)
+	# clf.draw(X)
 	
 	
