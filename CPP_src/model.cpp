@@ -60,8 +60,7 @@ double UNI::pdf(double x, int strand){ //probability density function
 		return 0.;
 	}
 	if ((a+delta_a)<= x and x<=(b + delta_b)){
-
-		return w / ((b+delta_b)-(a+delta_a));
+		return w / abs((b+delta_b)-(a+delta_a));
 	}
 	return 0;
 }
@@ -138,6 +137,8 @@ double EMG::EY2(double z, int s){
 //components wrapper class for EMG and UNIFORM objects
 
 component::component(){//empty constructor
+	//*****************************************************
+	//Priors on Simulation for EM SEED
 	//============================
 	//for sigma
 	alpha_0 	= 50.46;
@@ -150,6 +151,12 @@ component::component(){//empty constructor
 	//for initial length of Uniforms
 	alpha_2 	= 1.297;
 	beta_2 		= 19260;
+	//*****************************************************
+	//Priors on parameters for MAP Estimate
+	ALPHA_0 = 1, BETA_0 =1; //for sigma
+	ALPHA_1 = 1, BETA_1 =1; //for lambda
+	ALPHA_2 = 1; //for weights, dirchlet
+	ALPHA_3 = 1; //for strand probs
 } 
 
 void component::initialize(double mu, double minX, double maxX, int K, double scale, double noise_w, double noise_pi){//random seeds...
@@ -262,16 +269,16 @@ double component::get_all_repo(){
 
 }
 
-void component::update_parameters(double N){
+void component::update_parameters(double N, int K){
 	if (type==1){
 		//first for the bidirectional
 		double r 	= bidir.r_forward + bidir.r_reverse;
-		bidir.pi 	= bidir.r_forward / r;
-		bidir.w 	= r /N;
+		bidir.pi 	= (bidir.r_forward + ALPHA_3) / (r + ALPHA_3*2);
+		bidir.w 	= (r + ALPHA_2) / (N + ALPHA_2*K*3 + K*3) ;
 		bidir.mu 	= bidir.ex / (r+0.001);
 		
-		bidir.si 	= pow(abs((1. /(r + 3+ alpha_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + r*pow(bidir.mu,2)  )), 0.5);
-		bidir.l 	= min((r+alpha_1) / (bidir.ey + beta_1), 2.);
+		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5);
+		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 2.);
 		//now for the forward and reverse strand elongation components
 		forward.w 	= forward.r_forward / N;
 		reverse.w 	= reverse.r_reverse / N;
@@ -282,17 +289,6 @@ void component::update_parameters(double N){
 
 
 
-//=========================================================
-//For Classifier class / wrapper around EM
-
-classifier::classifier(int k){
-	K 						= k ;
-	seed 					= true;
-	convergence_threshold 	= pow(10,-4);
-	max_iterations 			= 300;
-	noise_max 				= 0.05;
-	p 						= 0.8;
-}
 
 
 
@@ -318,6 +314,77 @@ double LOG(double x){
 }
 
 
+double calc_log_likelihood(component * components, int K, segment * data){
+	double ll 	= 0;
+	double forward, reverse;
+	for (int i = 0 ; i < data->XN; i++){
+		forward=0, reverse=0;
+		for (int k = 0; k < K; k++){
+			forward+=(components[k].evaluate(data->X[0][i], 1));
+			reverse+=(components[k].evaluate(data->X[0][i], -1));
+		}
+		ll+=LOG(forward)*data->X[1][i] + LOG(reverse)*data->X[2][i];
+	}
+	return ll;
+}	
+
+double move_uniforom_support(component * components, int K, int add, segment * data, double move, double base_ll){
+	//===========================================================================
+	//normal distribution centered around 0 and some variance, how much to move 
+	//uniform supports
+	random_device rd;
+	mt19937 mt(rd());
+	normal_distribution<double> dist_uni(0,move);
+	vector<int> components_that_made_it;
+	vector<int> type_that_made_it;
+	vector<double> and_their_moves;
+	double ll, step;
+	double maxLL 	= base_ll;
+	for (int k = 0; k < K;k++){
+		//try the forward
+		step 	= dist_uni(mt);
+		components[k].forward.delta_b=step;
+		ll 	 	= calc_log_likelihood(components, K+add, data);
+		if (ll > base_ll){
+			components_that_made_it.push_back(k);
+			type_that_made_it.push_back(1);
+			and_their_moves.push_back(step);
+		}
+		components[k].forward.delta_b=0;
+		step 	= dist_uni(mt);
+		components[k].reverse.delta_a=step;
+		ll 		= calc_log_likelihood(components, K+add, data);
+		if (ll > base_ll){
+			components_that_made_it.push_back(k);
+			type_that_made_it.push_back(-1);
+			and_their_moves.push_back(step);
+		}		
+		components[k].reverse.delta_a=0;
+	}
+	for (int u = 0 ; u < components_that_made_it.size(); u++){
+		if (type_that_made_it[u]==1){
+			components[components_that_made_it[u]].forward.b+=and_their_moves[u];
+		}else{
+			components[components_that_made_it[u]].reverse.a+=and_their_moves[u];	
+		}
+	}
+	ll 		= calc_log_likelihood(components, K+add, data);
+	return ll;
+}
+
+//=========================================================
+//For Classifier class / wrapper around EM
+
+classifier::classifier(int k){
+	K 						= k ;
+	seed 					= true;
+	convergence_threshold 	= pow(10,-4);
+	max_iterations 			= 300;
+	noise_max 				= 0.1;
+	p 						= 0.8;
+	move 					= 5.;
+}
+
 
 int classifier::fit(segment * data, vector<double> mu_seeds){
 	int i;
@@ -335,7 +402,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	}
 	int add 	= noise_max>0;
 	component components[K+add];
-	//=========================
+	//===========================================================================
 	//random seeds, initialize
 	
 	for (int k = 0; k < K; k++){
@@ -346,17 +413,17 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	if (add){
 		components[K].initialize(0., data->minX, data->maxX, 0., 0. , noise_max, pi);
 	}
-
-	//=========================
+		
+		
+	//===========================================================================
 	int t 			= 0; //EM loop ticker
 	double prevll 	= nINF; //previous iterations log likelihood
+	double ll; //current log likelihood
 	bool converged 	= false; //has the EM converged?
-	double norm_forward, norm_reverse,N;
+	double norm_forward, norm_reverse,N; //helper variables
+
 	while (t < max_iterations && not converged){
-		for (int k = 0; k < K+add; k++){
-			components[k].print();
-		}
-			
+		
 		//******
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
@@ -395,19 +462,20 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		}
 		//update the new parameters
 		for (int k = 0; k < K+add; k++){
-			components[k].update_parameters(N);
+			components[k].update_parameters(N, K);
 		}
-		printf("--------------------------------------\n");
-		usleep(100000);
 
+		ll 	= calc_log_likelihood(components, K+add, data);
 		//******
 		//Move Uniform support		
-
-		
-
+		ll 	= move_uniforom_support(components, K, add, data,move, ll);
+		if (abs(ll-prevll)<convergence_threshold){
+			converged=true;
+		}
+		prevll=ll;
 		t++;
 	}
-
+	
 
 
 

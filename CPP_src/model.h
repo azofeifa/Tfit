@@ -57,12 +57,26 @@ public:
 	//=====================================
 	//parameters to simulate from
 	double alpha_0, alpha_1, alpha_2, beta_0, beta_1, beta_2;
+	//=====================================
+	//bayesian priors for parameters, MAP
+	//FOR SIGMA ; variance in loading, gamma
+	double ALPHA_0, BETA_0;
+	//FOR LAMBA ; rate of initiation, gamma
+	double ALPHA_1, BETA_1;
+	//FOR W ; weight , dirchlet
+	double ALPHA_2;
+	//FOR PI ; strand prob. , beta
+	double ALPHA_3;
+
+
+
+
 	component();
 	void initialize(double, double , double, int , double , double, double);
 
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
-	void update_parameters(double);
+	void update_parameters(double,int);
 	double get_all_repo();
 	void reset();
 	void print();
@@ -76,13 +90,9 @@ public:
 	int max_iterations; //stop after this many iterations
 	bool seed; //seed with a gross peak finder
 	double noise_max; //fit a uniform noise component, never let it get above this weight
+	double move; //variance in moving the uniform supports
 	//===================================================================================
 	//Bayesian Priors
-	double alpha_0; //symmetric prior for mixing weights; dirchlet
-	double beta_0; //symmetric prior for strand probabilities; beta
-	double m_0,tau; //priors for component mus; gaussian
-	double alpha_1,beta_1; //priors for component sigmas; gamma
-	double alpha_2,beta_2; //priors for component lambdas; gamma
 	double p;
 	int fit(segment *,vector<double>);
 	classifier(int);
