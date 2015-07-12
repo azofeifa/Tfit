@@ -18,6 +18,11 @@ segment::segment(){
 	N 		= 0;
 }
 
+string segment::write_out(){
+	string text 	= ("#" + chrom + ":" + to_string(start) + "-" 
+		+ to_string(stop) + "," + to_string(int(N))+ "\n");
+	return text;
+}
 
 void segment::add(int strand, double x, double y){
 	vector<double> v2(2);

@@ -1,0 +1,7 @@
+binning resolution			= 300
+normalizing scale			= 100
+maximum number of models to estimate	= 3
+number of random EM seeds / inits 	= 10
+convergence threshold 	    		= 0.0001
+noise weight 				= 0.05
+variance in moving uniform support 	= 5

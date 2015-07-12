@@ -78,8 +78,10 @@ public:
 	void add_stats(double, double , int, double);
 	void update_parameters(double,int);
 	double get_all_repo();
-	void reset();
+	bool check_elongation_support();
 	void print();
+	void reset();
+	string write_out();
 };
 
 
@@ -95,9 +97,20 @@ public:
 	//Bayesian Priors
 	double p;
 	int fit(segment *,vector<double>);
-	classifier(int);
-	component * rvs = NULL;
-
+	classifier(int, double, int, double, double);
+	classifier();
+	void free_classifier();
+	string print_out_components();
+	//===================================================================================
+	//final important parameters
+	double ll,pi;
+	double last_diff;
+	component * components;
+	int resets;
+	bool converged;
 };
+
+
+
 
 #endif

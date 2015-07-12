@@ -13,12 +13,14 @@ public:
 	vector< vector<double> > reverse;
 	segment(string, int , int);
 	segment();
+	string write_out();
 	void bin(int, double);
 	void add(int, double, double);
 	double N;
 	double XN;
 	double ** X;
 	double SCALE;
+
 };
 
 vector<segment*> load_EMGU_format_file(string, string);

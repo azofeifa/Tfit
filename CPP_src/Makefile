@@ -15,10 +15,10 @@ CPP_FLAGS_64  	= -D64_BIT
 
 GCCVERSION 		= $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
 
-NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o
+NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o read_in_parameters.o
 	@${CXX} ${CXXFLAGS} ${PWD}/main.o ${PWD}/load.o \
 	${PWD}/split.o ${PWD}/model.o ${PWD}/across_segments.o \
-	${PWD}/template_matching.o -o ${EXEC}
+	${PWD}/template_matching.o ${PWD}/read_in_parameters.o -o ${EXEC}
 	@echo "========================================="
 	@echo Sucessfully Compiled
 
@@ -43,6 +43,9 @@ across_segments.o:
 template_matching.o:
 	@${CXX} -c ${CXXFLAGS} ${PWD}/template_matching.cpp 
 	@echo Compiled template_matching
+read_in_parameters.o:
+	@${CXX} -c ${CXXFLAGS} ${PWD}/read_in_parameters.cpp 
+	@echo Compiled read_in_parameters
 
 
 
