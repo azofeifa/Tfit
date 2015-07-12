@@ -4,7 +4,7 @@
 #**    Description: Makefile for Exponential-Gaussian-Uniform Mixture Model*/
 #***************************************************************************/
 
-CXX             = g++-4.9.0
+CXX             = g++
 CXXFLAGS        = -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11  -fopenmp -Wno-write-strings
 
 EXEC            = ${PWD}/EMGU
@@ -19,7 +19,7 @@ NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o read
 	@${CXX} ${CXXFLAGS} ${PWD}/main.o ${PWD}/load.o \
 	${PWD}/split.o ${PWD}/model.o ${PWD}/across_segments.o \
 	${PWD}/template_matching.o ${PWD}/read_in_parameters.o -o ${EXEC}
-	@echo "========================================="
+	@echo "========================="
 	@echo Sucessfully Compiled
 
 main.o: 
