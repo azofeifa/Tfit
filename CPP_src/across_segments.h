@@ -4,8 +4,7 @@
 
 void run_model_accross_segments(vector<segment*>, 
 	int , int, int, double, 
-	double, double, double, int, string,
-	bool, bool, double);
+	double, double, double, int, string, double);
 
 void free_segments(vector<segment*>);
 
