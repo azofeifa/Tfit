@@ -409,7 +409,7 @@ double move_uniforom_support(component * components, int K, int add, segment * d
 //For Classifier class / wrapper around EM
 
 classifier::classifier(int k, double ct, int mi, double nm,
-	double move){
+	double move, double R_MU){
 	K 						= k ;
 	seed 					= true;
 	convergence_threshold 	= ct;
@@ -419,6 +419,8 @@ classifier::classifier(int k, double ct, int mi, double nm,
 	move 					= move;
 	resets 					= 0;
 	last_diff 				= 0;
+	r_mu 					= R_MU;
+
 }
 
 classifier::classifier(){};//empty constructor
@@ -452,7 +454,13 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	
 	for (int k = 0; k < K; k++){
 		i 	= sample_centers(mu_seeds ,  p);
-		components[k].initialize(mu_seeds[i], data->minX, data->maxX, K, data->SCALE , 0., 0.);
+		double mu 	= mu_seeds[i];
+		if (r_mu > 0){
+			normal_distribution<double> dist_r_mu(mu, r_mu);
+			mu 		= dist_r_mu(mt);
+		}
+
+		components[k].initialize(mu, data->minX, data->maxX, K, data->SCALE , 0., 0.);
 		mu_seeds.erase (mu_seeds.begin()+i);	
 	}
 	if (add){

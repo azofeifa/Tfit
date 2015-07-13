@@ -17,13 +17,16 @@ string check_file(string FILE, int i){ //don't want to write over an existing fi
 	return template_file;
 }
 
-map<int,vector<classifier> > initialize_data_struct(int maxK, int rounds, int num_proc, double scale, double move, double max_noise,  double convergence_tresh, int max_iterations){
+map<int,vector<classifier> > initialize_data_struct(int maxK, 
+	int rounds, int num_proc, double scale, double move, 
+	double max_noise,  double convergence_tresh, 
+	int max_iterations, double r_mu){
 	map<int,vector<classifier> >  data_struct;	
 	for (int k = 1; k<=maxK;k++){
 		data_struct[k] 	= vector<classifier>(rounds);
 		for (int r = 0; r<rounds; r++){
 			data_struct[k][r] 	= classifier(k,  convergence_tresh, max_iterations, 
-					max_noise, move);
+					max_noise, move,r_mu);
 		}
 	}
 	return data_struct;
@@ -54,7 +57,7 @@ map<int, classifier> getMax(map<int,vector<classifier> > DS){
 void run_model_accross_segments(vector<segment*> segments, 
 	int maxK, int rounds, int num_proc, double scale, double move, 
 		double max_noise,  double convergence_tresh, int max_iterations,
-		string out_dir,bool pp_r, bool pp_k){
+		string out_dir,bool pp_r, bool pp_k, double r_mu){
 	typedef map<int, classifier>::iterator it;
 	
 	int N 	= segments.size();
@@ -95,10 +98,12 @@ void run_model_accross_segments(vector<segment*> segments,
 	FHW.open(out_file);
 	for (int i = 0; i < N; i++ ){
 		vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
-		map<int,vector<classifier> > DS = initialize_data_struct(maxK, rounds, num_proc, scale,  move, max_noise,  convergence_tresh, max_iterations);
+		map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
+			rounds, num_proc, scale,  move, max_noise,  
+			convergence_tresh, max_iterations,r_mu);
 		FHW<<segments[i]->write_out();
 		classifier clf(0, convergence_tresh, max_iterations, 
-					max_noise, move);
+					max_noise, move,r_mu);
 		clf.fit(segments[i], mu_seeds);
 
 		FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;

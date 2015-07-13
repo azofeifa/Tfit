@@ -33,6 +33,7 @@ int main(int argc, char* argv[]){
 	int max_iterations 		= stoi(P->p["-mi"]);
 	bool pp_r 				= bool(stoi(P->p["-pp_r"]));
 	bool pp_k 				= bool(stoi(P->p["-pp_k"]));
+	double r_mu 			= stod(P->p["-r_mu"]);
 	
 	if (verbose){//show current user parameters...
 		P->display();
@@ -58,7 +59,8 @@ int main(int argc, char* argv[]){
 
 	t = clock();
 	run_model_accross_segments(segments, maxK, rounds, num_proc, scale, move, 
-		max_noise, convergence_tresh, max_iterations,out_file_dir, pp_r, pp_k);
+		max_noise, convergence_tresh, max_iterations,out_file_dir, pp_r, pp_k,
+		r_mu);
 	free_segments(segments);
 	end = chrono::system_clock::now();
 	int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >

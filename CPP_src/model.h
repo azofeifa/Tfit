@@ -97,7 +97,7 @@ public:
 	//Bayesian Priors
 	double p;
 	int fit(segment *,vector<double>);
-	classifier(int, double, int, double, double);
+	classifier(int, double, int, double, double, double);
 	classifier();
 	void free_classifier();
 	string print_out_components();
@@ -108,6 +108,7 @@ public:
 	component * components;
 	int resets;
 	bool converged;
+	double r_mu;
 };
 
 

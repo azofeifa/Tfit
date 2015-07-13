@@ -15,6 +15,7 @@
 -chr 		= all #specific chromosome to process on?
 -pp_r 		= 1 #put parrallel processing on the rounds...?
 -pp_k 		= 0 #put parrallel processing on KS?
+-r_mu 		= 3 #seed EM randomally from the peak finder
 
 
 

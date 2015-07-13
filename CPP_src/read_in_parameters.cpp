@@ -24,6 +24,7 @@ params::params(){
 	p["-mi"] 		= "300";
 	p["-pp_r"] 		= "1";
 	p["-pp_k"] 		= "0";
+	p["-r_mu"] 		= "0";
 	N 				= 0;
 
 }
@@ -57,6 +58,8 @@ void params::display(){
 	cout<<"-np       : "<<p["-np"]<<endl;
 	cout<<"-pp_r     : "<<p["-pp_r"]<<endl;
 	cout<<"-pp_k     : "<<p["-pp_k"]<<endl;
+	cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
+	
 	cout<<"----------------------------------------------------------------"<<endl;
 }
 
