@@ -5,7 +5,7 @@
 #PBS -l nodes=1:ppn=64
 
 ### Allocate the amount of memory needed
-#PBS -l mem=100gb
+#PBS -l pmem=1gb
 
 ### Set your expected walltime
 #PBS -l walltime=12:00:00
