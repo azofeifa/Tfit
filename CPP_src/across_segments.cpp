@@ -57,11 +57,11 @@ map<int, classifier> getMax(map<int,vector<classifier> > DS){
 void run_model_accross_segments(vector<segment*> segments, 
 	int maxK, int rounds, int num_proc, double scale, double move, 
 		double max_noise,  double convergence_tresh, int max_iterations,
-		string out_dir, double r_mu){
+		string out_dir, double r_mu, string spec){
 	typedef map<int, classifier>::iterator it;
 	
 	int N 	= segments.size();
-	string out_file_template 	= out_dir+"model_fits_out_";
+	string out_file_template 	= out_dir+"model_fits_out_" + spec+"_";
 	string out_file 			= check_file(out_file_template, 1);
 	
 	
@@ -80,7 +80,7 @@ void run_model_accross_segments(vector<segment*> segments,
 			classifier clf(0, convergence_tresh, max_iterations, 
 						max_noise, move,r_mu);
 			clf.fit(segments[i], mu_seeds);
-			
+			FHW<<segments[i]->write_out();
 			FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;
 			FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
 

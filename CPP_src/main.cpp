@@ -58,7 +58,7 @@ int main(int argc, char* argv[]){
 	t = clock();
 	run_model_accross_segments(segments, maxK, rounds, num_proc, scale, move, 
 		max_noise, convergence_tresh, max_iterations,out_file_dir, 
-		r_mu);
+		r_mu,spec_all);
 	free_segments(segments);
 	end = chrono::system_clock::now();
 	int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
