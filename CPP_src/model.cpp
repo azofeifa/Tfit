@@ -451,15 +451,19 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	components 	= new component[K+add];
 	//===========================================================================
 	//random seeds, initialize
-	
+	double mu;
 	for (int k = 0; k < K; k++){
-		i 	= sample_centers(mu_seeds ,  p);
-		double mu 	= mu_seeds[i];
-		if (r_mu > 0){
-			normal_distribution<double> dist_r_mu(mu, r_mu);
-			mu 		= dist_r_mu(mt);
-		}
 
+		if (mu_seeds.size()>0){
+			i 	= sample_centers(mu_seeds ,  p);
+			mu 	= mu_seeds[i];
+			if (r_mu > 0){
+				normal_distribution<double> dist_r_mu(mu, r_mu);
+				mu 		= dist_r_mu(mt);
+			}
+		}else{
+			mu 			= dist_uni(mt);
+		}
 		components[k].initialize(mu, data->minX, data->maxX, K, data->SCALE , 0., 0.);
 		mu_seeds.erase (mu_seeds.begin()+i);	
 	}
