@@ -73,6 +73,7 @@ void run_model_accross_segments(vector<segment*> segments,
 	for (int i = 0; i < N; i++ ){
 	 	
 		if (segments[i]->N > 0){
+			printf("----------------------------------\n");
 			printf("%d\n", i );
 			vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
 			printf("%d\n", mu_seeds.size() );
