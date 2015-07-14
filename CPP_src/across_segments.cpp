@@ -65,16 +65,16 @@ void run_model_accross_segments(vector<segment*> segments,
 	string out_file 			= check_file(out_file_template, 1);
 	
 	
-
+	printf("%d, number of segments\n", N );
 
 	ofstream FHW;
 	
 	FHW.open(out_file);
 	for (int i = 0; i < N; i++ ){
-	 	
+	 	printf("----------------------------------\n");
+		printf("%d, ***\n", i );
+			
 		if (segments[i]->N > 0){
-			printf("----------------------------------\n");
-			printf("%d\n", i );
 			vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
 			printf("%d\n", mu_seeds.size() );
 			map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
