@@ -65,36 +65,27 @@ void run_model_accross_segments(vector<segment*> segments,
 	string out_file 			= check_file(out_file_template, 1);
 	
 	
-	printf("%d, number of segments\n", N );
 
 	ofstream FHW;
 	
 	FHW.open(out_file);
 	for (int i = 0; i < N; i++ ){
-	 	printf("----------------------------------\n");
-		printf("%d, ***\n", i );
-			
+	 		
 		if (segments[i]->N > 0){
 			vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
-			printf("%d\n", mu_seeds.size() );
 			map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
 				rounds, num_proc, scale,  move, max_noise,  
 				convergence_tresh, max_iterations,r_mu);
-			printf("makde DS\n");
 			classifier clf(0, convergence_tresh, max_iterations, 
 						max_noise, move,r_mu);
 			clf.fit(segments[i], mu_seeds);
-			printf("made uniform\n");
 			FHW<<segments[i]->write_out();
 			FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;
 			FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
 
 			for (int k = 1; k <=maxK;k++ ){
-				printf("%d\n", k );
 				#pragma omp parallel for num_threads(num_proc)
 				for (int j = 0; j < rounds; j++){
-					printf("%d\n", j );
-				
 					DS[k][j].fit(segments[i], mu_seeds);
 				}
 			}

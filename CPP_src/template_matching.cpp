@@ -57,6 +57,7 @@ double window_cov(segment * data, int start, int stop){
 
 vector<vector<double>> bubble_sort(vector<vector<double>> X){ //sort vector of vectors by second
 	bool changed=true;
+	printf("%d\n", X.size() );
 	while (changed){
 		changed=false;
 		for (int i = 0; i < X.size()-1; i++  )	{
@@ -111,15 +112,16 @@ vector<double> take_avg(vector<double> X1, vector<double> X2 ){
 
 vector<double> peak_bidirs(segment * data){
 
-
 	vector<double> coverage_values 	= (window_search(data, 1, 0.1, 0));
 	vector<double> template_values 	= (window_search(data, 1, 0.1, 1));
 	vector<double> average_values 	= take_avg(coverage_values, template_values);
 	
 	vector<vector<double>> peaks 	= find_peaks(average_values, data->X);
-	
-	peaks 							= bubble_sort(peaks);
 	vector<double> centers ;
+	if (peaks.size()==0){
+		return centers;
+	}
+	peaks 							= bubble_sort(peaks);
 	for (int i = 0 ; i < peaks.size(); i++)	{
 		centers.push_back(peaks[i][0]);
 	}
