@@ -433,7 +433,6 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	uniform_real_distribution<double> dist_uni(data->minX,data->maxX);
 	
 
-	int i;
 	double l 	= data->maxX - data->minX;
 	pi 	= sum(data->X[1], data->XN)/ data->N;
 	double vl 	= 1.0 / l;
@@ -453,6 +452,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	components 	= new component[K+add];
 	//===========================================================================
 	//random seeds, initialize
+	int i 	= 0;
 	double mu;
 	for (int k = 0; k < K; k++){
 
@@ -467,7 +467,9 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 			mu 			= dist_uni(mt);
 		}
 		components[k].initialize(mu, data->minX, data->maxX, K, data->SCALE , 0., 0.);
-		mu_seeds.erase (mu_seeds.begin()+i);	
+		if (mu_seeds.size() > 0){
+			mu_seeds.erase (mu_seeds.begin()+i);	
+		}
 	}
        
 	if (add){

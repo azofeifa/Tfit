@@ -97,12 +97,10 @@ void run_model_accross_segments(vector<segment*> segments,
 			map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
 				rounds, num_proc, scale,  move, max_noise,  
 				convergence_tresh, max_iterations,r_mu);
-			printf("MAP");
 			FHW<<segments[i]->write_out();
 			classifier clf(0, convergence_tresh, max_iterations, 
 						max_noise, move,r_mu);
 			clf.fit(segments[i], mu_seeds);
-			printf("UNI");
 			
 			FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;
 			FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
