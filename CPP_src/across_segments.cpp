@@ -71,6 +71,7 @@ void run_model_accross_segments(vector<segment*> segments,
 	
 	FHW.open(out_file);
 	for (int i = 0; i < N; i++ ){
+<<<<<<< HEAD
 	  cout<<segments[i]->write_out()<<endl;
 	  printf("%d\n", i);
 		vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
@@ -97,16 +98,42 @@ void run_model_accross_segments(vector<segment*> segments,
 			for (int j = 0; j < rounds; j++){
 			  printf("rounds %d\n", j);
 				DS[k][j].fit(segments[i], mu_seeds);
+=======
+		printf("%d\n", i );
+		if (segments[i]->N > 0){
+			vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
+			printf("mu_seeds");
+			map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
+				rounds, num_proc, scale,  move, max_noise,  
+				convergence_tresh, max_iterations,r_mu);
+			printf("MAP");
+			FHW<<segments[i]->write_out();
+			classifier clf(0, convergence_tresh, max_iterations, 
+						max_noise, move,r_mu);
+			clf.fit(segments[i], mu_seeds);
+			printf("UNI");
+			
+			FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;
+			FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
+
+			for (int k = 1; k <=maxK;k++ ){
+				printf("%d, ********\n",k );
+				#pragma omp parallel for num_threads(num_proc)
+				for (int j = 0; j < rounds; j++){
+					printf("%d\n", j );
+					DS[k][j].fit(segments[i], mu_seeds);
+				}
 			}
-		}
-		//*********************************************
-		//we want to output for each model, k, the highest log likelihood estimate
-		//and then the respective parameter estimates for each component
-		map<int, classifier> reduced 	= getMax(DS);
-		//okay now lets write it out to the file
-		for(it  K = reduced.begin(); K != reduced.end(); K++) {
-			FHW<<"~"<<to_string(K->first)<<","<<to_string(K->second.ll)<<","<<to_string(K->second.converged)<<","<<to_string(K->second.last_diff)<<endl;
-			FHW<<K->second.print_out_components();
+			//*********************************************
+			//we want to output for each model, k, the highest log likelihood estimate
+			//and then the respective parameter estimates for each component
+			map<int, classifier> reduced 	= getMax(DS);
+			//okay now lets write it out to the file
+			for(it  K = reduced.begin(); K != reduced.end(); K++) {
+				FHW<<"~"<<to_string(K->first)<<","<<to_string(K->second.ll)<<","<<to_string(K->second.converged)<<","<<to_string(K->second.last_diff)<<endl;
+				FHW<<K->second.print_out_components();
+>>>>>>> 8687cf185e8ce154266a7559b62ca6e0301630af
+			}
 		}		
 	}
 }
