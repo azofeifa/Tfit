@@ -43,6 +43,6 @@ formatted_in_file=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/fs_only
 out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 #chr=chr$PBS_ARRAYID
 chr=chr5
-$src $config_file  -i $formatted_in_file -o $out_directory -chr $chr
+$src $config_file  -i $formatted_in_file -o $out_directory -chr $chr -np 1
 
 
