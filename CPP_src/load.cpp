@@ -145,6 +145,10 @@ vector<segment*> load_EMGU_format_file(string FILE, string spec){
 
 void BIN(vector<segment*> segments, int BINS, double scale){
 	for (int i = 0 ; i < segments.size() ; i ++){
-		segments[i]->bin(BINS, scale);
+		if (segments[i]->forward.size() > 0 or segments[i]->reverse.size() > 0 ){
+			segments[i]->bin(BINS, scale);
+		}else{
+			printf("WHAT?\n");
+		}
 	}
 }
