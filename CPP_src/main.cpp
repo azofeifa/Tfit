@@ -37,7 +37,6 @@ int main(int argc, char* argv[]){
 		P->display();
 	}
 	//==========================================
-	printf("reading in segments\n");
 	vector<segment*> segments	= load_EMGU_format_file(formatted_file, spec_all);
 	if (segments.empty()){
 		cout<<"segments was not populated"<<endl;
@@ -46,7 +45,6 @@ int main(int argc, char* argv[]){
 		return 0;
 
 	}
-	printf("read in segments\n");
 	BIN(segments, bin_resolution, scale);
 	//==========================================
 	//Model Parameters
@@ -58,7 +56,6 @@ int main(int argc, char* argv[]){
 	start = chrono::system_clock::now();
 
 	t = clock();
-	printf("Beginning Model Fit\n");
 	run_model_accross_segments(segments, maxK, rounds, num_proc, scale, move, 
 		max_noise, convergence_tresh, max_iterations,out_file_dir, 
 		r_mu,spec_all);
