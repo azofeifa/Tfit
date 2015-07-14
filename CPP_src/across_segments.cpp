@@ -92,10 +92,8 @@ void run_model_accross_segments(vector<segment*> segments,
 				DS[k][j].fit(segments[i], mu_seeds);
 			}
 		}
-		printf("%d\n", i );
 		if (segments[i]->N > 0){
 			vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
-			printf("mu_seeds");
 			map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
 				rounds, num_proc, scale,  move, max_noise,  
 				convergence_tresh, max_iterations,r_mu);
@@ -110,10 +108,8 @@ void run_model_accross_segments(vector<segment*> segments,
 			FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
 
 			for (int k = 1; k <=maxK;k++ ){
-				printf("%d, ********\n",k );
 				#pragma omp parallel for num_threads(num_proc)
 				for (int j = 0; j < rounds; j++){
-					printf("%d\n", j );
 					DS[k][j].fit(segments[i], mu_seeds);
 				}
 			}
