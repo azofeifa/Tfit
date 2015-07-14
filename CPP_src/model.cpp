@@ -447,11 +447,13 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 
 		return 1;
 	}
+	
 	int add 	= noise_max>0;
+       
 	components 	= new component[K+add];
 	//===========================================================================
 	//random seeds, initialize
-	
+	printf("Initializing, %d\n", mu_seeds.size());
 	for (int k = 0; k < K; k++){
 		i 	= sample_centers(mu_seeds ,  p);
 		double mu 	= mu_seeds[i];
@@ -463,22 +465,25 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		components[k].initialize(mu, data->minX, data->maxX, K, data->SCALE , 0., 0.);
 		mu_seeds.erase (mu_seeds.begin()+i);	
 	}
+       
 	if (add){
 		components[K].initialize(0., data->minX, data->maxX, 0., 0. , noise_max, pi);
 	}
-		
+       
 		
 	//===========================================================================
 	int t 			= 0; //EM loop ticker
 	double prevll 	= nINF; //previous iterations log likelihood
 	converged 		= false; //has the EM converged?
 	double norm_forward, norm_reverse,N; //helper variables
+	printf("Running EM\n");
 	while (t < max_iterations && not converged){
 		
 		//******
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
+		       
 		}
 		//******
 		//E-step

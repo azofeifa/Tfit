@@ -5,7 +5,7 @@
 #PBS -l nodes=1:ppn=64
 
 ### Allocate the amount of memory needed
-#PBS -l mem=10gb
+#PBS -l mem=100gb
 
 ### Set your expected walltime
 #PBS -l walltime=12:00:00
@@ -17,8 +17,7 @@
 ### Set your email address
 #PBS -M jgazofeifa@gmail.com
 
-###
-#PBS -t 1-64
+### P BS -t 1-23
 
 
 ### Choose your shell 
@@ -40,12 +39,10 @@ fi
 
 src=/Users/azofeifa/Lab/EMG/CPP_src/EMGU
 config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/model_config.txt
-formatted_in_file=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/fs_only_merged_32.tsv
-out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/cpp_model_fits_03/
-maxK=5
-rounds=64
-r_mu=3
-mi=1000
-$src $config_file  -i $formatted_in_file -o $out_directory -np $PBS_ARRAYID -rounds $PBS_ARRAYID -r_mu $r_mu -mi $mi
+formatted_in_file=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/fs_only_merged.tsv
+out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+chr=chr1
+
+$src $config_file  -i $formatted_in_file -o $out_directory -chr $chr
 
 

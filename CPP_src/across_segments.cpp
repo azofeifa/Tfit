@@ -57,62 +57,45 @@ map<int, classifier> getMax(map<int,vector<classifier> > DS){
 void run_model_accross_segments(vector<segment*> segments, 
 	int maxK, int rounds, int num_proc, double scale, double move, 
 		double max_noise,  double convergence_tresh, int max_iterations,
-		string out_dir,bool pp_r, bool pp_k, double r_mu){
+		string out_dir, double r_mu){
 	typedef map<int, classifier>::iterator it;
 	
 	int N 	= segments.size();
 	string out_file_template 	= out_dir+"model_fits_out_";
 	string out_file 			= check_file(out_file_template, 1);
 	
-	int parrallelism_on_rounds 	= pp_r;
-	int parrallelism_on_KS 		= pp_k;
-
-
-	int num_proc_r=1;
-	int num_proc_k=1;
-	if (parrallelism_on_rounds and not parrallelism_on_KS){
-		num_proc_r=num_proc;
-	}else if (not parrallelism_on_rounds and parrallelism_on_KS){
-		num_proc_k=num_proc;
-	}
-	else{//both have been wanted...
-		if (maxK < num_proc){
-			//this giving a core to each K model and the remaing cores 
-			num_proc_k=maxK;
-			num_proc_r=(num_proc-maxK)/maxK;
-			if (num_proc_r==0){
-				num_proc_r=1;
-			}
-		}
-		else{
-			num_proc_k=num_proc;
-			num_proc_r=1;
-		}
-	}
-
-
+	
 
 
 	ofstream FHW;
 	
 	FHW.open(out_file);
 	for (int i = 0; i < N; i++ ){
+	  cout<<segments[i]->write_out()<<endl;
+	  printf("%d\n", i);
 		vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
+	  printf("made mu_seeds\n");
+				
 		map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
 			rounds, num_proc, scale,  move, max_noise,  
 			convergence_tresh, max_iterations,r_mu);
+		printf("made map vector\n");
 		FHW<<segments[i]->write_out();
 		classifier clf(0, convergence_tresh, max_iterations, 
 					max_noise, move,r_mu);
+		printf("classified the uniform\n");
 		clf.fit(segments[i], mu_seeds);
 
 		FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;
 		FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
 
-		#pragma omp parallel for num_threads(num_proc_k)
+		//#pragma omp parallel for num_threads(num_proc_k)
+		//#pragma omp parallel for num_threads(num_proc) collapse(2)
 		for (int k = 1; k <=maxK;k++ ){
-			#pragma omp parallel for num_threads(num_proc_r)
+		  printf("working on %d\n", k);
+			#pragma omp parallel for num_threads(num_proc)
 			for (int j = 0; j < rounds; j++){
+			  printf("rounds %d\n", j);
 				DS[k][j].fit(segments[i], mu_seeds);
 			}
 		}

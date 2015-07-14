@@ -79,8 +79,71 @@ def wall_vs_np(G,A):
 	ax4.legend(loc=(0.02,0.69))
 
 
-
-
-
 	plt.show()
 	pass
+
+def delta_ll_vs_RI(G):
+	I 	= {}
+	J 	= {}
+	L 	= {}
+	N 	= 0.
+	for gene in G:
+		G[gene].calc_improvements(TYPE=1)
+		data 	= G[gene].get_average_diff(TYPE=1)
+		G[gene].calc_improvements(TYPE=2)
+		data2 	= G[gene].get_average_diff(TYPE=2)
+		G[gene].calc_improvements2()
+		data3 	= G[gene].get_average_diff2()
+
+		
+		for rounds, comparisons in data:
+			if rounds not in I:
+				I[rounds] 	= list()
+			I[rounds].append(comparisons)
+		for rounds, comparisons in data2:
+			if rounds not in J:
+				J[rounds] 	= list()
+			J[rounds].append(comparisons)
+		for rounds, extra in data3:
+			if rounds not in L:
+				L[rounds] 	= {}
+			for move, diff in extra:
+				if move not in L[rounds]:
+					L[rounds][move] 	= list()
+				L[rounds][move].append(diff)
+
+
+
+	
+	F 	= plt.figure(figsize=(15,10))
+	ax1 	= F.add_subplot(2,1,1)
+	ax1.scatter(I.keys(), map(np.mean, I.values()))
+	ax1.scatter(J.keys(), map(np.mean, J.values()), color="green")
+
+	ax1.grid()
+
+	ax2 	= F.add_subplot(2,1,2)
+	ax2.scatter(L.keys(), map(np.mean, [L[r][0] for r in L ]))
+	ax2.scatter(L.keys(), map(np.mean, [L[r][1] for r in L ]), color="red")
+	ax2.scatter(L.keys(), map(np.mean, [L[r][2] for r in L ]), color="green")
+	ax2.scatter(L.keys(), map(np.mean, [L[r][3] for r in L ]), color="black")
+	
+	ax2.grid()
+	
+
+	plt.show()
+
+
+
+
+
+	pass
+
+
+
+
+
+
+
+
+
