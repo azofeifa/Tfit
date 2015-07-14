@@ -81,10 +81,6 @@ void run_model_accross_segments(vector<segment*> segments,
 						max_noise, move,r_mu);
 			clf.fit(segments[i], mu_seeds);
 			FHW<<segments[i]->write_out();
-<<<<<<< HEAD
-=======
-			
->>>>>>> 33da234a5625d8e5e186500295844c8248891a02
 			FHW<<"~0"<<","<<to_string(clf.ll)<<",1,0"<<endl;
 			FHW<<"U: "<<to_string(segments[i]->minX)<<","<<to_string(segments[i]->maxX)<<",1,"<<to_string(clf.pi)<<endl;
 
