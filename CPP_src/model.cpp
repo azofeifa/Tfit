@@ -453,11 +453,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	components 	= new component[K+add];
 	//===========================================================================
 	//random seeds, initialize
-<<<<<<< HEAD
-	printf("Initializing, %d\n", mu_seeds.size());
-=======
 	double mu;
->>>>>>> 8687cf185e8ce154266a7559b62ca6e0301630af
 	for (int k = 0; k < K; k++){
 
 		if (mu_seeds.size()>0){
@@ -484,7 +480,6 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	double prevll 	= nINF; //previous iterations log likelihood
 	converged 		= false; //has the EM converged?
 	double norm_forward, norm_reverse,N; //helper variables
-	printf("Running EM\n");
 	while (t < max_iterations && not converged){
 		
 		//******
