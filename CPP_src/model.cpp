@@ -446,18 +446,21 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 
 		return 1;
 	}
-	
 	int add 	= noise_max>0;
-       
+    printf("Beginning Fit, %d, %d\n", K, add );
+	   
 	components 	= new component[K+add];
+	printf("made components\n");
 	//===========================================================================
 	//random seeds, initialize
 	int i 	= 0;
 	double mu;
+	
 	for (int k = 0; k < K; k++){
-
+		printf("%d\n", mu_seeds.size() );
 		if (mu_seeds.size()>0){
 			i 	= sample_centers(mu_seeds ,  p);
+			printf("%d\n", i );
 			mu 	= mu_seeds[i];
 			if (r_mu > 0){
 				normal_distribution<double> dist_r_mu(mu, r_mu);
@@ -475,7 +478,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	if (add){
 		components[K].initialize(0., data->minX, data->maxX, 0., 0. , noise_max, pi);
 	}
-       
+   	printf("Beginning\n");
 		
 	//===========================================================================
 	int t 			= 0; //EM loop ticker
@@ -540,6 +543,8 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 
 		t++;
 	}
+	printf("Finished\n");
+	
 	return 1;
 }
 string classifier::print_out_components(){
