@@ -15,9 +15,10 @@
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/  
 
 ### Set your email address
+#PBS -m ae
 #PBS -M jgazofeifa@gmail.com
 
-#PBS -t 1-23
+#PBS -t 1-22
 
 
 ### Choose your shell 
@@ -42,7 +43,6 @@ config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/model_config.txt
 formatted_in_file=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/fs_only_merged.tsv
 out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 chr=chr$PBS_ARRAYID
-#chr=chr5
 $src $config_file  -i $formatted_in_file -o $out_directory -chr $chr
 
 
