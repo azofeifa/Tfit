@@ -52,6 +52,7 @@ void segment::bin(int BINS, double scale){
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}
+	
 	double delta 	= (maxX - minX) / BINS;
 	XN 				= BINS;
 	//===================
@@ -62,6 +63,7 @@ void segment::bin(int BINS, double scale){
 		X[1][i] 	= 0;
 		X[2][i] 	= 0;
 	}
+
 	//===================
 	//insert forward strand
 	int j 	=0;
@@ -87,10 +89,41 @@ void segment::bin(int BINS, double scale){
 	for (int i = 0; i < BINS; i ++ ){
 		X[0][i] 	= (X[0][i]-minX)/scale;
 	}
+	//we also want to get rid of those data points that we don't need
+	//i.e. the ones where there is no data coverage values on either the 
+	//forward or reverse strands
+	int realN 		= 0;
+	for (int i = 0; i < BINS;i++){
+		if (X[1][i]>0 or X[2][i]>0){
+			realN++;
+		}
+	}
+
+	double ** newX 	= new double*[3];
+	for (int j=0; j<3;j++){
+		newX[j] 	= new double[realN];
+	}
+	j = 0;
+	for (int i = 0; i < BINS; i ++){
+		if (X[1][i]>0 or X[2][i]>0){
+			newX[0][j] 	= X[0][i];
+			newX[1][j] 	= X[1][i];
+			newX[2][j] 	= X[2][i];
+			j++;
+		}
+	}
+	//clear previous memory
+	for (int i = 0; i < 3; i ++){
+		delete X[i];
+	}
+	delete X;
+	X 				= newX;
+	XN 				= realN;
 	maxX 			= (maxX-minX)/scale;
 	minX 			=0;
 	forward.clear();
 	reverse.clear();
+	
 }
 
 vector<segment*> load_EMGU_format_file(string FILE, string spec){
@@ -147,8 +180,6 @@ void BIN(vector<segment*> segments, int BINS, double scale){
 	for (int i = 0 ; i < segments.size() ; i ++){
 		if (segments[i]->forward.size() > 0 or segments[i]->reverse.size() > 0 ){
 			segments[i]->bin(BINS, scale);
-		}else{
-			printf("WHAT?\n");
 		}
 	}
 }

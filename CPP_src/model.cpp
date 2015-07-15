@@ -156,7 +156,7 @@ component::component(){//empty constructor
 	//==============================
 	//for initial length of Uniforms
 	alpha_2 	= 1.297;
-	beta_2 		= 19260;
+	beta_2 		= 10260;
 	//*****************************************************
 	//Priors on parameters for MAP Estimate
 	ALPHA_0 = 1, BETA_0 =1; //for sigma
@@ -409,14 +409,14 @@ double move_uniforom_support(component * components, int K, int add, segment * d
 //For Classifier class / wrapper around EM
 
 classifier::classifier(int k, double ct, int mi, double nm,
-	double move, double R_MU){
+	double MOVE, double R_MU){
 	K 						= k ;
 	seed 					= true;
 	convergence_threshold 	= ct;
 	max_iterations 			= mi;
 	noise_max 				= nm;
 	p 						= 0.8;
-	move 					= move;
+	move 					= MOVE;
 	resets 					= 0;
 	last_diff 				= 0;
 	r_mu 					= R_MU;
@@ -432,7 +432,6 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	mt19937 mt(rd());
 	uniform_real_distribution<double> dist_uni(data->minX,data->maxX);
 	
-
 	double l 	= data->maxX - data->minX;
 	pi 	= sum(data->X[1], data->XN)/ data->N;
 	double vl 	= 1.0 / l;
@@ -533,6 +532,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		if (abs(ll-prevll)<convergence_threshold){
 			converged=true;
 		}
+		
 		last_diff=abs(ll-prevll);
 		prevll=ll;
 

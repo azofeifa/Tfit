@@ -57,7 +57,6 @@ double window_cov(segment * data, int start, int stop){
 
 vector<vector<double>> bubble_sort(vector<vector<double>> X){ //sort vector of vectors by second
 	bool changed=true;
-	printf("%d\n", X.size() );
 	while (changed){
 		changed=false;
 		for (int i = 0; i < X.size()-1; i++  )	{
