@@ -39,10 +39,11 @@ config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/format_config.txt
 EMG_out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/EMG_formmated_files/
 interval_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/interval_files/
 bedgraph_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/
+out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/EMG_formmated_files/
 
 interval_file=DMSO2_3_Nutlin2_3_merged_FS.bed
-forward_bedgraph=Nutlin2_3.sorted.pos.BedGraph
-reverse_bedgraph=Nutlin2_3.sorted.neg.BedGraph
-out_file=Nutlin_ND_intervals_formatted.tsv
+forward_bedgraph=DMSO2_3.pos.BedGraph
+reverse_bedgraph=DMSO2_3.neg.BedGraph
+out_file=DMSO_ND_intervals_formatted.tsv
 
-$src $config_file -i ${interval_directory}$interval_file -j ${bedgraph_directory}$forward_bedgraph -k ${bedgraph_directory}$reverse_bedgraph
+$src $config_file -i ${interval_directory}$interval_file -j ${bedgraph_directory}$forward_bedgraph -k ${bedgraph_directory}$reverse_bedgraph -o ${out_directory}$out_file
