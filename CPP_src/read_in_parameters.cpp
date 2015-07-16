@@ -212,17 +212,32 @@ void fillInOptions(char* argv[],params * P){
 
 		}
 		if ((*argv)[0] == COM[0] and GO_FORIT){
-			F 			= string(*argv); 
-			if (P->p.find(F) !=P->p.end()){
-				P->p[F] 	= "1";
-				P->N+=1;
-			}else{
-				F 			= "";
+			F 			= string(*argv):
+			if (P->module=="MODEL"){
+				if (P->p.find(F) !=P->p.end()){
+					P->p[F] 	= "1";
+					P->N+=1;
+				}else{
+					F 			= "";
+				}
+			}else if (P->module=="FORMAT"){
+				if (P->p2.find(F) !=P->p2.end()){
+					P->p2[F] 	= "1";
+					P->N+=1;
+				}else{
+					F 			= "";
+				}
 			}
 		}
 		else if (not F.empty()) {
-			if (P->p.find(F) !=P->p.end()){
-				P->p[F]=string(*argv);
+			if (P->module=="MODEL"){
+				if (P->p.find(F) !=P->p.end()){
+					P->p[F]=string(*argv);
+				}
+			}else if(P->module=="FORMAT"){
+				if (P->p2.find(F) !=P->p2.end()){
+					P->p2[F]=string(*argv);
+				}
 			}
 		}
 		argv++;

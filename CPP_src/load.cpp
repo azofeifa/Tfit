@@ -392,10 +392,8 @@ void insert_bedgraph(map<string, interval_tree *> intervals, string FILE, int st
 				intervals[chrom]->insert(double(i), coverage, strand);
 			}		
 		}
-
 	}else{
 		cout<<"Coudn't open: "<<FILE<<endl;
-
 	}
 }
 
