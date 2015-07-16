@@ -126,7 +126,7 @@ def gene_annotations(FILE, SI=True, pad=0):
 					t+=1
 	
 	return IS
-def FStitch_annotations(forward, reverse, merge=True, pad=1000):
+def FStitch_annotations(forward, reverse, merge=True, pad=0):
 	G 	= {}
 	for i,f in enumerate((forward, reverse)):
 		header=True

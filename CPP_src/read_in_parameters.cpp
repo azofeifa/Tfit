@@ -9,10 +9,12 @@
 #include <ctype.h>
 using namespace std;
 params::params(){
+	p2["-v"] 		= "1";
 	p["-i"] 		= "";
 	p["-o"] 		= "";
 	p["-br"] 		= "300";
 	p["-ns"] 		= "100";
+	p["-minK"] 		= "1";
 	p["-maxK"] 		= "3";
 	p["-rounds"] 	= "10";
 	p["-ct"] 		= "0.0001";
@@ -23,7 +25,17 @@ params::params(){
 	p["-v"] 		= "0";
 	p["-mi"] 		= "300";
 	p["-r_mu"] 		= "0";
+
+	p2["-v"] 		= "1";
+	p2["-i"] 		= "";
+	p2["-j"] 		= "";
+	p2["-k"] 		= "";
+	p2["-o"] 		= "";
+	p2["-pad"] 		= "100";
+	
 	N 				= 0;
+	module 			= "";
+
 
 }
 void params::help(){
@@ -40,23 +52,41 @@ void params::help(){
 	
 }
 void params::display(){
-	cout<<"----------------------------------------------------------------"<<endl;
-	cout<<"              User Provided EMGU Parameters                     "<<endl;
-	cout<<"-i        : "<<p["-i"]<<endl;
-	cout<<"-o        : "<<p["-o"]<<endl;
-	cout<<"-chr      : "<<p["-chr"]<<endl;
-	cout<<"-br       : "<<p["-br"]<<endl;
-	cout<<"-ns       : "<<p["-ns"]<<endl;
-	cout<<"-maxK     : "<<p["-maxK"]<<endl;
-	cout<<"-rounds   : "<<p["-rounds"]<<endl;
-	cout<<"-ct       : "<<p["-ct"]<<endl;
-	cout<<"-mi       : "<<p["-mi"]<<endl;
-	cout<<"-max_noise: "<<p["-max_noise"]<<endl;
-	cout<<"-move     : "<<p["-move"]<<endl;
-	cout<<"-np       : "<<p["-np"]<<endl;
-	cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
-	
-	cout<<"----------------------------------------------------------------"<<endl;
+	if (module=="MODEL"){
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"              User Provided EMGU Parameters                     "<<endl;
+		cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
+		cout<<"-i        : "<<p["-i"]<<endl;
+		cout<<"-o        : "<<p["-o"]<<endl;
+		cout<<"-chr      : "<<p["-chr"]<<endl;
+		cout<<"-br       : "<<p["-br"]<<endl;
+		cout<<"-ns       : "<<p["-ns"]<<endl;
+		cout<<"-minK     : "<<p["-minK"]<<endl;
+		cout<<"-maxK     : "<<p["-maxK"]<<endl;
+		cout<<"-rounds   : "<<p["-rounds"]<<endl;
+		cout<<"-ct       : "<<p["-ct"]<<endl;
+		cout<<"-mi       : "<<p["-mi"]<<endl;
+		cout<<"-max_noise: "<<p["-max_noise"]<<endl;
+		cout<<"-move     : "<<p["-move"]<<endl;
+		cout<<"-np       : "<<p["-np"]<<endl;
+		cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
+		
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+	}else if (module=="FORMAT"){
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"              User Provided EMGU Parameters                     "<<endl;
+		cout<<"                    (FORMATING DATA)                        "<<endl;
+		cout<<"-i        : "<<p2["-i"]<<endl;
+		cout<<"-j        : "<<p2["-j"]<<endl;
+		cout<<"-k        : "<<p2["-k"]<<endl;
+		cout<<"-o        : "<<p2["-o"]<<endl;
+		cout<<"-pad      : "<<p2["-pad"]<<endl;
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		
+		
+	}
 }
 
 bool checkIfFileAndConfigFile(string FILE){
@@ -73,6 +103,33 @@ bool checkIfFileAndConfigFile(string FILE){
 	}
 	return false;
 }
+
+string checkModule(string FILE){
+	ifstream FH(FILE);
+	
+	if (FH){
+		string line, ID;
+		ID="";
+		string pound 		= "#";
+		const char *h 	=pound.c_str();
+		while (getline(FH, line)){
+			if ("~"==line.substr(0,1)){
+
+				for (int i = 1; i < line.size(); i++){
+					if (not isspace(line[i]) and line[i]!= *h){
+						ID+=line[i];
+					}else{
+						break;
+					}
+				}
+				FH.close();
+				return ID;
+			}
+		}
+	}
+	return "";
+}
+
 
 void read_in_config_file(string FILE, params * P){
 	ifstream FH(FILE);
@@ -113,9 +170,15 @@ void read_in_config_file(string FILE, params * P){
 						add_param=false;
 					}
 				}
-				if (P->p.find(ID) !=P->p.end()){
-					P->p[ID] 	= val;
-				}				
+				if (P->module=="MODEL"){
+					if (P->p.find(ID) !=P->p.end()){
+						P->p[ID] 	= val;
+					}				
+				}else if (P->module=="FORMAT"){
+					if (P->p2.find(ID) !=P->p2.end()){
+							P->p2[ID] 	= val;
+					}
+				}	
 			}	
 		}
 	}else{
@@ -135,7 +198,12 @@ void fillInOptions(char* argv[],params * P){
 			bool isConfig 	= checkIfFileAndConfigFile(F);
 			if (isConfig){
 				//read this in
-				read_in_config_file(F, P);
+				string module 	= checkModule(F);
+				P->module 		= module;
+				if (not P->module.empty() ){
+					read_in_config_file(F, P);
+				}
+
 				begin 		= false;
 
 			}else{

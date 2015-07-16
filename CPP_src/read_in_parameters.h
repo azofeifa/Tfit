@@ -17,6 +17,9 @@ public:
 	void display();
 	void help();
 	int N;
+	string module;
+	map<string, string> p2;
+	
 };
 
 void fillInOptions(char*,params);

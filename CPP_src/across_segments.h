@@ -3,7 +3,7 @@
 #include "load.h"
 
 void run_model_accross_segments(vector<segment*>, 
-	int , int, int, double, 
+	int , int, int, int, double, 
 	double, double, double, int, string, double, string);
 
 void free_segments(vector<segment*>);
