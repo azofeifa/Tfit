@@ -212,7 +212,7 @@ void fillInOptions(char* argv[],params * P){
 
 		}
 		if ((*argv)[0] == COM[0] and GO_FORIT){
-			F 			= string(*argv):
+			F 			= string(*argv); 
 			if (P->module=="MODEL"){
 				if (P->p.find(F) !=P->p.end()){
 					P->p[F] 	= "1";
@@ -220,7 +220,7 @@ void fillInOptions(char* argv[],params * P){
 				}else{
 					F 			= "";
 				}
-			}else if (P->module=="FORMAT"){
+			}else if(P->module=="FORMAT"){
 				if (P->p2.find(F) !=P->p2.end()){
 					P->p2[F] 	= "1";
 					P->N+=1;
@@ -242,7 +242,6 @@ void fillInOptions(char* argv[],params * P){
 		}
 		argv++;
 		GO_FORIT=true;
-		
 	}
 
 }
