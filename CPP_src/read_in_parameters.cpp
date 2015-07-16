@@ -203,9 +203,7 @@ void fillInOptions(char* argv[],params * P){
 				if (not P->module.empty() ){
 					read_in_config_file(F, P);
 				}
-
 				begin 		= false;
-
 			}else{
 				GO_FORIT 	= true;
 			}

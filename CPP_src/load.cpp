@@ -310,7 +310,7 @@ void interval_tree::insert_into_array(merged_interval * ARRAY , int N ){
 
 
 
-map<string, vector<merged_interval*> >  load_intervals(string FILE){
+map<string, vector<merged_interval*> >  load_intervals(string FILE, int pad){
 
 	bool header = 1;
 	ifstream FH(FILE);
@@ -323,7 +323,7 @@ map<string, vector<merged_interval*> >  load_intervals(string FILE){
 			if (not header){
 				lineArray 	= splitter(line, "\t");
 				chrom=lineArray[0], start=lineArray[1], stop=lineArray[2];
-				G[chrom].push_back(interval(chrom, stoi(start), stoi(stop) ));
+				G[chrom].push_back(interval(chrom, stoi(start)-pad, stoi(stop)+pad ));
 			
 			}else{
 				header 		= 0;

@@ -69,7 +69,7 @@ public:
 vector<segment*> load_EMGU_format_file(string, string);
 
 void BIN(vector<segment*>, int, double);
-map<string, vector<merged_interval*> > load_intervals(string);
+map<string, vector<merged_interval*> > load_intervals(string, int);
 void insert_bedgraph(map<string, interval_tree *>, string, int);
 void write_out(string,map<string, interval_tree *> );
 #endif
