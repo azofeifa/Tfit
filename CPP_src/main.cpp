@@ -85,21 +85,32 @@ int main(int argc, char* argv[]){
 		if (verbose){//show current user parameters...
 			P->display();
 		}
+		cout<<"Loading Files"<<endl;
 		map<string, vector<merged_interval*> > G 	= load_intervals(interval_file, pad); //load the forward and reverse strand intervals, merge accordingly...
+		cout<<"Loaded Files"<<endl;
 		//====================================================
 		//making interval tree
 		map<string, interval_tree *> A;
 		typedef map<std::string, vector<merged_interval*>>::iterator it_type;
+		cout<<"Making interval Tree"<<endl;
 		for(it_type c = G.begin(); c != G.end(); c++) {
 			A[c->first] 	= new interval_tree();
 			A[c->first]->construct(c->second);
 		}
+		cout<<"Made interval Tree"<<endl;
+
+		cout<<"Inserting Forward Strand"<<endl;
 		insert_bedgraph(A, forward_strand_bedgraph_file, 1);
+		cout<<"Inserted Forward Strand"<<endl;
 		
+		cout<<"Inserting Reverse Strand"<<endl;
 		insert_bedgraph(A, reverse_strand_bedgraph_file, -1);
-
+		cout<<"Inserted Reverse Strand"<<endl;
+		
+		cout<<"Writing OUT"<<endl;
 		write_out(out_file_name, A);
-
+		cout<<"DONE"<<endl;
+		
 	
 
 
