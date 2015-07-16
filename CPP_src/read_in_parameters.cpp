@@ -242,6 +242,7 @@ void fillInOptions(char* argv[],params * P){
 		}
 		argv++;
 		GO_FORIT=true;
+		
 	}
 
 }
