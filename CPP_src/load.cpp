@@ -386,11 +386,13 @@ void insert_bedgraph(map<string, interval_tree *> intervals, string FILE, int st
 		int start, stop;
 		double coverage;
 		while (getline(FH, line)){
-			cout<<line<<endl;
 			lineArray=splitter(line, "\t");
 			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
 			for (int i=start; i < stop;i++){
-				intervals[chrom]->insert(double(i), coverage, strand);
+				if (intervals.find(chrom) !=intervals.end()){
+					
+					intervals[chrom]->insert(double(i), coverage, strand);
+				}
 			}		
 		}
 	}else{
