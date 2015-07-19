@@ -66,7 +66,8 @@ def grab_specific_region(chrom_spec,start_spec, stop_spec,
 				if FOUND and (chrom!=chrom_spec or start>stop_spec ):
 					break
 				if FOUND and start < stop_spec and stop > start_spec:
-					D[i].append(((stop + start) /2., coverage))
+					for j in range(int(start), int(stop)):
+						D[i].append((j, coverage))
 	if bins is None:
 		return D
 	if SHOW:

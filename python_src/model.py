@@ -239,8 +239,8 @@ class EMGU:
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
 		self.beta_0 				= 1. #symmetric prior for strand probabilities
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
-		self.alpha_1, self.beta_1 	= 5, 5 #priors for component sigmas
-		self.alpha_2, self.beta_2 	= 1, 10 #priors for component 
+		self.alpha_1, self.beta_1 	= 1, 1 #priors for component sigmas
+		self.alpha_2, self.beta_2 	= 1, 1 #priors for component 
 		self.peaks 					= None #prior on where the bidirectionals are from our template/bayes factor analysis
 		self.seed 					= seed
 		self.uniform_rate 			= None

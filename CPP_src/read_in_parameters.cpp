@@ -25,6 +25,7 @@ params::params(){
 	p["-v"] 		= "0";
 	p["-mi"] 		= "300";
 	p["-r_mu"] 		= "0";
+	p["-print_all"] = "0";	
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
@@ -70,6 +71,7 @@ void params::display(){
 		cout<<"-move     : "<<p["-move"]<<endl;
 		cout<<"-np       : "<<p["-np"]<<endl;
 		cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
+		cout<<"-print_all: "<<p["-print_all"]<<endl;
 		
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
