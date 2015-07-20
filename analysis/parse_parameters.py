@@ -14,16 +14,24 @@ def write_out(G, out, penality,diff_threshold ):
 
 
 if __name__ == "__main__":
+	import sys
+	
 	if len(sys.argv)==1:
 		merged_file 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
 		out 			= "/Users/joeyazo/Desktop/BIC_BEST"
 		penality 		= 100
 		diff_threshold 	= 10
+		EMG_path 		= "/Users/joeyazo/Desktop/Lab/EMG/python_src/"
 	else:
 		merged_file 	= sys.argv[1]
 		out 			= sys.argv[2]
 		penality 		= sys.argv[3]
 		diff_threshold 	= sys.argv[4]
+		EMG_path 		= sys.argv[5]
+	sys.path.append(EMG_path)
+	import time, load, merge_data_types as mdt
+	import sys, BIC
+
 	G 				= load.merge_data_out(merged_file)
 	write_out(G, out, penality,diff_threshold)
 

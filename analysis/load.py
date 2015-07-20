@@ -2,7 +2,6 @@ import merge_data_types as mdt
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-sys.path.append("/Users/joeyazo/Desktop/Lab/EMG/python_src/")
 import model
 import simulate
 def merge_data_out(FILE):
@@ -30,6 +29,8 @@ def merge_data_out(FILE):
 	return G
 
 if __name__ == "__main__":
+	sys.path.append("/Users/joeyazo/Desktop/Lab/EMG/python_src/")
+
 	FILE 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
 	G 		= merge_data_out(FILE)
 	
