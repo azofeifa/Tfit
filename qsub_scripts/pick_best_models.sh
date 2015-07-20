@@ -17,7 +17,7 @@
 #PBS -m ae
 #PBS -M jgazofeifa@gmail.com
 
-#PBS -t 1-10
+###PBS -t 1-10
 
 ### Choose your shell 
 #PBS -S /bin/sh
@@ -43,7 +43,8 @@ root=/Users/azofeifa/
 merged_data=${root}Lab/gro_seq_files/HCT116/merged_data_file.txt
 out_file=${root}Lab/EMG_analysis_files/final_models
 penality=100
-diff_threshold=$PBS_ARRAYID
+#diff_threshold=$PBS_ARRAYID
+diff_threshold=3
 module_path=/Users/azofeifa/Lab/EMG/python_src/
 python $src $merged_data $out_file $penality $diff_threshold $module_path
 
