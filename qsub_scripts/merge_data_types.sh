@@ -4,7 +4,7 @@
 #PBS -l nodes=1:ppn=1
 
 ### Allocate the amount of memory needed
-#PBS -l pmem=1gb
+#PBS -l pmem=20gb
 
 ### Set your expected walltime
 #PBS -l walltime=12:00:00
@@ -38,7 +38,7 @@ if [ "$vieques_pando" = true ] ; then ###load modules
 fi
 
 
-src=/Users/azofeifa/Lab/EMG/analysis/load.py
+src=/Users/azofeifa/Lab/EMG/analysis/merge_data_types.py
 root=/Users/azofeifa/
 model_first_directory=${root}Lab/gro_seq_files/HCT116/EMG_out_files/DMSO_ND_intervals_model_fits_2/
 refseq_file=${root}genome_files/RefSeqHG19.txt
