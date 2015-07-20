@@ -522,7 +522,9 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		//update the new parameters
 		for (int k = 0; k < K+add; k++){
 			components[k].update_parameters(N, K);
+			components[k].print();
 		}
+		printf("-----------------------------------------\n");
 		
 
 		ll 	= calc_log_likelihood(components, K+add, data);
