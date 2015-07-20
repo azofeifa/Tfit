@@ -1,4 +1,6 @@
-
+import math 
+import numpy as np
+	
 
 def bic_function(ll, n, K, penality):
 	return -2.*ll + K*4*math.log(n)*penality

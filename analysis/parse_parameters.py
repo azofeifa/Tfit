@@ -1,4 +1,3 @@
-
 def write_out(G, out, penality,diff_threshold ):
 	FHW 	= open(out+"_" + str(penality) + "_" +str(diff_threshold) +".txt" , "w")
 	for I in G:
@@ -7,9 +6,6 @@ def write_out(G, out, penality,diff_threshold ):
 		for rv in model.rvs:
 			FHW.write(rv.__str__()+"\n")
 	FHW.close()
-
-
-
 
 if __name__ == "__main__":
 	import sys
