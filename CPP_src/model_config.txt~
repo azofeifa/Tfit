@@ -2,20 +2,21 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~MODEL #do not change this line
 -v 			= 1
--i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/fs_only_merged_32.tsv
+-i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/test_file_2.tsv
 -o 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/
 -br			= 300 #binning resolution
 -ns			= 100 #normalizing scale
--minK 		= 6  #min number of models to consider
--maxK		= 10 #max number of models to consider
--rounds 	= 100 #number of random EM initializations
+-minK 		= 1  #min number of models to consider
+-maxK		= 3 #max number of models to consider
+-rounds 	= 5 #number of random EM initializations
 -ct 	    = 0.0001 #EM convergence threshold difference
 -mi 	    = 300 #Number of EM iterations before it is aborted
 -max_noise	= 0.05 #weight of the random/uniform noise component
 -move 		= 5 #variance in moving uniform support
--np 	    = 1 #number of cores/CPUs to run on
+-np 	    = 4 #number of cores/CPUs to run on
 -chr 		= all #specific chromosome to process on?
 -r_mu 		= 3 #seed EM randomally from the peak finder
+-print_all 	= 0 #output all EM rounds
 
 
 

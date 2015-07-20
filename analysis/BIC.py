@@ -1,99 +1,63 @@
 import math 
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+import time, load, merge_data_types as mdt
+import sys
+
+
+
 def bic_function(ll, n, K, penality):
 	return -2.*ll + K*4*math.log(n)*penality
+def get_best_model(I, penality , diff_threshold):
+	models 	 	= dict([ (k, MAX([(model.ll, model) for model in I.models[k] if model.diff < diff_threshold ])[1]) for k in I.models])
+	BIC_best 	= min([ (bic_function(models[k].ll, I.N, k*9, penality), k ) if models[k] is not None else (np.inf, k) for k in models  ])[1]
+	return models[BIC_best]
 
-def run(fits):
-	resolution 	= 100
-	penalities 	= np.linspace(0.01, 500, resolution)
-	errors 		= np.zeros((resolution,))
-	N_ps 	= list()
-	N_ss 	= list()
-	N_ls 	= list()
-	N_ws 	= list()
+
+def MAX(LST):
+	if not LST:
+		return None, None
+	return max(LST)
+
+def run(G, figName):
+	data 	= list()
+	for I in G:
+		if I.annotation_N==1:
+			models 	= dict([ (k, MAX([(model.ll, model) for model in I.models[k] if model.diff < 10 ])[1]) for k in I.models])
+			data.append((models, I))
+	penality 	= np.linspace(0.1, 500, 100)
+	scatter 	= list()
+	for p in penality:
+		error=list()
+		for models,I in data:
+			BIC_best 	= min([ (bic_function(models[k].ll, I.N, k*9, p), k ) if models[k] is not None else (np.inf, k) for k in models  ])[1]
+
+			error.append(BIC_best-1)
+		scatter.append(error)
+	F 		= plt.figure(figsize=(15,10))
+	ax1 	= F.add_subplot(211)
+	ax1.scatter(penality, [np.mean(s) for s in scatter] )
+	ax1.fill_between(penality, [np.mean(s)- np.std(s) for s in scatter], [np.mean(s) + np.std(s) for s in scatter] , color="grey", alpha=0.5 )
+	ax1.grid()
+	ax1.set_xlabel("BIC Penality")
+	ax1.set_ylabel("Error (Mean)")
+	ax2 	= F.add_subplot(212)
 	
-	for i,p in enumerate(penalities):
-		E 		= 0.
-		c 		= list()
-		c1 		= list()
-		c2 		= list()
-		c3 		= list()
-		for I in fits:
-			curr 	= np.inf
-			argCurr = None
-			for K in I.models:
-				val = bic_function(I.models[K].ll, I.N, K, p)
-				if val < curr:
-					argCurr 	= K
-					curr 	 	= val
-			E += 3.-argCurr
-			d 	= [rv.pi for rv in I.models[argCurr].rvs if rv.type=="N"]
-			d2 	= [rv.si for rv in I.models[argCurr].rvs if rv.type=="N"]
-			d3 	= [rv.l for rv in I.models[argCurr].rvs if rv.type=="N"]
-			d4 	= [rv.w for rv in I.models[argCurr].rvs if rv.type=="N"]
-			
-			if d:
-				c.append(np.mean(d))
-				c1.append(np.mean(d2))
-				c2.append(np.mean(d3))
-				c3.append(np.mean(d4))
-
-		errors[i] 	= (E / len(fits))
-		N_ps.append(np.mean(c))
-		N_ss.append(np.mean(c1))
-		N_ls.append(np.mean(c2))
-		N_ws.append(np.mean(c3))
-		
-	i 	= 0
-	errors.sort()
-	while i < len(errors) and errors[i]<0:
-		i+=1
-	p 	= penalities[i]
-	KS 	= list()
-	for I in fits:
-		curr 	= np.inf
-		argCurr = None
-		for K in I.models:
-			val = bic_function(I.models[K].ll, I.N, K, p)
-			if val < curr:
-				argCurr 	= K
-				curr 	 	= val
-		E += 3.-argCurr
-		KS.append(argCurr)
-		
-	F 	= plt.figure(figsize=(15,10))
-	ax 	= F.add_subplot(2,2,1)
-	ax.scatter(penalities, errors)
-	ax.set_title("BIC Penality vs Accuracy in Picking Single Isoform Gene")
-	ax.set_xlabel("BIC Penality")
-	ax.set_ylabel("Erorr")
-	ax.grid()
-	ax2 	= F.add_subplot(2,2,2)
-	ax2.scatter(penalities, N_ps)
-	ax2.scatter(penalities, N_ws, color="green")
-
-	ax2.set_title("BIC Penality vs W and PI Parameters")
-	ax2.set_xlabel("BIC Penality")
-	ax2.set_ylabel("EMG Average Weight\nand Strand Probability")
-	
+	ax2.scatter(penality, [np.sum(s) for s in scatter] )
 	ax2.grid()
-	ax3 	= F.add_subplot(2,2,3)
-	ax3.scatter(penalities, N_ss)
-	ax3.set_title("BIC Penality vs Sigma (variance)")
-	ax3.set_xlabel("BIC Penality")
-	ax3.set_ylabel("EMG Average Loading Variance ")
-	ax3.grid()
+	ax2.set_xlabel("BIC Penality")
+	ax2.set_ylabel("Error (sum)")
+	plt.savefig(figName)
 
-	ax4 	= F.add_subplot(2,2,4)
-	ax4.scatter(penalities, N_ls)
-	ax4.set_title("BIC Penality vs Lambda (Initiating)")
-	ax4.set_xlabel("BIC Penality ")
-	ax4.set_ylabel("EMG Average Initiating Rate ")
-	
-	ax4.grid()
-	plt.tight_layout()
-	
-	plt.show()
 
+if __name__=="__main__":
+	if len(sys.argv)==1:
+		merged_file 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
+		figName 		= "/Users/joeyazo/Desktop/BIC"
+	else:
+		merged_file 	= sys.argv[1]
+		figName 		= sys.argv[2]
+	
+
+	G 				= load.merge_data_out(merged_file)
+	run(G, figName)

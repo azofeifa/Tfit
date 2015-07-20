@@ -362,12 +362,12 @@ class EMGU:
 			mus 		= np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-		sigmas 		= np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
+		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
 		#assign to components
 
-		self.uniform_rate= (maxX-minX)/(2*self.K)
+		self.uniform_rate= (maxX-minX)/(1*self.K)
 
 		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self) for k in range(self.K)] 
 		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], pis[k][1], bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
@@ -424,9 +424,14 @@ class EMGU:
 			elif self.move:
 				ll 		= self.moveLS_not_pp(X, ll, components)
 			prevll 	= ll
-			for c in components:
-				print c
-			print "------------"
+			# for c in components:
+			# 	print c
+			# print "------------"
+			print t, ll
+			self.rvs 		= [c for c in components if c.type!="noise"]
+			self.draw(X)
+			for rv in self.rvs:
+				print rv
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):

@@ -87,7 +87,7 @@ class model:
 
 
 class segment:
-	def __init__(self, chrom, start, stop, N):
+	def __init__(self, chrom, start, stop, N, annotation_N=0):
 		self.annotations 		= list()
 		self.chrom 				= chrom
 		self.start 				= start
@@ -97,6 +97,7 @@ class segment:
 		self.k 					= None
 		self.data_types 		= list()
 		self.BINNED 			= False
+		self.annotation_N 		= annotation_N
 	def insert_model_info(self,line):
 		k,ll,converged, diff 	= line[1:].strip("\n").split(",")
 		k,ll,converged, diff 	= int(k), float(ll), bool(converged), float(diff)
