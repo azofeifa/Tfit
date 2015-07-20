@@ -26,7 +26,8 @@ if __name__ == "__main__":
 	sys.path.append(EMG_path)
 	import time, load, merge_data_types as mdt
 	import sys, BIC
-
+	print "loading..."
 	G 				= load.merge_data_out(merged_file)
+	print "loaded"
 	write_out(G, out, penality,diff_threshold)
 

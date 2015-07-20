@@ -30,20 +30,27 @@ def run(G, figName):
 
 			error.append(BIC_best-1)
 		scatter.append(error)
-	F 		= plt.figure(figsize=(15,10))
-	ax1 	= F.add_subplot(211)
-	ax1.scatter(penality, [np.mean(s) for s in scatter] )
-	ax1.fill_between(penality, [np.mean(s)- np.std(s) for s in scatter], [np.mean(s) + np.std(s) for s in scatter] , color="grey", alpha=0.5 )
-	ax1.grid()
-	ax1.set_xlabel("BIC Penality")
-	ax1.set_ylabel("Error (Mean)")
-	ax2 	= F.add_subplot(212)
+
+	FHW 	= open(figName, "w")	
+	for i,s in enumerate(scatter):
+		FHW.write(str(penality[i]) + "," + str(np.sum(s)) + "," + str(np.mean(s)) + "," + str(np.std(s)) + "," + str(np.var(s)) + "\n" )
+	FHW.close()	
+
+
+	# F 		= plt.figure(figsize=(15,10))
+	# ax1 	= F.add_subplot(211)
+	# ax1.scatter(penality, [np.mean(s) for s in scatter] )
+	# ax1.fill_between(penality, [np.mean(s)- np.std(s) for s in scatter], [np.mean(s) + np.std(s) for s in scatter] , color="grey", alpha=0.5 )
+	# ax1.grid()
+	# ax1.set_xlabel("BIC Penality")
+	# ax1.set_ylabel("Error (Mean)")
+	# ax2 	= F.add_subplot(212)
 	
-	ax2.scatter(penality, [np.sum(s) for s in scatter] )
-	ax2.grid()
-	ax2.set_xlabel("BIC Penality")
-	ax2.set_ylabel("Error (sum)")
-	plt.savefig(figName)
+	# ax2.scatter(penality, [np.sum(s) for s in scatter] )
+	# ax2.grid()
+	# ax2.set_xlabel("BIC Penality")
+	# ax2.set_ylabel("Error (sum)")
+	# plt.savefig(figName)
 
 
 if __name__=="__main__":
