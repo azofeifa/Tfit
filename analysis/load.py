@@ -208,15 +208,14 @@ def load_peak_files(FILE, G, TYPE):
 				setattr(I, TYPE+"_peak", True)
 	else:
 		with open(FILE) as FH:
-			header 	= True
 			A 		= {}
 			for line in FH:
-				if not header:
-					chrom,start, stop 	= line.strip("\n").split("\t")[:3]
-					start, stop 		= int(start), int(stop)
-					if chrom not in A:
-						A[chrom]=list()
-					A[chrom].append((start, stop, ""))
+				chrom,start, stop 	= line.strip("\n").split("\t")[:3]
+				start, stop 		= int(start), int(stop)
+				if chrom not in A:
+					A[chrom]=list()
+				A[chrom].append((start, stop, ""))
+		
 
 		for chrom in G:
 			if chrom in A:
@@ -287,7 +286,7 @@ def write_out(G, out):
 
 
 if __name__ == "__main__":
-	TEST 					= None
+	TEST 					= 5
 	
 	#========================================================================================================================
 	#data file directories

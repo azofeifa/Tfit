@@ -14,7 +14,7 @@ class node:
 	def search(self, interval):
 		finds 					= list()
 		for info in self.intervals:
-			if info[0] < interval[0] <info[1] or info[0] < interval[1] <info[1] or (interval[0] < info[0] and interval[1] > info[1]) :
+			if info[0] <= interval[0] <= info[1] or info[0] <= interval[1] <=info[1] or (interval[0] <= info[0] and interval[1] >= info[1]) :
 				finds.append(info)
 		return finds
 	def __str__(self):
@@ -50,7 +50,7 @@ class treeNode:
 			self.right.build(nodes[i+1:])
 	def searchInterval(self, interval):
 		start, stop 	= interval
-		if self.node.start < start < self.node.stop or self.node.start < stop < self.node.stop or (start < self.node.start and stop > self.node.stop):
+		if self.node.start <= start <= self.node.stop or self.node.start <= stop <= self.node.stop or (start <= self.node.start and stop >= self.node.stop):
 			return self.node.search(interval)
 		if stop < self.node.start and self.left:
 			return self.left.searchInterval(interval)
