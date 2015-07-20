@@ -38,12 +38,13 @@ if [ "$vieques_pando" = true ] ; then ###load modules
 fi
 
 
-src=/Users/azofeifa/Lab/EMG/analysis/BIC.py
+src=/Users/azofeifa/Lab/EMG/analysis/parse_parameters.py
 root=/Users/azofeifa/
 merged_data=${root}Lab/gro_seq_files/HCT116/merged_data_file.txt
 out_file=${root}Lab/EMG_analysis_files/final_models
 penality=100
 diff_threshold=$PBS_ARRAYID
-python $src $merged_data $out_file $penality $diff_threshold
+module_path=/Users/azofeifa/Lab/EMG/python_src/
+python $src $merged_data $out_file $penality $diff_threshold $module_path
 
 

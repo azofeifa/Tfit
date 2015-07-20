@@ -42,6 +42,7 @@ src=/Users/azofeifa/Lab/EMG/analysis/BIC.py
 root=/Users/azofeifa/
 merged_data=${root}Lab/gro_seq_files/HCT116/merged_data_file.txt
 out_file=${root}Lab/EMG_analysis_files/BIC_figure
-python $src $merged_data $out_file
+module_path=/Users/azofeifa/Lab/EMG/python_src/
+python $src $merged_data $out_file $module_path
 
 
