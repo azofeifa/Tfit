@@ -3,7 +3,7 @@ import sys, BIC
 		
 def output(I,  FHW, penality,diff_threshold ):
 	model 	= BIC.get_best_model(I, penality , diff_threshold)
-	FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) + "\n")
+	FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) +  "," + str(I.annotation_N) "\n")
 	for rv in model.rvs:
 		FHW.write(rv.__str__()+"\n")
 
@@ -23,19 +23,7 @@ def run(merged_file, out_file_name, penality,diff_threshold):
 				I.insert_model_info(line)
 			elif "N:"==line[:2] or "U:"==line[:2]:
 				I.insert_component(line)
-			# else:
-			# 	line_array 				= line.strip("\n").split(",")
-			# 	data_type,peak, data 	= line_array[0], line_array[1],",".join(line_array[2:])
-			# 	if data_type != "dbSNP":
-			# 		data 					= [(float(d.split(",")[0]),float(d.split(",")[1])) for d in data.split(":") ]
-			# 	else:
-			# 		data 					= [(float(d.split(",")[0]), d.split(",")) for d in data.split(":")  ]
-			# 	setattr(I, data_type, data)
-			# 	setattr(I, data_type+"_peak", bool(peak=="True"))
-			# 	if not hasattr(I, "data_types"):
-			# 		setattr(I, "data_types", list())
-			# 	I.data_types.append(data_type)
-	
+	FHW.close()
 
 
 if __name__ == "__main__":
