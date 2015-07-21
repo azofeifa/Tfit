@@ -1,11 +1,16 @@
 def write_out(G, out, penality,diff_threshold ):
 	FHW 	= open(out+"_" + str(penality) + "_" +str(diff_threshold) +".txt" , "w")
-	print len(G)
+	
 	for I in G:
-		model 	= BIC.get_best_model(I, penality , diff_threshold)
-		FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) + "\n")
-		for rv in model.rvs:
-			FHW.write(rv.__str__()+"\n")
+		try:
+			model 	= BIC.get_best_model(I, penality , diff_threshold)
+			FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) + "\n")
+			for rv in model.rvs:
+				FHW.write(rv.__str__()+"\n")
+		except:
+			print "---------------"
+			print I.models
+			print I.N
 	FHW.close()
 def read_in_display(FILE):
 	with open(FILE) as FH:
@@ -13,7 +18,7 @@ def read_in_display(FILE):
 			pass
 
 if __name__ == "__main__":
-	RUN 				= False
+	RUN 				= True
 	if RUN:
 		import sys
 		if len(sys.argv)==1:
