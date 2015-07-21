@@ -3,7 +3,7 @@ import sys, BIC
 		
 def output(I,  FHW, penality,diff_threshold ):
 	model 	= BIC.get_best_model(I, penality , diff_threshold)
-	FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) +  "," + str(I.annotation_N) "\n")
+	FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) +  "," + str(I.annotation_N) + "\n")
 	for rv in model.rvs:
 		FHW.write(rv.__str__()+"\n")
 
