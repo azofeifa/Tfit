@@ -27,7 +27,10 @@ def merge_data_out(FILE,just_params=False):
 				else:
 					data 					= [(float(d.split(",")[0]), d.split(",")) for d in data.split(":")  ]
 				setattr(G[-1], data_type, data)
-				setattr(G[-1], data_type+"_peak", bool(peak))
+				setattr(G[-1], data_type+"_peak", bool(peak=="True"))
+				if not hasattr(G[-1], "data_types"):
+					setattr(G[-1], "data_types", list())
+				G[-1].data_types.append(data_type)
 	return G
 
 if __name__ == "__main__":
