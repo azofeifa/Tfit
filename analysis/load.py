@@ -5,6 +5,7 @@ import os
 import sys
 sys.path.append( "/".join(os.getcwd().split("/")[:-1]) + "/python_src/")
 sys.path.append( os.getcwd() + "/python_src/")
+sys.path.append("/Users/azofeifa/Lab/EMG/python_src/")
 import model
 import simulate
 def merge_data_out(FILE,just_params=False):
