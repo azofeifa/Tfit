@@ -34,7 +34,6 @@ def merge_data_out(FILE,just_params=False):
 	return G
 
 if __name__ == "__main__":
-	sys.path.append("/Users/joeyazo/Desktop/Lab/EMG/python_src/")
 
 	FILE 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
 	G 		= merge_data_out(FILE)

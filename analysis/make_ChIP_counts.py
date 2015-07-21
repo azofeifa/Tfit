@@ -34,12 +34,16 @@ def run(G, penality, diff_threshold, out_file_name, si_thresh, l_thresh, w_thres
 	for I in G:
 		model 	= BIC.get_best_model(I, penality , diff_threshold)
 		bidirs 	= [rv for rv in model.rvs if check_bidir_component(rv,si_thresh=si_thresh, l_thresh=l_thresh, w_thresh=w_thresh, pi_thresh=pi_thresh)]
-		FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop)+ "\n")
+		if bidirs:
+			FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop)+ "\n")
 
-		for N in bidirs:
-			XS 	= bin_ChIP_signal(N, I)
-			for x, data_type, peak in XS:
-				FHW.write(data_type+"," + str(peak) + "\n" )
+			for N in bidirs:
+				XS 	= bin_ChIP_signal(N, I)
+				FHW.write(N.__str__() + "\n")
+				for X, data_type, peak in XS:
+					FHW.write(data_type+"," + str(peak) + "," + ",".join([str(x) +"-"+str(y) for x,y in X] ) + "\n")
+
+
 
 
 

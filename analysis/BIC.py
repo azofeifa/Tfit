@@ -1,12 +1,14 @@
 import math 
 import numpy as np
-	
 import matplotlib.pyplot as plt
+import time, load, merge_data_types as mdt
+import sys
 def bic_function(ll, n, K, penality):
 	print ll, n, K, penality
 	print -2.*ll
+	print K*math.log(n)
+	print math.log(n)*penality
 	print K*math.log(n)*penality
-	print math
 
 	return -2.*ll + K*math.log(n)*penality
 def get_best_model(I, penality , diff_threshold):
@@ -76,24 +78,16 @@ def readInOut(FILE):
 	plt.show()
 
 if __name__=="__main__":
-	import sys
-	RUN 	= False
+	RUN 	= True
 	if RUN:
 		if len(sys.argv)==1:
 			merged_file 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
 			figName 		= "/Users/joeyazo/Desktop/BIC"
-			EMG_path 		= "/Users/joeyazo/Desktop/Lab/EMG/python_src/"
-
+		
 		else:
 			merged_file 	= sys.argv[1]
 			figName 		= sys.argv[2]
-			EMG_path 		= sys.argv[3]
-
-		sys.path.append(EMG_path)
-		import math 
-		import numpy as np
-		import matplotlib.pyplot as plt
-		import time, load, merge_data_types as mdt
+		
 		
 		G 				= load.merge_data_out(merged_file)
 		run(G, figName)
