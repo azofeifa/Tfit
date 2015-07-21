@@ -12,7 +12,7 @@ def read_in_display(FILE):
 
 
 if __name__ == "__main__":
-	RUN 				= False
+	RUN 				= True
 	if RUN:
 		import sys
 		if len(sys.argv)==1:
