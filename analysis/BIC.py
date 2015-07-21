@@ -7,7 +7,8 @@ def bic_function(ll, n, K, p):
 	return -2.*ll + K*math.log(n)*p
 def get_best_model(I, penality , diff_threshold):
 	models 	 	= dict([ (k, MAX([(model.ll, model) for model in I.models[k] if model.diff < diff_threshold ])[1]) for k in I.models])
-	print models.keys()
+	for k in models:
+		print models[k].ll, I.N, (k+1)*9, penality
 	BIC_best 	= min([ (bic_function(models[k].ll, I.N, (k+1)*9, penality), k ) if models[k] is not None else (np.inf, k) for k in models  ])[1]
 	return models[BIC_best]
 
