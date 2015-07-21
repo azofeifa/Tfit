@@ -5,6 +5,7 @@ import time, load, merge_data_types as mdt
 import sys
 def bic_function(ll, n, K, penality):
 	print ll, n, K, penality
+	print isinstance(ll ,list), isinstance(n ,list), isinstance(K ,list), isinstance(penality, list)
 	print -2.*ll
 	print K*math.log(n)
 	print math.log(n)*penality
