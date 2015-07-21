@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import model
 import simulate
-def merge_data_out(FILE):
+def merge_data_out(FILE,just_params=False):
 	G=list()
 	with open(FILE) as FH:
 		for line in FH:
@@ -17,7 +17,7 @@ def merge_data_out(FILE):
 				G[-1].insert_model_info(line)
 			elif "N:"==line[:2] or "U:"==line[:2]:
 				G[-1].insert_component(line)
-			else:
+			elif not just_params:
 				line_array 				= line.strip("\n").split(",")
 				data_type,peak, data 	= line_array[0], line_array[1],",".join(line_array[2:])
 				if data_type != "dbSNP":

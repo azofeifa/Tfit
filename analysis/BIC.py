@@ -1,7 +1,7 @@
 import math 
 import numpy as np
 	
-
+import matplotlib.pyplot as plt
 def bic_function(ll, n, K, penality):
 	return -2.*ll + K*4*math.log(n)*penality
 def get_best_model(I, penality , diff_threshold):
@@ -35,40 +35,63 @@ def run(G, figName):
 	for i,s in enumerate(scatter):
 		FHW.write(str(penality[i]) + "," + str(np.sum(s)) + "," + str(np.mean(s)) + "," + str(np.std(s)) + "," + str(np.var(s)) + "\n" )
 	FHW.close()	
+def readInOut(FILE):
+	with open(FILE) as FH:
+		penality 	= list()
+		mean 	= list()
+		S 	= list()
+		stds 	= list()
+		VARS 	= list()
+		
+		for line in FH:
+			p, s, m, std, var 	= line.strip("\n").split(",")
+			penality.append(float(p))
+			mean.append(float(m))
+			S.append(float(s))
+			stds.append(float(std))
+			VARS.append(float(var))
 
 
-	# F 		= plt.figure(figsize=(15,10))
-	# ax1 	= F.add_subplot(211)
-	# ax1.scatter(penality, [np.mean(s) for s in scatter] )
-	# ax1.fill_between(penality, [np.mean(s)- np.std(s) for s in scatter], [np.mean(s) + np.std(s) for s in scatter] , color="grey", alpha=0.5 )
-	# ax1.grid()
-	# ax1.set_xlabel("BIC Penality")
-	# ax1.set_ylabel("Error (Mean)")
-	# ax2 	= F.add_subplot(212)
+
+
+
+	F 		= plt.figure(figsize=(15,10))
+	ax1 	= F.add_subplot(211)
+	ax1.scatter(penality, mean )
+	ax1.fill_between(penality, [mean[i]- stds[i] for i in range(len(mean))], [mean[i]+ stds[i] for i in range(len(mean))] , color="grey", alpha=0.5 )
+	ax1.grid()
+	ax1.set_xlabel("BIC Penality")
+	ax1.set_ylabel("Error (Mean)")
+	ax2 	= F.add_subplot(212)
 	
-	# ax2.scatter(penality, [np.sum(s) for s in scatter] )
-	# ax2.grid()
-	# ax2.set_xlabel("BIC Penality")
-	# ax2.set_ylabel("Error (sum)")
-	# plt.savefig(figName)
-
+	ax2.scatter(penality, S)
+	ax2.grid()
+	ax2.set_xlabel("BIC Penality")
+	ax2.set_ylabel("Error (sum)")
+	plt.show()
 
 if __name__=="__main__":
 	import sys
-	if len(sys.argv)==1:
-		merged_file 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
-		figName 		= "/Users/joeyazo/Desktop/BIC"
-		EMG_path 		= "/Users/joeyazo/Desktop/Lab/EMG/python_src/"
-	else:
-		merged_file 	= sys.argv[1]
-		figName 		= sys.argv[2]
-		EMG_path 		= sys.argv[3]
+	RUN 	= False
+	if RUN:
+		if len(sys.argv)==1:
+			merged_file 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_100.txt"
+			figName 		= "/Users/joeyazo/Desktop/BIC"
+			EMG_path 		= "/Users/joeyazo/Desktop/Lab/EMG/python_src/"
 
-	sys.path.append(EMG_path)
-	import math 
-	import numpy as np
-	import matplotlib.pyplot as plt
-	import time, load, merge_data_types as mdt
-	
-	G 				= load.merge_data_out(merged_file)
-	run(G, figName)
+		else:
+			merged_file 	= sys.argv[1]
+			figName 		= sys.argv[2]
+			EMG_path 		= sys.argv[3]
+
+		sys.path.append(EMG_path)
+		import math 
+		import numpy as np
+		import matplotlib.pyplot as plt
+		import time, load, merge_data_types as mdt
+		
+		G 				= load.merge_data_out(merged_file)
+		run(G, figName)
+	else:
+		EMG_OUT 		= "/Users/joeyazo/Desktop/Lab/EMG_files/BIC_figure"
+		readInOut(EMG_OUT)
