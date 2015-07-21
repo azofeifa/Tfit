@@ -50,8 +50,8 @@ if __name__ == "__main__":
 			
 			merged_file 	= sys.argv[1]
 			out 			= sys.argv[2]
-			penality 		= sys.argv[3]
-			diff_threshold 	= sys.argv[4]
+			penality 		= float(sys.argv[3])
+			diff_threshold 	= float(sys.argv[4])
 		
 		run(merged_file, out, penality,diff_threshold)
 	else:
