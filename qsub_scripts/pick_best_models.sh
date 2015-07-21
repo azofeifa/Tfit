@@ -40,7 +40,7 @@ fi
 
 src=/Users/azofeifa/Lab/EMG/analysis/parse_parameters.py
 root=/Users/azofeifa/
-merged_data=${root}Lab/gro_seq_files/HCT116/merged_data_file.txt
+merged_data=${root}Lab/gro_seq_files/HCT116/merged_data_file_1.txt
 out_file=${root}Lab/EMG_analysis_files/final_models
 penality=100
 #diff_threshold=$PBS_ARRAYID
