@@ -2,8 +2,7 @@ import time, load, merge_data_types as mdt
 import sys, BIC
 		
 def output(I,  FHW, penality,diff_threshold ):
-	model 	= BIC.get_best_model(I, penality , diff_threshold)
-	
+	print penality
 	model 	= BIC.get_best_model(I, penality , diff_threshold)
 	FHW.write("#" + I.chrom + ":" + str(I.start) + "-" + str(I.stop) + "\n")
 	for rv in model.rvs:
