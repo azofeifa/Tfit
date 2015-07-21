@@ -3,15 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time, load, merge_data_types as mdt
 import sys
-def bic_function(ll, n, K, penality):
-	print ll, n, K, penality
-	print isinstance(ll ,list), isinstance(n ,list), isinstance(K ,list), isinstance(penality, list)
-	print -2.*ll
-	print K*math.log(n)
-	print math.log(n)*penality
-	print K*math.log(n)*penality
-
-	return -2.*ll + K*math.log(n)*penality
+def bic_function(ll, n, K, p):
+	return -2.*ll + K*math.log(n)*p
 def get_best_model(I, penality , diff_threshold):
 	models 	 	= dict([ (k, MAX([(model.ll, model) for model in I.models[k] if model.diff < diff_threshold ])[1]) for k in I.models])
 	BIC_best 	= min([ (bic_function(models[k].ll, I.N, (k+1)*9, penality), k ) if models[k] is not None else (np.inf, k) for k in models  ])[1]
