@@ -1,7 +1,9 @@
 import merge_data_types as mdt
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import sys
+sys.path.append( "/".join(os.getcwd().split("/")[:-1]) + "/python_src/")
 import model
 import simulate
 def merge_data_out(FILE,just_params=False):
