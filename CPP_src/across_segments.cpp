@@ -130,7 +130,7 @@ void run_model_accross_segments(vector<segment*> segments, int minK,
 					FHW<<"~"<<to_string(K->first)<<","<<to_string(K->second.ll)<<","<<to_string(K->second.converged)<<","<<to_string(K->second.last_diff)<<endl;
 					FHW<<K->second.print_out_components();
 				}
-			}
+			}else{
 				for (int k = minK; k <=maxK; k++){
 					for (int j = 0; j < rounds; j++){
 						FHW<<"~"<<to_string(k)<<","<<to_string(DS[k][j].ll)<<","<<to_string(DS[k][j].converged)<<","<<to_string(DS[k][j].last_diff)<<endl;
@@ -138,6 +138,7 @@ void run_model_accross_segments(vector<segment*> segments, int minK,
 							
 					}
 				}
+			}
 		}		
 	}
 }

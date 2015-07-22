@@ -149,11 +149,11 @@ component::component(){//empty constructor
 	//Priors on Simulation for EM SEED
 	//============================
 	//for sigma
-	alpha_0 	= 10.46;
-	beta_0 		= 10.6;
+	alpha_0 	= 30.46;
+	beta_0 		= 20.6;
 	//============================
 	//for lambda
-	alpha_1 	= 1.823;
+	alpha_1 	= 20.823;
 	beta_1 		= 0.5;
 	//==============================
 	//for initial length of Uniforms
@@ -164,7 +164,7 @@ component::component(){//empty constructor
 	ALPHA_0 = 1, BETA_0 =1; //for sigma
 	ALPHA_1 = 1, BETA_1 =1; //for lambda
 	ALPHA_2 = 1; //for weights, dirchlet
-	ALPHA_3 = 1000; //for strand probs
+	ALPHA_3 = 100; //for strand probs
 } 
 
 int get_nearest_position(segment * data, double center, double dist){
@@ -182,7 +182,21 @@ int get_nearest_position(segment * data, double center, double dist){
 		}
 	}
 	return i;
+}
+bool check_uniform_support(component c, int forward){
+	if (forward==1){
+		if (c.forward.b < (c.bidir.mu + (1.0 / c.bidir.l) )){
+			return false;
+		}
+		return true;
+	}
+	else{
+		if (c.forward.a < (c.bidir.mu - (1.0 / c.bidir.l) )){
+			return false;
+		}
+		return true;
 
+	}
 }
 
 
@@ -194,8 +208,6 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 			noise_w, noise_pi);
 		type 	= 0; 
 	}else{
-
-
 		//====================================
 		random_device rd;
 		mt19937 mt(rd());
@@ -209,22 +221,25 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		//for the bidirectional/EMG component
 		gamma_distribution<double> dist_sigma(alpha_0,beta_0);
 		gamma_distribution<double> dist_lambda(alpha_1,beta_1);
-		gamma_distribution<double> dist_lengths(1,( (data->maxX-
-			data->minX)/(K)));
-
+		uniform_real_distribution<double> dist_lambda_2(0.1, 0.9);
+		uniform_real_distribution<double> dist_sigma_2(300, 800);
+		gamma_distribution<double> dist_lengths(1,( (data->maxX-data->minX)/(K)));
+		
 		sigma 		= dist_sigma(mt)/scale;
 		lambda 		= dist_lambda(mt)/scale;
-		double dist = dist_lengths(mt);
+		double dist = (1.0/lambda) + dist_lengths(mt);
 		int j 		= get_nearest_position(data, mu, dist);
+		
 		b_forward 	= data->X[0][j];
-		forward 	= UNI(mu, b_forward, 1.0 / (3*K), 1, j);
-		dist 		= -dist_lengths(mt);
+		forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j);
+		
+		dist 		= (-1.0/lambda) -dist_lengths(mt);
 		j 			= get_nearest_position(  data, mu, dist);
 		
 		a_reverse 	= data->X[0][j];
 
 		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
-		reverse 	= UNI(a_reverse, mu, 1.0 / (3*K), -1, j);
+		reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j);
 		type 		= 1;
 	}
 
@@ -351,7 +366,7 @@ void component::update_parameters(double N, int K){
 		//now for the forward and reverse strand elongation components
 		forward.w 	= forward.r_forward / N;
 		reverse.w 	= reverse.r_reverse / N;
-		forward.a 	= bidir.mu, reverse.b=bidir.mu;
+		forward.a 	= bidir.mu + (1.0 /bidir.l), reverse.b=bidir.mu - (1.0 / bidir.l);
 
 	}
 }
@@ -454,10 +469,15 @@ double move_uniforom_support(component * components, int K, int add,
 			components[k].reverse.pos, data->XN, get_direction(direction, mt), 2, data);
 		//firs the forward
 		components[k].forward.b=data->X[0][steps[k][0]];
-		ll 	= calc_log_likelihood(components, K+add, data);
-		//printf("%f,%f,%f,%f\n", prev_b, components[k].forward.b, base_ll,ll );
-		if (ll > base_ll){
-			new_bounds[k][0] 	= components[k].forward.b;
+		if (check_uniform_support(components[k], 1)){
+			ll 	= calc_log_likelihood(components, K+add, data);
+			//printf("%f,%f,%f,%f\n", prev_b, components[k].forward.b, base_ll,ll );
+			if (ll > base_ll){
+				new_bounds[k][0] 	= components[k].forward.b;
+			}else{
+				new_bounds[k][0] 	= prev_b;
+				steps[k][0] 		= components[k].forward.pos;
+			}
 		}else{
 			new_bounds[k][0] 	= prev_b;
 			steps[k][0] 		= components[k].forward.pos;
@@ -465,15 +485,20 @@ double move_uniforom_support(component * components, int K, int add,
 		components[k].forward.b 	= prev_b;
 		//now reverse
 		components[k].reverse.a=data->X[0][steps[k][1]];
-		ll 	= calc_log_likelihood(components, K+add, data);
-		if (ll > base_ll){
-			new_bounds[k][1] 	= components[k].reverse.a;
+		if (check_uniform_support(components[k], 0)){
+
+			ll 	= calc_log_likelihood(components, K+add, data);
+			if (ll > base_ll){
+				new_bounds[k][1] 	= components[k].reverse.a;
+			}else{
+				new_bounds[k][1] 	= prev_a;
+				steps[k][1] 		= components[k].reverse.pos;
+			}
+			//printf("%f,%f,%f,%f\n", prev_a, components[k].reverse.a, base_ll,ll );
 		}else{
-			new_bounds[k][1] 	= prev_a;
-			steps[k][1] 		= components[k].reverse.pos;
+				new_bounds[k][1] 	= prev_a;
+				steps[k][1] 		= components[k].reverse.pos;			
 		}
-		//printf("%f,%f,%f,%f\n", prev_a, components[k].reverse.a, base_ll,ll );
-		
 		components[k].reverse.a 	= prev_a;
 	}
 	for (int k =0; k < K;k++){
@@ -571,11 +596,9 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
-			components[k].print();
 		       
 		}
-		printf("----------------------------\n");
-
+	
 		//******
 		//E-step
 		for (int i =0; i < data->XN;i++){
