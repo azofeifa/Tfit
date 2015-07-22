@@ -79,9 +79,32 @@ if __name__ == "__main__":
 	if len(sys.argv)==1:
 		merge_data_out 		= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/merged_data_file_20.txt"
 		out_file_name 		= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/counted_data"
-		G 					= load.merge_data_out(merge_data_out)
 		penality 			= 100
 		diff_threshold 		= 5
 		si_thresh, l_thresh, w_thresh, pi_thresh 	= 4,2,0.01, 0.1
 
 		run(merge_data_out, penality, diff_threshold, out_file_name,si_thresh, l_thresh, w_thresh, pi_thresh)
+
+	else:
+		merge_data_out 		= sys.argv[1]
+		out_file_name 		= sys.argv[2]
+		penality 			= 100
+		diff_threshold 		= 5
+		si_thresh, l_thresh, w_thresh, pi_thresh 	= 4,2,0.01, 0.1
+		run(merge_data_out, penality, diff_threshold, out_file_name,si_thresh, l_thresh, w_thresh, pi_thresh)
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

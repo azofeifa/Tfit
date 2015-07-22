@@ -41,9 +41,9 @@ bool checkNumber(double x){
 // Uniform Noise Class
 double NOISE::pdf(double x, int strand){
 	if (strand == 1){
-		return (w*pi) / (b-a);
+		return (w*pi) / abs(b-a);
 	}
-	return (w*(1-pi)) / (b-a);
+	return (w*(1-pi)) / abs(b-a);
 }
 NOISE::NOISE(){}
 NOISE::NOISE(double A, double B, double W, double PI){
@@ -60,8 +60,8 @@ double UNI::pdf(double x, int strand){ //probability density function
 	if (strand != st){
 		return 0.;
 	}
-	if ((a+delta_a)<= x and x<=(b + delta_b)){
-		p=w / abs((b+delta_b)-(a+delta_a));
+	if ( a<= x and x <=b){
+		p=w / abs(b- a);
 		if (checkNumber(p)){
 			return p;
 		}
@@ -75,12 +75,13 @@ string UNI::print(){
 	+ "," + to_string(w) + "," + to_string(pi));
 	return text;
 }	
-UNI::UNI(double start, double stop, double w_i, int strand){
+UNI::UNI(double start, double stop, double w_i, int strand, int POS){
 
-	a=start;
-	b=stop;
-	w=w_i;
-	st=strand;
+	a 		= start;
+	b 		= stop;
+	w 		= w_i;
+	st 		= strand;
+	pos 	= POS;
 	if (st==1){
 		pi=1.;
 	}else{
@@ -89,6 +90,7 @@ UNI::UNI(double start, double stop, double w_i, int strand){
 	delta_a=0;
 	delta_b=0;
 	ri_forward=0, ri_reverse=0;
+
 
 }
 
@@ -147,8 +149,8 @@ component::component(){//empty constructor
 	//Priors on Simulation for EM SEED
 	//============================
 	//for sigma
-	alpha_0 	= 50.46;
-	beta_0 		= 50.6;
+	alpha_0 	= 10.46;
+	beta_0 		= 10.6;
 	//============================
 	//for lambda
 	alpha_1 	= 1.823;
@@ -156,19 +158,40 @@ component::component(){//empty constructor
 	//==============================
 	//for initial length of Uniforms
 	alpha_2 	= 1.297;
-	beta_2 		= 10260;
+	beta_2 		= 8260;
 	//*****************************************************
 	//Priors on parameters for MAP Estimate
 	ALPHA_0 = 1, BETA_0 =1; //for sigma
 	ALPHA_1 = 1, BETA_1 =1; //for lambda
 	ALPHA_2 = 1; //for weights, dirchlet
-	ALPHA_3 = 1; //for strand probs
+	ALPHA_3 = 1000; //for strand probs
 } 
 
-void component::initialize(double mu, double minX, double maxX, int K, double scale, double noise_w, double noise_pi){//random seeds...
+int get_nearest_position(segment * data, double center, double dist){
+	int i;
+
+	if (dist < 0 ){
+		i=0;
+		while (i < data->XN and (data->X[0][i] -center) < dist){
+			i++;
+		}
+	}else{
+		i=data->XN-1;
+		while (i >=0 and (data->X[0][i] - center) > dist){
+			i--;
+		}
+	}
+	return i;
+
+}
+
+
+void component::initialize(double mu, segment * data , int K, double scale, double noise_w, 
+	double noise_pi){//random seeds...
 	
 	if (noise_w>0){
-		noise 	= NOISE(minX, maxX, noise_w, noise_pi);
+		noise 	= NOISE(data->minX, data->maxX, 
+			noise_w, noise_pi);
 		type 	= 0; 
 	}else{
 
@@ -186,16 +209,22 @@ void component::initialize(double mu, double minX, double maxX, int K, double sc
 		//for the bidirectional/EMG component
 		gamma_distribution<double> dist_sigma(alpha_0,beta_0);
 		gamma_distribution<double> dist_lambda(alpha_1,beta_1);
-		gamma_distribution<double> dist_lengths(alpha_2,beta_2);
+		gamma_distribution<double> dist_lengths(1,( (data->maxX-
+			data->minX)/(K)));
 
 		sigma 		= dist_sigma(mt)/scale;
 		lambda 		= dist_lambda(mt)/scale;
-		b_forward 	= min(mu + (dist_lengths(mt)/scale), maxX);
-		a_reverse 	= max(mu - (dist_lengths(mt)/scale),0.);
+		double dist = dist_lengths(mt);
+		int j 		= get_nearest_position(data, mu, dist);
+		b_forward 	= data->X[0][j];
+		forward 	= UNI(mu, b_forward, 1.0 / (3*K), 1, j);
+		dist 		= -dist_lengths(mt);
+		j 			= get_nearest_position(  data, mu, dist);
+		
+		a_reverse 	= data->X[0][j];
 
 		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
-		forward 	= UNI(mu, b_forward, 1.0 / (3*K), 1);
-		reverse 	= UNI(a_reverse, mu, 1.0 / (3*K), -1);
+		reverse 	= UNI(a_reverse, mu, 1.0 / (3*K), -1, j);
 		type 		= 1;
 	}
 
@@ -206,8 +235,9 @@ void component::print(){
 		string text 	= bidir.print()+ "\n";
 		text+=forward.print()+ "\n";
 		text+=reverse.print() + "\n";
-
 		printf(text.c_str());
+	}else{
+		cout<<"NOISE: " << noise.w<<"," <<noise.pi<<endl;
 	}
 }
 
@@ -236,17 +266,25 @@ double component::evaluate(double x, int st){
 	reverse.ri_reverse 	= reverse.pdf(x, st);
 		
 	return bidir.ri_reverse + reverse.ri_reverse;
-
+}
+double component::pdf(double x, int st){
+	if (type==0){
+		return noise.pdf(x,st);
+	}
+	if (st==1){
+		return bidir.pdf(x,st) + forward.pdf(x, st);
+	}
+	return bidir.pdf(x,st) + reverse.pdf(x,st);
 }
 
 
 void component::add_stats(double x, double y, int st, double normalize){
 	if (type==0){//noise component
 		if (st==1){
-			noise.r_forward+=(noise.ri_forward/normalize);
+			noise.r_forward+=(y*noise.ri_forward/normalize);
 			noise.ri_forward=0;
 		}else{
-			noise.r_reverse+=(noise.ri_reverse/normalize);
+			noise.r_reverse+=(y*noise.ri_reverse/normalize);
 			noise.ri_reverse=0;
 		}
 
@@ -280,9 +318,14 @@ void component::add_stats(double x, double y, int st, double normalize){
 void component::reset(){
 	if (type){
 		bidir.ey=0, bidir.ex=0, bidir.ex2=0, bidir.r_reverse=0, bidir.r_forward=0;
+		bidir.ri_forward=0, forward.ri_forward=0;
+		bidir.ri_reverse=0, reverse.ri_reverse=0;
 		forward.r_forward=0, forward.r_reverse=0, reverse.r_reverse=0, reverse.r_forward=0;
+		forward.delta_a=0, forward.delta_b=0, reverse.delta_a=0, reverse.delta_b=0;
 	}else{
 		noise.r_forward=0,noise.r_reverse=0;
+		noise.ri_reverse=0,noise.ri_forward=0 ;
+		
 	}
 }
 
@@ -353,54 +396,97 @@ double calc_log_likelihood(component * components, int K, segment * data){
 	for (int i = 0 ; i < data->XN; i++){
 		forward=0, reverse=0;
 		for (int k = 0; k < K; k++){
-			forward+=(components[k].evaluate(data->X[0][i], 1));
-			reverse+=(components[k].evaluate(data->X[0][i], -1));
+			forward+=(components[k].pdf(data->X[0][i], 1));
+			reverse+=(components[k].pdf(data->X[0][i], -1));
 		}
-		ll+=LOG(forward)*data->X[1][i] + LOG(reverse)*data->X[2][i];
+		ll+=LOG(forward)*data->X[1][i]; 
+		ll+=LOG(reverse)*data->X[2][i];
 	}
 	return ll;
 }	
+int get_direction(uniform_int_distribution<int> direction,mt19937 mt){
+	if (direction(mt)==0){
+		return 1;
+	}
+	return -1;
+}
+int get_new_position(geometric_distribution<int> dist_uni, mt19937 mt, 
+	int pos, int N, int direction, int st, segment * data){
+	int ct 	= dist_uni(mt)+1;
+	int i = pos;
+	int j = 0;
+	if (direction==1){
+		while (i < (N-1) and j < ct){
+			if (data->X[st][i] > 0){
+				j++;
+			}
+			i++;
+		}
+	}else{
+		while (i > 0 and j < ct){
+			if (data->X[st][i]>0){
+				j++;
+			}
+			i--;
+		}
+	}
+	return i;
+}
 
-double move_uniforom_support(component * components, int K, int add, segment * data, double move, double base_ll){
+double move_uniforom_support(component * components, int K, int add, 
+	segment * data, double move, double base_ll){
 	//===========================================================================
 	//normal distribution centered around 0 and some variance, how much to move 
 	//uniform supports
 	random_device rd;
 	mt19937 mt(rd());
-	normal_distribution<double> dist_uni(0,move);
-	vector<int> components_that_made_it;
-	vector<int> type_that_made_it;
-	vector<double> and_their_moves;
-	double ll, step;
-	double maxLL 	= base_ll;
-	for (int k = 0; k < K;k++){
-		//try the forward
-		step 	= dist_uni(mt) ;
-		components[k].forward.delta_b=step;
-		ll 	 	= calc_log_likelihood(components, K+add, data);
+	geometric_distribution<int> dist_uni(0.3);
+	uniform_int_distribution<int> direction(0,1);
+	int 	steps[K][2];
+	double  new_bounds[K][2];
+	double ll;
+	double prev_a, prev_b;
+	for (int k = 0; k < K; k++){
+		prev_b=components[k].forward.b, prev_a=components[k].reverse.a;
+		steps[k][0] 	= get_new_position(dist_uni, mt, 
+			components[k].forward.pos, data->XN, get_direction(direction, mt), 1, data);
+		steps[k][1] 	= get_new_position(dist_uni, mt, 
+			components[k].reverse.pos, data->XN, get_direction(direction, mt), 2, data);
+		//firs the forward
+		components[k].forward.b=data->X[0][steps[k][0]];
+		ll 	= calc_log_likelihood(components, K+add, data);
+		//printf("%f,%f,%f,%f\n", prev_b, components[k].forward.b, base_ll,ll );
 		if (ll > base_ll){
-			components_that_made_it.push_back(k);
-			type_that_made_it.push_back(1);
-			and_their_moves.push_back(step);
-		}
-		components[k].forward.delta_b=0;
-		step 	= dist_uni(mt);;
-		components[k].reverse.delta_a=step ;
-		ll 		= calc_log_likelihood(components, K+add, data);
-		if (ll > base_ll){
-			components_that_made_it.push_back(k);
-			type_that_made_it.push_back(-1);
-			and_their_moves.push_back(step);
-		}		
-		components[k].reverse.delta_a=0;
-	}
-	for (int u = 0 ; u < components_that_made_it.size(); u++){
-		if (type_that_made_it[u]==1){
-			components[components_that_made_it[u]].forward.b+=and_their_moves[u];
+			new_bounds[k][0] 	= components[k].forward.b;
 		}else{
-			components[components_that_made_it[u]].reverse.a+=and_their_moves[u];	
+			new_bounds[k][0] 	= prev_b;
+			steps[k][0] 		= components[k].forward.pos;
 		}
+		components[k].forward.b 	= prev_b;
+		//now reverse
+		components[k].reverse.a=data->X[0][steps[k][1]];
+		ll 	= calc_log_likelihood(components, K+add, data);
+		if (ll > base_ll){
+			new_bounds[k][1] 	= components[k].reverse.a;
+		}else{
+			new_bounds[k][1] 	= prev_a;
+			steps[k][1] 		= components[k].reverse.pos;
+		}
+		//printf("%f,%f,%f,%f\n", prev_a, components[k].reverse.a, base_ll,ll );
+		
+		components[k].reverse.a 	= prev_a;
 	}
+	for (int k =0; k < K;k++){
+		components[k].forward.pos 	= steps[k][0];
+		components[k].forward.b 	= new_bounds[k][0];
+		components[k].reverse.pos 	= steps[k][1];
+		components[k].reverse.a 	= new_bounds[k][1];
+ 		
+			
+	}
+
+
+
 	ll 		= calc_log_likelihood(components, K+add, data);
 	return ll;
 }
@@ -464,14 +550,14 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		}else{
 			mu 			= dist_uni(mt);
 		}
-		components[k].initialize(mu, data->minX, data->maxX, K, data->SCALE , 0., 0.);
+		components[k].initialize(mu, data, K, data->SCALE , 0., 0.);
 		if (mu_seeds.size() > 0){
 			mu_seeds.erase (mu_seeds.begin()+i);	
 		}
 	}
        
 	if (add){
-		components[K].initialize(0., data->minX, data->maxX, 0., 0. , noise_max, pi);
+		components[K].initialize(0., data, 0., 0. , noise_max, pi);
 	}
  		
 	//===========================================================================
@@ -485,8 +571,11 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
+			components[k].print();
 		       
 		}
+		printf("----------------------------\n");
+
 		//******
 		//E-step
 		for (int i =0; i < data->XN;i++){
@@ -523,7 +612,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		for (int k = 0; k < K+add; k++){
 			components[k].update_parameters(N, K);
 		}
-
+		
 
 		ll 	= calc_log_likelihood(components, K+add, data);
 		//******

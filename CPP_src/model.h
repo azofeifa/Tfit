@@ -1,17 +1,18 @@
 #ifndef model_H
 #define model_H
-
+#include "load.h"
 class UNI{
 public:
 	double a,b,w,pi;
 	
 	int st;
+	int pos;
 	//sufficient stats
 	double ri_forward, ri_reverse; //current responsibility
 	double r_forward, r_reverse; //running total
 	double delta_a, delta_b;
 	UNI();
-	UNI(double, double, double, int);
+	UNI(double, double, double, int, int);
 	double pdf(double,int);	
 	string print();
 
@@ -72,10 +73,11 @@ public:
 
 
 	component();
-	void initialize(double, double , double, int , double , double, double);
+	void initialize(double, segment *, int , double , double, double);
 
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
+	double pdf(double , int);
 	void update_parameters(double,int);
 	double get_all_repo();
 	bool check_elongation_support();

@@ -380,6 +380,13 @@ class EMGU:
 		ll, prevll 			= 0., -np.inf
 		st 					= time.clock()
 		while t < self.max_it and not converged:
+			self.rvs 		= [c for c in components if c.type!="noise"]
+			self.draw(X)
+			
+			for rv in self.rvs:
+				if rv.type=="EMGU":
+					print rv
+			
 			#######
 			#E-step
 			#######
@@ -428,10 +435,6 @@ class EMGU:
 			# 	print c
 			# print "------------"
 			print t, ll
-			self.rvs 		= [c for c in components if c.type!="noise"]
-			self.draw(X)
-			for rv in self.rvs:
-				print rv
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
