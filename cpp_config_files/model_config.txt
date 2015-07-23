@@ -8,7 +8,7 @@
 -ns			= 100 #normalizing scale
 -minK 			= 1  #min number of models to consider
 -maxK			= 7 #max number of models to consider
--rounds 		= 64 #number of random EM initializations
+-rounds 		= 32 #number of random EM initializations
 -ct 	    		= 0.0001 #EM convergence threshold difference
 -mi 	    		= 750 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
@@ -17,6 +17,3 @@
 -chr 			= all #specific chromosome to process on?
 -r_mu 			= 2 #seed EM randomally from the peak finder
 -print_all    		= 1
-
-
-
