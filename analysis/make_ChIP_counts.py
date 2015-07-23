@@ -60,7 +60,7 @@ def run(FILE, penality, diff_threshold, out_file_name, si_thresh, l_thresh, w_th
 			else:
 				line_array 				= line.strip("\n").split(",")
 				data_type,peak, data 	= line_array[0], line_array[1],",".join(line_array[2:])
-				if data_type != "dbSNP":
+				if data_type != "dbSNP" and data_type!= "ClinVar":
 					data 					= [(float(d.split(",")[0]),float(d.split(",")[1])) for d in data.split(":") ]
 				else:
 					data 					= [(float(d.split(",")[0]), d.split(",")) for d in data.split(":")  ]
