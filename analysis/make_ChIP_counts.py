@@ -23,7 +23,7 @@ def bin_ChIP_signal(N, I,res=100, limit=4):
 		for x,y in getattr(I, data_type):
 			while j < NN and X[j,0] <= x:
 				j+=1
-			if data_type!="dbSNP" and 1< j < NN and x < X[j,0]:
+			if data_type!="dbSNP" and 1< j < NN and x < X[j,0] and data_type!="ClinVar":
 				X[j-1, 1]+=y
 			elif 1< j < NN and  x < X[j,0]:
 				X[j-1, 1]+=1
