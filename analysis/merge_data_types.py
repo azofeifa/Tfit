@@ -115,7 +115,7 @@ class segment:
 	def bin_data_types(self, bins=500):
 		self.BINNED=True
 		for data_type in self.data_types:
-			if data_type!= "dbSNP":
+			if data_type!= "dbSNP" and data_type != "ClinVar":
 				LST 		= getattr(self, data_type)
 				counts,edges= np.histogram([x for x,y in LST ],weights=[y for x,y in LST], bins=bins)
 				edges 		= (edges[1:] + edges[:-1]) /2.
@@ -136,7 +136,7 @@ class segment:
 			self.bin_data_types()
 		string 	= ""
 		for data_type in self.data_types:
-			if data_type!= "dbSNP":
+			if data_type!= "dbSNP" and data_type != "ClinVar":
 				string+= data_type+","+ str(getattr(self, data_type+ "_peak"))+ ","+  ":".join([str(x) + "," + str(y) for x,y in getattr(self, data_type+"_binned")]) + "\n"
 			else:
 				string+= data_type+","+ "1" + ","+  ":".join([str((x-self.start)/100.) + "," + y for x,y in getattr(self, data_type) ]) + "\n"
@@ -244,7 +244,7 @@ def merge_peak_files(G,FILES, TYPES, test=None):
 		load_peak_files(FILE, G, TYPE)	
 
 	
-def insert_dbSNP(G, dbSNP_directory, data_type,test=None): #vcf
+def insert_dbSNP(G, dbSNP_directory, data_type,test=None): #bed
 	#need to make intervals into interval tree
 	A  	= {}
 	for chrom in G:
@@ -266,6 +266,33 @@ def insert_dbSNP(G, dbSNP_directory, data_type,test=None): #vcf
 									break
 					else:
 						header=False
+def insert_clinVarSNP(G, FILE, data_type, sig_level=4): #vcf
+	A 	= {}
+	N 	= 0.
+	NN 	= 0.
+	NNN = 0.
+	with open(FILE) as FH:
+		for chrom in G:
+			A[chrom] = node.tree([(I.start, I. stop, I) for I in G[chrom]])
+		for line in FH:
+			if "#" != line[0]:
+				chrom, pos, ID, REF, ALT,QUAL,FILTER, INFO 	= line.strip("\n").split("\t")
+
+				chrom="chr"+chrom
+				info_array 		= dict([d.split("=") for d in INFO.split(";") if len(d.split("="))==2 ])
+				sig 	 		= int(info_array["CLNSIG"].split("|")[-1].split(",")[-1])
+				if sig  >= sig_level and sig!=255:
+					NN+=1
+				if chrom in A:
+					pos 		= int(pos )
+					finds 	 	= A[chrom].searchPoint(pos)
+					if finds:
+						for st, sp, I in finds:
+							I.insert_data(pos,ID, data_type)	
+						NNN+=1
+								
+				N+=1
+
 
 def write_out(G, out):
 	FHW = open(out, "w")
@@ -287,7 +314,7 @@ def write_out(G, out):
 
 
 if __name__ == "__main__":
-	TEST 					= None
+	TEST 					= 5
 	
 	#========================================================================================================================
 	#data file directories
@@ -297,7 +324,7 @@ if __name__ == "__main__":
 		dbSNP_directory 	= "/Users/joeyazo/Desktop/Lab/dbSNP/"
 		D 					= "/Users/joeyazo/Desktop/Lab/ENCODE/HCT116/"
 		D2 					= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/bed_graph_files/"
-		out_dir 			= "/Users/joeyazo/Desktop/Lab/EMG/analysis_files/"
+		out_dir 			= "/Users/joeyazo/Desktop/Lab/EMG_files/"
 	else:
 		model_fits   		= sys.argv[1] 
 		refseq_file 		= sys.argv[2]
@@ -320,6 +347,7 @@ if __name__ == "__main__":
 	JunD 				= D+"JunD/bedgraph_files/ENCFF000PAA.bedgraph"
 	Sin3A 				= D+"Sin3A/bedgraph_files/ENCFF000PBV.bedgraph"
 	Sp1 				= D+"Sp1/bedgraph_files/ENCFF000PCF.bedgraph"
+	ClinVar 			= dbSNP_directory+"clinvar.vcf"
 	OUT_FILE 			= out_dir + "merged_data_file.txt"
 	#========================================================================================================================
 	#peak files 		
@@ -332,12 +360,16 @@ if __name__ == "__main__":
 	Sin3A_peak 			= D+"Sin3A/peak_files/SL12244_Peaks.bed.broadPeak"
 	Sp1_peak 			= D+"Sp1/peak_files/SL12239_Peaks.bed.broadPeak"
 	
+
 	
 	RF 					= load_refseq(refseq_file)
 	print "loaded refseq annotations"
 	#okay so local is way faster....
 	G 					= load_directory_segments(model_fits, test=TEST)
 	print "loaded model fits"
+
+	insert_clinVarSNP(G, ClinVar, "ClinVar" )
+	print "inserted ClinVar aata"
 
 	insert_dbSNP(G, dbSNP_directory, "dbSNP",test=TEST)
 	print "inserted SNP data"
@@ -347,9 +379,9 @@ if __name__ == "__main__":
 	
 	
 
-	TYPES 				= ("DNAse", "H3K27ac", "H3K4me1", "H3K4me3", "gro_f", "gro_r", "poll","CTCF", "JunD", "Sin3A", "Sp1")
-	FILES 				= (DNAse, H3K27ac, H3K4me1,H3K4me3, gro_forward, gro_reverse, poll_II, CTCF, JunD, Sin3A,  Sp1)
-	peak_FILES 			= (DNAse_peak, H3K27ac_peak, H3K4me1_peak,H3K4me3_peak, "", "", "", CTCF_peak, JunD_peak, Sin3A_peak,  Sp1_peak)
+	TYPES 				= ("DNAse", "H3K27ac", "H3K4me1", "H3K4me3", "gro_f", "gro_r", "poll","CTCF", "JunD", "Sin3A", "Sp1" )
+	FILES 				= (DNAse, H3K27ac, H3K4me1,H3K4me3, gro_forward, gro_reverse, poll_II, CTCF, JunD, Sin3A,  Sp1 )
+	peak_FILES 			= (DNAse_peak, H3K27ac_peak, H3K4me1_peak,H3K4me3_peak, "", "", "", CTCF_peak, JunD_peak, Sin3A_peak,  Sp1_peak )
 
 	merge_peak_files(G,peak_FILES, TYPES, test=None)
 

@@ -17,6 +17,12 @@ class node:
 			if info[0] <= interval[0] <= info[1] or info[0] <= interval[1] <=info[1] or (interval[0] <= info[0] and interval[1] >= info[1]) :
 				finds.append(info)
 		return finds
+	def search_point(self, point):
+		finds 					= list()
+		for info in self.intervals:
+			if info[0]<= point <= info[1]:
+				finds.append(info)
+		return finds
 	def __str__(self):
 		return str(self.start)+"-"+str(self.stop) + ", " + str(len(self.intervals))
 	def erase_repeats(self):
@@ -60,7 +66,7 @@ class treeNode:
 
 	def searchPoint(self, point):
 		if self.node.start <= point <= self.node.stop:
-			return self.node
+			return self.node.search_point(point)
 		if point < self.node.start and self.left:
 			return self.left.searchPoint(point)
 		if point > self.node.stop and self .right:

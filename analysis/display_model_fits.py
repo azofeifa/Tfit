@@ -87,7 +87,7 @@ def run(EMG_IN,EMG_OUT):
 					x,y 	= line.strip("\n").split(",")
 					getattr(I, "reverse").append((float(x),float(y)))
 	for I in G.values():
-		model 		= BIC.get_best_model(I, 20, 2)
+		model 		= BIC.get_best_model(I, 100, 2)
 		print model.diff, len(model.rvs)
 		model.rvs 	= [rv for rv in model.rvs if rv.w >0.01]
 		print len(model.rvs)
