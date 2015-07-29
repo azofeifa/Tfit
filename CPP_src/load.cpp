@@ -50,10 +50,10 @@ void segment::add(int strand, double x, double y){
 void segment::bin(int res, double scale){
 
 
-
 	X 				= new double*[3];
 	SCALE 			= scale;
 	int BINS 		= (maxX-minX)/res;
+	
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}

@@ -368,11 +368,14 @@ void component::update_parameters(double N, int K){
 		bidir.mu 	= bidir.ex / (r+0.001);
 
 		
-		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5);
+		bidir.si 	= min(pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
+			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5), 10.) ;
+		
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 2.);
+		bidir.l 	= max(0.1, bidir.l);
 		//now for the forward and reverse strand elongation components
-		forward.w 	= forward.r_forward / N;
-		reverse.w 	= reverse.r_reverse / N;
+		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
+		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		forward.a 	= bidir.mu + (1.0 /bidir.l), reverse.b=bidir.mu - (1.0 / bidir.l);
 
 	}
@@ -664,7 +667,11 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		}
 
 		last_diff=abs(ll-prevll);
+		//printf("%f,%f,%d\n", ll, last_diff, t  );
 		prevll=ll;
+		// for (int c = 0; c<K;c++){
+		// 	components[c].print();
+		// }
 
 		t++;
 	}
