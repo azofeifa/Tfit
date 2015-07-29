@@ -29,16 +29,17 @@ string check_file(string FILE, int i){ //don't want to write over an existing fi
 	return template_file;
 }
 
-map<int,vector<classifier> > initialize_data_struct(int maxK, 
-	int rounds, int num_proc, double scale, double move, 
+map<int,vector<classifier> > initialize_data_struct(int minK, int maxK, 
+	int rounds, int num_proc, double scale, 
 	double max_noise,  double convergence_tresh, 
-	int max_iterations, double r_mu){
+	int max_iterations, double r_mu, double ALPHA_0, double BETA_0, 
+	double ALPHA_1, double BETA_1, double ALPHA_2, double ALPHA_3){
 	map<int,vector<classifier> >  data_struct;	
-	for (int k = 1; k<=maxK;k++){
+	for (int k = minK; k<=maxK;k++){
 		data_struct[k] 	= vector<classifier>(rounds);
 		for (int r = 0; r<rounds; r++){
 			data_struct[k][r] 	= classifier(k,  convergence_tresh, max_iterations, 
-					max_noise, move,r_mu);
+					max_noise,r_mu, ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
 		}
 	}
 	return data_struct;
@@ -47,14 +48,10 @@ map<int,vector<classifier> > initialize_data_struct(int maxK,
 map<int, classifier> getMax(map<int,vector<classifier> > DS){
 	typedef map<int, vector<classifier>>::iterator it_type;
 	map<int, classifier> reduced;
-	double MAX=0;
+	double MAX=nINF;
 	for(it_type K = DS.begin(); K != DS.end(); K++) {
-		MAX=0;
 		for (int i = 0; i < K->second.size(); i ++){
-			if (MAX==0){
-				reduced[K->first] 	= DS[K->first][i];
-				MAX 				= DS[K->first][i].ll;
-			}else if (DS[K->first][i].ll > MAX) {
+			if (DS[K->first][i].ll > MAX and DS[K->first][i].converged) {
 				reduced[K->first] 	= DS[K->first][i];
 				MAX 				= DS[K->first][i].ll;
 			}
@@ -66,14 +63,15 @@ map<int, classifier> getMax(map<int,vector<classifier> > DS){
 
 
 
-void run_model_accross_segments(vector<segment*> segments, int minK,
-	int maxK, int rounds, int num_proc, double scale, double move, 
-		double max_noise,  double convergence_tresh, int max_iterations,
-		string out_dir, double r_mu, string spec, bool print_all,
-		int bin_resolution){
+void run_model_accross_segments(vector<segment*> segments, params *P){
 	typedef map<int, classifier>::iterator it;
-	int N 	= segments.size();
-	string out_file_template 	= out_dir+"model_fits_out_" + spec+"_";
+	
+
+
+
+	int N 			= segments.size();
+	string out_dir 	= P->p["-o"]; 
+	string out_file_template 	= out_dir+"model_fits_out_" + P->p["-chr"]+"_";
 	string out_file 			= check_file(out_file_template, 1);
 	
 	
@@ -83,32 +81,56 @@ void run_model_accross_segments(vector<segment*> segments, int minK,
 	FHW.open(out_file);
 
 	string header 	= currentDateTime() + ",";
-	header+="minK: " + to_string(minK) + ",";
-	header+="maxK: " + to_string(maxK) + ",";
-	header+="scale: " + to_string(scale).substr(0, 5) + ",";
-	header+="bin_resolution: " + to_string(bin_resolution) + ",";
-	header+="convergence_tresh: " + to_string(convergence_tresh).substr(0, 7) + ",";
-	header+="max_iterations: " + to_string(max_iterations) + ",";
-	header+="spec_chrom: " + (spec) + ",";
-	header+="print_all: " + to_string(print_all) + ",";
-	header+="move: " + to_string(move).substr(0, 5) + ",";
-	header+="max_noise: " + to_string(max_noise).substr(0, 5) + ",";
-	header+="r_mu: " + to_string(r_mu).substr(0, 5);
+	header+="minK: " + P->p["-minK"] + ",";
+	header+="maxK: " +  P->p["-maxK"] + ",";
+	header+="scale: " +  P->p["-ns"] + ",";
+	header+="bin_resolution: " + P->p["-br"] + ",";
+	header+="convergence_tresh: " + P->p["-ct"] + ",";
+	header+="max_iterations: " + P->p["-mi"] + ",";
+	header+="spec_chrom: " + P->p["-chr"] + ",";
+	header+="max_noise: " + P->p["-max_noise"] + ",";
+	header+="r_mu: " + P->p["-r_mu"] +",";
+	header+="rounds: " + P->p["-rounds"]+",";
+	header+="ALPHA_0: " + P->p["-ALPHA_0"] +",";
+	header+="BETA_0: " + P->p["-BETA_0"] +",";
+	header+="ALPHA_1: " + P->p["-ALPHA_1"] +",";
+	header+="BETA_1: " + P->p["-BETA_1"] +",";
+	header+="ALPHA_2: " + P->p["-ALPHA_2"] +",";
+	header+="ALPHA_3: " + P->p["-ALPHA_3"]  ;
+	
 	
 	
 	
 	header+="\n";
 	FHW<<header;
 
-
+	int minK 					= stoi(P->p["-minK"]);
+	int maxK 					= stoi(P->p["-maxK"]);
+	double max_noise 			= stod(P->p["-max_noise"]);
+	double convergence_tresh 	= stod(P->p["-ct"]);
+	int max_iterations 			= stoi(P->p["-mi"]);
+	double r_mu 				= stod(P->p["-r_mu"]);
+	int num_proc 				= stoi(P->p["-np"]);
+	int rounds 					= stoi(P->p["-rounds"]);
+	double scale 				= stod(P->p["-ns"]);
+	double ALPHA_0 				= stod(P->p["-ALPHA_0"]);
+	double BETA_0 				= stod(P->p["-BETA_0"]);
+	double ALPHA_1 				= stod(P->p["-ALPHA_1"]);
+	double BETA_1 				= stod(P->p["-BETA_1"]);
+	double ALPHA_2 				= stod(P->p["-ALPHA_2"]);
+	double ALPHA_3 				= stod(P->p["-ALPHA_3"]);
+	
 	for (int i = 0; i < N; i++ ){
 		if (segments[i]->N > 0){
 			vector<double> mu_seeds 		=  peak_bidirs(segments[i]);
-			map<int,vector<classifier> > DS = initialize_data_struct(maxK, 
-				rounds, num_proc, scale,  move, max_noise,  
-				convergence_tresh, max_iterations,r_mu);
+			map<int,vector<classifier> > DS = initialize_data_struct(minK, maxK, 
+				rounds, num_proc, scale, max_noise,  
+				convergence_tresh, max_iterations,r_mu, ALPHA_0,  BETA_0, 
+	 		ALPHA_1,  BETA_1,  ALPHA_2,  ALPHA_3);
+			
+
 			classifier clf(0, convergence_tresh, max_iterations, 
-						max_noise, move,r_mu);
+						max_noise,r_mu, ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
 			clf.fit(segments[i], mu_seeds);
 			
 			FHW<<segments[i]->write_out();
@@ -123,22 +145,18 @@ void run_model_accross_segments(vector<segment*> segments, int minK,
 			//*********************************************
 			//we want to output for each model, k, the highest log likelihood estimate
 			//and then the respective parameter estimates for each component
-			if (not print_all){
-				map<int, classifier> reduced 	= getMax(DS);
-				//okay now lets write it out to the file
-				for(it  K = reduced.begin(); K != reduced.end(); K++) {
-					FHW<<"~"<<to_string(K->first)<<","<<to_string(K->second.ll)<<","<<to_string(K->second.converged)<<","<<to_string(K->second.last_diff)<<endl;
-					FHW<<K->second.print_out_components();
-				}
-			}else{
-				for (int k = minK; k <=maxK; k++){
-					for (int j = 0; j < rounds; j++){
-						FHW<<"~"<<to_string(k)<<","<<to_string(DS[k][j].ll)<<","<<to_string(DS[k][j].converged)<<","<<to_string(DS[k][j].last_diff)<<endl;
-						FHW<<DS[k][j].print_out_components();
-							
-					}
+			map<int, classifier> reduced 	= getMax(DS);
+			//okay now lets write it out to the file
+			for (int k = minK; k<=maxK; k++){
+				if (reduced.find(k) !=reduced.end()){
+					classifier K 	= reduced[k];
+					FHW<<"~"<<to_string(k)<<","<<to_string(K.ll)<<","<<to_string(K.converged)<<","<<to_string(K.last_diff)<<endl;
+					FHW<<K.print_out_components();
+				}else{
+					FHW<<"~"<<to_string(k)<<","<<to_string(nINF)<<","<<to_string(0)<<","<<to_string(INF)<<endl;
 				}
 			}
+			
 		}		
 	}
 }

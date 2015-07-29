@@ -19,6 +19,9 @@ public:
 	int N;
 	string module;
 	map<string, string> p2;
+
+	map<string, string> p3;
+	bool EXIT;
 	
 };
 

@@ -47,14 +47,18 @@ void segment::add(int strand, double x, double y){
 	}
 }
 
-void segment::bin(int BINS, double scale){
+void segment::bin(int res, double scale){
+
+
+
 	X 				= new double*[3];
 	SCALE 			= scale;
+	int BINS 		= (maxX-minX)/res;
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}
 	
-	double delta 	= (maxX - minX) / BINS;
+	double delta 	= double(res);
 	XN 				= BINS;
 	//===================
 	//populate bin ranges
@@ -73,6 +77,7 @@ void segment::bin(int BINS, double scale){
 			j++;
 		}
 		X[1][j-1]=X[1][j-1]+forward[i][1];
+
 		N=N+forward[i][1];
 	}
 	j 	=0;

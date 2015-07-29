@@ -1,106 +1,87 @@
+import os
+import merge_data_types as mdt
+import BIC
 import matplotlib.pyplot as plt
-import time
-import numpy as np
-import math
-import scipy.stats as ss
+#=============================================
+#GLOBAL VARIABLES
+si_thresh 	= 4
+l_thresh 	= 2
+w_thresh 	= 0.01
+pi_thresh 	= 0.1
+#=============================================
+penality 		= 50
+diff_threshold  = 5
 
 
-def display(G, U=True, N=True):
+def check_bidir_component(rv, si_thresh=4, l_thresh=2., w_thresh=0.01, pi_thresh=0.1):
+	if rv.type == "N":
+		if rv.si < si_thresh and rv.l < l_thresh and rv.w > w_thresh and pi_thresh <= rv.pi<= (1-pi_thresh):
+			return True
+	return False
+
+
+def output(I, G):
+	model 	= BIC.get_best_model(I, penality , diff_threshold)
+	bidirs 	= [rv for rv in model.rvs if check_bidir_component(rv,si_thresh=si_thresh, l_thresh=l_thresh, w_thresh=w_thresh, pi_thresh=pi_thresh)]
+	for c in bidirs:
+		G["mu"].append(c.mu)
+		G["si"].append(c.si)
+		G["l"].append(c.l)
+		G["pi"].append(c.pi)
+		
+	pass
+def parse_file(FILE, G):
+	with open(FILE) as FH:
+
+		header,I	= True,None
+		for line in FH:
+			if header:
+				if "#" == line[0]:
+					if I is not None:
+						output(I, G)
+					chrom,info 			= line[1:].strip("\n").split(":")
+					start_stop, N  		= info.split(",")
+					start,stop 			= start_stop.split("-")
+					I 					= mdt.segment(chrom,int(start),int(stop),float(N) )
+				elif "~" == line[0]:
+					I.insert_model_info(line)
+				elif "N:"==line[:2] or "U:"==line[:2]:
+					I.insert_component(line)
+			else:
+				header=False
+
+
+def load(DIR,test=3):
+	G 	= {"mu":list(), "si":list(), "l":list(), "pi":list()}
+	t 	= 0
+	for FILE in os.listdir(DIR):
+		parse_file(DIR+FILE, G)
+		if test is not None and t > test:
+			break
+		t+=1
+	return G
+
+def run(DIR):
+	G 	= load(DIR)
 	F 	= plt.figure(figsize=(15,10))
 	ax1 = F.add_subplot(2,2,1)
-	ax1.set_title("sigma; loading variability")
-	data 	= [math.sqrt(x*100) for x in G["N"][1] if x < 20]
-	fit_alpha, fit_loc, fit_beta = ss.gamma.fit(data)
-	
-	rv 							= ss.gamma(fit_alpha, fit_loc, fit_beta)
-	xs 							= np.linspace(0, max(data) , 1000)
+	ax1.set_title("Displacement of mu")
 
-	ax1.hist(data ,bins=100,
-		label="Mean: " + str(np.mean(data))[:7],
-		normed=1)
-	ax1.plot(xs, map(rv.pdf , xs), linewidth=2,label="alpha: " + str(fit_alpha)[:5] + 
-		"\nbeta: " + str(fit_beta)[:5] + "\nloc: " + str(fit_loc)[:5])
-	ax1.legend()
-	ax1.grid()
+	ax2 = F.add_subplot(2,2,2)
+	ax2.set_title("sigma")
+	ax2.hist(G["si"], bins=100)
 	
-	ax2 = F.add_subplot(2,2,3)
-	ax2.set_title("lambda; intiating rate")
-
-	data 						= [x/100. for x in G["N"][2] if x < 2]
-
-	fit_alpha, fit_loc, fit_beta = ss.gamma.fit(data)
-	
-	rv 							= ss.gamma(fit_alpha, fit_loc, fit_beta)
-	xs 							= np.linspace(0, max(data) , 1000)
-
-	ax2.hist(data  ,bins=100,  
-	 label="Mean: " + str(np.mean([x/100. for x in G["N"][2] if x < 2]))[:7],
-	 normed=1)
-	ax2.plot(xs, map(rv.pdf , xs), linewidth=2,label="alpha: " + str(fit_alpha)[:5] + 
-		"\nbeta: " + str(fit_beta)[:5] + "\nloc: " + str(fit_loc)[:5])
-	ax2.legend()
-	ax2.grid()
-	
-	ax3=F.add_subplot(2,2,2)
-	ax3.set_title("pi; strand probability")
-	data 						= [x for x in G["N"][4] if x > 0.01 and x < 0.99]
-
-	a,b,loc, scale  = ss.beta.fit(data)
-	
-	rv 							= ss.beta(a,b,loc, scale)
-	xs 							= np.linspace(0, max(data) , 1000)
-
-
-
-	ax3.hist(data,bins=100, label="Mean: " + str(np.mean(data))[:7],
-		normed=1)
-	ax3.plot(xs, map(rv.pdf, xs), 
-		linewidth=3., label="alpha: " + str(a)[:5] + "\nbeta: " + str(b)[:5] + "\nloc: " + str(loc)[:5]
-		+"\nscale: " + str(scale)[:5])
-	ax3.legend()
-	ax3.grid()
-	
-	ax4=F.add_subplot(2,2,4)
-	ax4.set_title("Length of Single Isoform Genes")
-	data 	= [x/100. for x in G["U"][2] if x < 150000]
-	fit_alpha, fit_loc, fit_beta = ss.gamma.fit(data)
-	
-	rv 							= ss.gamma(fit_alpha, fit_loc, fit_beta)
-	xs 							= np.linspace(0, max(data) , 1000)
-	
-	ax4.hist(data, bins=100, normed=1)
-	ax4.plot(xs, map(rv.pdf , xs), linewidth=2,label="alpha: " + str(fit_alpha)[:7] + 
-		"\nbeta: " + str(fit_beta)[:7] + "\nloc: " + str(fit_loc)[:7])
-	ax4.grid()
-	ax4.legend()
-	plt.tight_layout()
+	ax3 = F.add_subplot(2,2,3)
+	ax3.set_title("lambda")
+	ax3.hist(G["l"], bins=100)
+	ax4 = F.add_subplot(2,2,4)
+	ax4.set_title("pi")
+	ax4.hist(G["pi"], bins=100)
 	plt.show()
 
 
-def run(fits, spec=None, 
-		weight_thresh=0., retry_tresh=0.,
-		converged=True
-		):
-	G 	= { "N": (list(), list(), list(), list(), list()), 
-			"U": (list(), list(), list()) }
-	
-	for I in fits:
-			for k, model in zip(I.models.keys(), I.models.values()):
-				if ((spec is None or k == spec) and 
-					model.retries <= retry_tresh 
-					and (not converged or model.converged)):
-					for rv in model.rvs:
-						if rv.w > weight_thresh:
-							if rv.type == "U":
-								G["U"][0].append(rv.w)
-								G["U"][1].append(rv.pi)
-								G["U"][2].append(I.stop-I.start)
-							elif rv.type=="N":
-								G["N"][0].append(rv.mu)
-								G["N"][1].append(rv.si)
-								G["N"][2].append(rv.l)
-								G["N"][3].append(rv.w)
 
-								G["N"][4].append(rv.pi)
-						
-	display(G)
+if __name__ == "__main__":
+	DIR 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO_ND_intervals_model_fits_1/"
+	run(DIR)
+	pass

@@ -9,6 +9,7 @@
 #include <chrono>
 #include <map>
 #include "read_in_parameters.h"
+#include "model_selection.h"
 
 using namespace std;
 int main(int argc, char* argv[]){
@@ -16,7 +17,10 @@ int main(int argc, char* argv[]){
 
 	params * P 	= new params();
     P 			= readInParameters(argv);
-
+    if (P->EXIT){
+    	printf("exiting...\n");
+    	return 0;
+	}
     if (P->module=="MODEL"){
 
 
@@ -25,22 +29,14 @@ int main(int argc, char* argv[]){
 		int verbose 			= stoi(P->p["-v"]);
 		string formatted_file 	= P->p["-i"]; 
 		string out_file_dir 	= P->p["-o"] ;
-		string spec_all 		= P->p["-chr"];
-		int bin_resolution 		= stoi(P->p["-br"]);
-		double scale 			= stod(P->p["-ns"]);
-		int num_proc 			= stoi(P->p["-np"]);
-		double move 			= stod(P->p["-move"]);
-		double max_noise 		= stod(P->p["-max_noise"]);
-		double convergence_tresh= stod(P->p["-ct"]);
-		int max_iterations 		= stoi(P->p["-mi"]);
-		double r_mu 			= stod(P->p["-r_mu"]);
-		bool print_all 			= bool(stoi(P->p["-print_all"]));
+		
+
 		
 		if (verbose){//show current user parameters...
 			P->display();
 		}
 		//==========================================
-		vector<segment*> segments	= load_EMGU_format_file(formatted_file, spec_all);
+		vector<segment*> segments	= load_EMGU_format_file(formatted_file, P->p["-chr"]);
 		if (segments.empty()){
 			cout<<"segments was not populated"<<endl;
 			cout<<"exiting"<<endl;
@@ -48,21 +44,16 @@ int main(int argc, char* argv[]){
 			return 0;
 
 		}
-		BIN(segments, bin_resolution, scale);
+		BIN(segments, stod(P->p["-br"]), stod(P->p["-ns"]));
 		//==========================================
 		//Model Parameters
-		int maxK 	= stoi(P->p["-maxK"]); //max number of models to try
-		int minK 	= stoi(P->p["-minK"]);
-		int rounds 	= stoi(P->p["-rounds"]); //number of random seeds
-
+		
 		clock_t t;
 		chrono::time_point<chrono::system_clock> start, end;
 		start = chrono::system_clock::now();
 
 		t = clock();
-		run_model_accross_segments(segments, minK, maxK, rounds, num_proc, scale, move, 
-			max_noise, convergence_tresh, max_iterations,out_file_dir, 
-			r_mu,spec_all, print_all, bin_resolution);
+		run_model_accross_segments(segments, P);
 		free_segments(segments);
 		end = chrono::system_clock::now();
 		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
@@ -111,14 +102,18 @@ int main(int argc, char* argv[]){
 		cout<<"Writing OUT"<<endl;
 		write_out(out_file_name, A);
 		cout<<"DONE"<<endl;
+	}
+	else if(P->module=="SELECTION"){
+		int verbose 			= stoi(P->p3["-v"]);
 		
-	
-
-
-
-
-
-	}else {
+		if (verbose){//show current user parameters...
+			P->display();
+		}
+		run_model_selection(P->p3["-i"], P->p3["-o"], stod(P->p3["-penality"]));
+		
+	}
+		
+	else {
 		printf("Could not understand module or not provided...\n");
 		printf("exiting\n");
 		return 0;

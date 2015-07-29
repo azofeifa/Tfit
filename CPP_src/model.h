@@ -79,6 +79,7 @@ public:
 	void add_stats(double, double , int, double);
 	double pdf(double , int);
 	void update_parameters(double,int);
+	void set_priors(double,double,double,double,double,double);
 	double get_all_repo();
 	bool check_elongation_support();
 	void print();
@@ -99,7 +100,8 @@ public:
 	//Bayesian Priors
 	double p;
 	int fit(segment *,vector<double>);
-	classifier(int, double, int, double, double, double);
+	classifier(int, double, int, double, double, double, double
+		, double, double, double, double);
 	classifier();
 	void free_classifier();
 	string print_out_components();
@@ -108,9 +110,9 @@ public:
 	double ll,pi;
 	double last_diff;
 	component * components;
-	int resets;
 	bool converged;
 	double r_mu;
+	double ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3;
 };
 
 

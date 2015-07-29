@@ -81,7 +81,7 @@ class model:
 		self.rvs.append(component)
 
 	def pdf(self, x, st):
-		return sum([rv.pdf(x, st) for rv in self.rvs])
+		return sum([rv.pdf(x, st) for rv in self.rvs if rv.w > 0.001])
 	def __str__(self):
 		return "~" + str(self.k) + "," + str(self.ll) + "," + str(self.converged) + "," + str(self.diff) + "\n"+ "\n".join([rv.__str__() for rv in self.rvs])+"\n"
 

@@ -9,7 +9,7 @@
 #include <ctype.h>
 using namespace std;
 params::params(){
-	p2["-v"] 		= "1";
+	p["-v"] 		= "1";
 	p["-i"] 		= "";
 	p["-o"] 		= "";
 	p["-br"] 		= "300";
@@ -19,13 +19,19 @@ params::params(){
 	p["-rounds"] 	= "10";
 	p["-ct"] 		= "0.0001";
 	p["-max_noise"] = "0.05";
-	p["-move"] 		= "5";
 	p["-np"] 		= "4";
 	p["-chr"] 		= "all";
 	p["-v"] 		= "0";
 	p["-mi"] 		= "300";
 	p["-r_mu"] 		= "0";
-	p["-print_all"] = "0";	
+	p["-ALPHA_0"] 	= "1";
+	p["-BETA_0"] 	= "1";
+	p["-ALPHA_1"] 	= "1";
+	p["-BETA_1"] 	= "1";
+	p["-ALPHA_2"] 	= "1";
+	p["-ALPHA_3"] 	= "1";
+
+
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
@@ -33,10 +39,18 @@ params::params(){
 	p2["-k"] 		= "";
 	p2["-o"] 		= "";
 	p2["-pad"] 		= "100";
+
+	p3["-v"] 		= "1";
+	p3["-i"] 		= "";
+	p3["-o"] 		= "";
+	p3["-penality"] = "1";
+	p3["-to_igv"] 	= "1";
+	p3["-to_EMG"] 	= "1";
+
 	
 	N 				= 0;
 	module 			= "";
-
+	EXIT 			= 0;
 
 }
 void params::help(){
@@ -68,10 +82,8 @@ void params::display(){
 		cout<<"-ct       : "<<p["-ct"]<<endl;
 		cout<<"-mi       : "<<p["-mi"]<<endl;
 		cout<<"-max_noise: "<<p["-max_noise"]<<endl;
-		cout<<"-move     : "<<p["-move"]<<endl;
 		cout<<"-np       : "<<p["-np"]<<endl;
 		cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
-		cout<<"-print_all: "<<p["-print_all"]<<endl;
 		
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
@@ -86,9 +98,18 @@ void params::display(){
 		cout<<"-pad      : "<<p2["-pad"]<<endl;
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-		
-		
-	}
+	}else if (module=="SELECTION"){
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"              User Provided EMGU Parameters                     "<<endl;
+		cout<<"                    (MODEL SELECTION)                        "<<endl;
+		cout<<"-i           : "<<p3["-i"]<<endl;;
+		cout<<"-o           : "<<p3["-i"]<<endl;;
+		cout<<"-penality    : "<<p3["-penality"]<<endl;;
+		cout<<"-to_igv      : "<<p3["-to_igv"]<<endl;;
+		cout<<"-to_EMG      : "<<p3["-to_EMG"]<<endl;;
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+	}	
 }
 
 bool checkIfFileAndConfigFile(string FILE){
@@ -116,7 +137,6 @@ string checkModule(string FILE){
 		const char *h 	=pound.c_str();
 		while (getline(FH, line)){
 			if ("~"==line.substr(0,1)){
-
 				for (int i = 1; i < line.size(); i++){
 					if (not isspace(line[i]) and line[i]!= *h){
 						ID+=line[i];
@@ -150,6 +170,7 @@ void read_in_config_file(string FILE, params * P){
 		
 		bool add_ID 	= true;
 		bool add_param 	= false;
+		vector<string> not_valid;
 		while (getline(FH, line)){
 			if ("#" != line.substr(0,1)){
 				ID 	= "";
@@ -157,7 +178,7 @@ void read_in_config_file(string FILE, params * P){
 				add_ID=true;
 				add_param=false;
 				for (int i = 0; i < line.size(); i++){
-					if (line[i]==*d){
+					if (line[i]==*d and not add_param and ID.empty()){
 						ID+="-";
 					}else if (not ID.empty() and not isspace(line[i]) and add_ID ){
 						ID+=line[i];
@@ -175,17 +196,36 @@ void read_in_config_file(string FILE, params * P){
 				if (P->module=="MODEL"){
 					if (P->p.find(ID) !=P->p.end()){
 						P->p[ID] 	= val;
+					}else if(not ID.empty()) {
+						not_valid.push_back(ID);
 					}				
 				}else if (P->module=="FORMAT"){
 					if (P->p2.find(ID) !=P->p2.end()){
 							P->p2[ID] 	= val;
+					}else if (not ID.empty() ){
+						not_valid.push_back(ID);
 					}
-				}	
+				}else if (P->module=="SELECTION")	{
+					if (P->p3.find(ID) !=P->p3.end()){
+							P->p3[ID] 	= val;
+					}else if (not ID.empty() ){
+						not_valid.push_back(ID);
+					}
+				}
 			}	
+		}
+		if (not_valid.size() >0){
+			cout<<"These parameters were found but are not valid identifiers: ";
+			for (int i =0; i < not_valid.size(); i++){
+				cout<<not_valid[i]<<",";
+			}
+			P->EXIT=1;
+			cout<<endl;
 		}
 	}else{
 		printf("couldn't open config file...\n");
 	}
+	
 }
 
 
@@ -227,6 +267,13 @@ void fillInOptions(char* argv[],params * P){
 				}else{
 					F 			= "";
 				}
+			}else if (P->module== "SELECTION"){
+				if (P->p3.find(F) !=P->p3.end()){
+					P->p3[F] 	= "1";
+					P->N+=1;
+				}else{
+					F 			= "";
+				}
 			}
 		}
 		else if (not F.empty()) {
@@ -237,6 +284,11 @@ void fillInOptions(char* argv[],params * P){
 			}else if(P->module=="FORMAT"){
 				if (P->p2.find(F) !=P->p2.end()){
 					P->p2[F]=string(*argv);
+				}
+			}else if(P->module=="SELECTION"){
+				if (P->p3.find(F) !=P->p3.end()){
+					
+					P->p3[F]=string(*argv);
 				}
 			}
 		}

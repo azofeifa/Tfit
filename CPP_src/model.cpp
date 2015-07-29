@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <unistd.h>
 #include <random>
+
+
 //=============================================
 //Helper functions
 double IN(double x){ //Standard Normal PDF 
@@ -83,7 +85,7 @@ UNI::UNI(double start, double stop, double w_i, int strand, int POS){
 	st 		= strand;
 	pos 	= POS;
 	if (st==1){
-		pi=1.;
+		pi=1;
 	}else{
 		pi=0;
 	}
@@ -145,8 +147,10 @@ double EMG::EY2(double z, int s){
 //components wrapper class for EMG and UNIFORM objects
 
 component::component(){//empty constructor
-	//*****************************************************
-	//Priors on Simulation for EM SEED
+} 
+
+void component::set_priors(double s_0, double s_1, 
+	double l_0, double l_1, double w_0,double strand_0){
 	//============================
 	//for sigma
 	alpha_0 	= 30.46;
@@ -159,13 +163,16 @@ component::component(){//empty constructor
 	//for initial length of Uniforms
 	alpha_2 	= 1.297;
 	beta_2 		= 8260;
+
 	//*****************************************************
 	//Priors on parameters for MAP Estimate
-	ALPHA_0 = 1, BETA_0 =1; //for sigma
-	ALPHA_1 = 1, BETA_1 =1; //for lambda
-	ALPHA_2 = 1; //for weights, dirchlet
-	ALPHA_3 = 100; //for strand probs
-} 
+	ALPHA_0 = s_0, BETA_0 =s_1; //for sigma
+	ALPHA_1 = l_0, BETA_1 =l_1; //for lambda
+	ALPHA_2 = w_0; //for weights, dirchlet
+	ALPHA_3 = strand_0; //for strand probs
+
+	
+}
 
 int get_nearest_position(segment * data, double center, double dist){
 	int i;
@@ -185,13 +192,13 @@ int get_nearest_position(segment * data, double center, double dist){
 }
 bool check_uniform_support(component c, int forward){
 	if (forward==1){
-		if (c.forward.b < (c.bidir.mu + (1.0 / c.bidir.l) )){
+		if (c.forward.b < (c.bidir.mu + c.bidir.si + (1.0 / c.bidir.l) )){
 			return false;
 		}
 		return true;
 	}
 	else{
-		if (c.forward.a < (c.bidir.mu - (1.0 / c.bidir.l) )){
+		if (c.forward.a < (c.bidir.mu - c.bidir.si - (1.0 / c.bidir.l) )){
 			return false;
 		}
 		return true;
@@ -227,13 +234,13 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		
 		sigma 		= dist_sigma(mt)/scale;
 		lambda 		= dist_lambda(mt)/scale;
-		double dist = (1.0/lambda) + dist_lengths(mt);
+		double dist = (1.0/lambda) + sigma + dist_lengths(mt);
 		int j 		= get_nearest_position(data, mu, dist);
 		
 		b_forward 	= data->X[0][j];
 		forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j);
 		
-		dist 		= (-1.0/lambda) -dist_lengths(mt);
+		dist 		= (-1.0/lambda) - sigma - dist_lengths(mt);
 		j 			= get_nearest_position(  data, mu, dist);
 		
 		a_reverse 	= data->X[0][j];
@@ -520,17 +527,22 @@ double move_uniforom_support(component * components, int K, int add,
 //For Classifier class / wrapper around EM
 
 classifier::classifier(int k, double ct, int mi, double nm,
-	double MOVE, double R_MU){
+	double R_MU, double alpha_0, double beta_0,
+	double alpha_1, double beta_1, double alpha_2,double alpha_3){
 	K 						= k ;
 	seed 					= true;
 	convergence_threshold 	= ct;
 	max_iterations 			= mi;
 	noise_max 				= nm;
 	p 						= 0.8;
-	move 					= MOVE;
-	resets 					= 0;
 	last_diff 				= 0;
 	r_mu 					= R_MU;
+
+	//=============================
+	//hyperparameters
+	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
+	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
+
 
 }
 
@@ -559,6 +571,12 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	int add 	= noise_max>0;
        
 	components 	= new component[K+add];
+
+	//initialize components
+	for (int k = 0; k < K; k++){
+		components[k].set_priors(ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
+	}
+
 	//===========================================================================
 	//random seeds, initialize
 	int i 	= 0;
@@ -644,7 +662,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		if (abs(ll-prevll)<convergence_threshold){
 			converged=true;
 		}
-		
+
 		last_diff=abs(ll-prevll);
 		prevll=ll;
 

@@ -18,6 +18,20 @@ vector<string> splitter(string ELE, string D){
 
 	return results;
 }
+
+string strip(string ELE, string D){
+	const char *d 	= D.c_str();
+	string result 	= "";
+	for (int i = 0; i < ELE.size(); i++){
+		if (ELE[i]==*d){
+			break;
+		}else{
+			result+=ELE[i];
+		}
+	}
+	return result;
+}
+
 string join(vector<string> toBeJoined, string delim){
 	typedef vector<string>::iterator vs_it;
 	string result="";

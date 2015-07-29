@@ -11,6 +11,8 @@ class node:
 		self.stop 				= stop
 		self.intervals 			= list()
 		self.right, self.left 	= None, None
+	def getAll(self):
+		return self.intervals
 	def search(self, interval):
 		finds 					= list()
 		for info in self.intervals:
@@ -20,7 +22,7 @@ class node:
 	def search_point(self, point):
 		finds 					= list()
 		for info in self.intervals:
-			if info[0]<= point <= info[1]:
+			if info[0]<  point <  info[1]:
 				finds.append(info)
 		return finds
 	def __str__(self):
@@ -72,6 +74,19 @@ class treeNode:
 		if point > self.node.stop and self .right:
 			return self.right.searchPoint(point)
 		return None
+	def getAll(self):
+		if not self.node :
+			return None
+		if self.left and self.right:
+			return self.node.getAll() + self.left.getAll() + self.right.getAll()
+		elif self.right:
+			return self.node.getAll() + self.right.getAll()
+		elif self.left:
+			return self.node.getAll() + self.left.getAll()
+		else:
+			return self.node.getAll()
+			
+
 
 
 class tree:
@@ -112,6 +127,9 @@ class tree:
 	def searchPoint(self,point):
 		assert self.root, "interval tree has not been built yet"
 		return self.root.searchPoint(point)
+	def getAll(self):
+		return self.root.getAll()
+
 
 
 
