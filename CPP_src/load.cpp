@@ -5,7 +5,35 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include "dirent.h"
+#include "model.h"
+#include "across_segments.h"
 using namespace std;
+//========================
+//model fit wrapper classes
+model_component::model_component(){}
+model_component::model_component(simple_c sc){
+	mu 	= sc.ps[0],si = sc.ps[1], l = sc.ps[2], w_e = sc.ps[3], pi = sc.ps[4];
+	f_b = sc.ps[7], f_w = sc.ps[5], r_a = sc.ps[8], r_w = sc.ps[6];
+}
+
+
+bidir_preds::bidir_preds(double ll){
+	noise_ll 	= ll;
+}
+bidir_preds::bidir_preds( ){}
+void bidir_preds::insert_component(int K, simple_c sc){
+	G[K].insert_component(sc);
+}
+
+all_model_components::all_model_components(){}
+
+void all_model_components::insert_component(simple_c sc){
+	all_components.push_back(model_component(sc));
+}
+
+
+
 
 //========================
 //segment class
@@ -14,9 +42,12 @@ segment::segment(string chr, int st, int sp){
 	start	= st;
 	stop	= sp;
 	N 		= 0;
+	minX=st, maxX=sp;
+	counts 	= 0;
 }
 segment::segment(){
 	N 		= 0;
+	counts 	= 0;
 }
 
 string segment::write_out(){
@@ -46,19 +77,41 @@ void segment::add(int strand, double x, double y){
 		reverse.push_back(v2);
 	}
 }
+void segment::add2(int strand, double x, double y){
+	vector<double> v2(2);
+	v2[0] 	= x;
+	v2[1] 	= y;
+	if (forward.empty() && reverse.empty()){
+		minX=x;
+		maxX=x;
+	}else{
+		if (x < minX){
+			minX=x;
+			start=int(x);
+		}
+		if (x > maxX){
+			maxX=x;
+			stop=int(x);
+		}
+	}
+	if (strand == 1){
+		forward.push_back(v2);
+	}else if (strand==-1){
+		reverse.push_back(v2);
+	}
+}
 
-void segment::bin(int res, double scale){
 
-
+void segment::bin(double delta, double scale, bool erase){
 	X 				= new double*[3];
 	SCALE 			= scale;
-	int BINS 		= (maxX-minX)/res;
-	
+	int BINS;
+	BINS 		= (maxX-minX)/delta;
+
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}
 	
-	double delta 	= double(res);
 	XN 				= BINS;
 	//===================
 	//populate bin ranges
@@ -72,13 +125,14 @@ void segment::bin(int res, double scale){
 	//===================
 	//insert forward strand
 	int j 	=0;
+	//printf("start: %d , stop: %d , bins: %d ,delta: %f, forward: %d, reverse: %d\n", start, stop, BINS, delta, forward.size(), reverse.size() );
 	for (int i = 0 ; i < forward.size(); i++){
 		while (j < BINS and X[0][j] <=forward[i][0]){
 			j++;
 		}
-		X[1][j-1]=X[1][j-1]+forward[i][1];
+		X[1][j-1]+=forward[i][1];
 
-		N=N+forward[i][1];
+		N+=forward[i][1];
 	}
 	j 	=0;
 	//===================
@@ -87,49 +141,120 @@ void segment::bin(int res, double scale){
 		while (j < BINS and X[0][j] <=reverse[i][0]){
 			j++;
 		}
-		X[2][j-1]=X[2][j-1]+reverse[i][1];
-		N=N+reverse[i][1];
+		X[2][j-1]+=reverse[i][1];
+		N+=reverse[i][1];
 	}
 	//===================
 	//scale data down for numerical stability
-	for (int i = 0; i < BINS; i ++ ){
-		X[0][i] 	= (X[0][i]-minX)/scale;
+	if (scale){
+		for (int i = 0; i < BINS; i ++ ){
+			X[0][i] 	= (X[0][i]-minX)/scale;
+		}
 	}
 	//we also want to get rid of those data points that we don't need
 	//i.e. the ones where there is no data coverage values on either the 
 	//forward or reverse strands
+
 	int realN 		= 0;
 	for (int i = 0; i < BINS;i++){
 		if (X[1][i]>0 or X[2][i]>0){
 			realN++;
 		}
 	}
-
-	double ** newX 	= new double*[3];
-	for (int j=0; j<3;j++){
-		newX[j] 	= new double[realN];
-	}
-	j = 0;
-	for (int i = 0; i < BINS; i ++){
-		if (X[1][i]>0 or X[2][i]>0){
-			newX[0][j] 	= X[0][i];
-			newX[1][j] 	= X[1][i];
-			newX[2][j] 	= X[2][i];
-			j++;
+	if (erase){
+		double ** newX 	= new double*[3];
+		for (int j=0; j<3;j++){
+			newX[j] 	= new double[realN];
 		}
+		j = 0;
+		for (int i = 0; i < BINS; i ++){
+			if (X[1][i]>0 or X[2][i]>0){
+				newX[0][j] 	= X[0][i];
+				newX[1][j] 	= X[1][i];
+				newX[2][j] 	= X[2][i];
+				j++;
+			}
+		}
+		//clear previous memory
+		for (int i = 0; i < 3; i ++){
+			delete X[i];
+		}
+		delete X;
+		X 				= newX;
+		XN 				= realN;
 	}
-	//clear previous memory
-	for (int i = 0; i < 3; i ++){
-		delete X[i];
+	if (scale){
+		maxX 			= (maxX-minX)/scale;
+		minX 			=0;
 	}
-	delete X;
-	X 				= newX;
-	XN 				= realN;
-	maxX 			= (maxX-minX)/scale;
-	minX 			=0;
 	forward.clear();
 	reverse.clear();
+}
+
+
+
+void segment::insert_bidirectional_data(int pad){
+
+	for (int i = 0; i < bidirectional_bounds.size();i++){
+		bidirectional_bounds[i][0]= max(bidirectional_bounds[i][0]-pad, minX);
+		bidirectional_bounds[i][1]= min(bidirectional_bounds[i][1]+pad, maxX);
+	}
+	vector<vector<double>> merged_bidirectional_bounds;
+
+	//first thing merge
+	int bound_N 		= bidirectional_bounds.size();
+	int i 	= 0;
+	double o_st, o_sp;
+	int cts  	= 0;
+	while (i < bound_N){
+		o_st  	= bidirectional_bounds[i][0], o_sp=bidirectional_bounds[i][1];
+		cts 	= 0;
+		while (i < bound_N and 
+			( bidirectional_bounds[i][1] > o_st) and 
+			( bidirectional_bounds[i][0] < o_sp)  ){
+
+			o_st=min(o_st, bidirectional_bounds[i][0]);
+			o_sp=min(o_sp, bidirectional_bounds[i][1]);
+			i++;
+			cts++;
+		} 
+		vector<double> merged(2);
+		merged[0]=o_st, merged[1]=o_sp;
+		merged_bidirectional_bounds.push_back(merged);
+		bidir_counts.push_back(cts);
 	
+	}
+	//first thing is to get NS
+	vector<double> Y_f(2);
+	vector<double> Y_r(2);
+	
+	segment * bidir_seg 	= NULL;
+	for (int j = 0; j < merged_bidirectional_bounds.size(); j++ ){
+		bidir_seg 	= new segment(chrom,
+				merged_bidirectional_bounds[j][0],
+				merged_bidirectional_bounds[j][1] );
+		bidir_seg->counts 	= bidir_counts[j];
+		bidirectional_data.push_back(bidir_seg);
+	}
+
+
+
+	int j 	= 0;
+	for (int i = 0; i < XN;i++){
+		while (j < bidirectional_data.size() and
+			bidirectional_data[j]->stop < X[0][i] ){
+			j++;
+		
+		}
+		if (j < bidirectional_data.size() and bidirectional_data[j]->start <=X[0][i] and  
+			X[0][i]<=bidirectional_data[j]->stop){
+		
+				Y_f[0]=X[0][i],Y_f[1]=X[1][i];
+				Y_r[0]=X[0][i],Y_r[1]=X[2][i];
+				bidirectional_data[j]->forward.push_back(Y_f);
+				bidirectional_data[j]->reverse.push_back(Y_r);
+		}
+	}
 }
 
 vector<segment*> load_EMGU_format_file(string FILE, string spec){
@@ -182,19 +307,22 @@ vector<segment*> load_EMGU_format_file(string FILE, string spec){
 }
 
 
-void BIN(vector<segment*> segments, int BINS, double scale){
+void BIN(vector<segment*> segments, int BINS, double scale, bool erase){
 	for (int i = 0 ; i < segments.size() ; i ++){
 		if (segments[i]->forward.size() > 0 or segments[i]->reverse.size() > 0 ){
-			segments[i]->bin(BINS, scale);
+			segments[i]->bin(BINS, scale, erase);
 		}
 	}
 }
 
-interval::interval(){};
+interval::interval(){
+	hits 	= 0;
+};
 interval::interval(string chr, int st, int sp){
 	chrom 	= chr;
 	start 	= st;
 	stop 	= sp;
+	hits 	= 0;
 };
 
 void interval::insert(double x, double y, int strand){
@@ -248,6 +376,40 @@ void merged_interval::insert(double x,double y, int strand){
 		}
 	}
 }
+bool merged_interval::find(int ST, int SP){
+	bool FOUND=false;
+	for (int i = 0; i < intervals.size(); i++){
+		if (  SP > intervals[i].start and   ST < intervals[i].stop){
+			intervals[i].hits+=1;
+			FOUND=true;
+		}
+	}
+	return FOUND;
+}
+int merged_interval::get_hits(bool y, int ST, int SP){
+	int HITS = 0;
+	for (int i = 0; i < intervals.size(); i++){
+		if ( SP > intervals[i].start  and ST< intervals[i].stop ){
+			if (not y ){
+				HITS+=intervals[i].hits;
+			}else if (intervals[i].hits>0){
+				HITS+=1;
+			}
+		}
+	}
+	return HITS;
+}
+void merged_interval::reset_hits(){
+	for (int i = 0; i < intervals.size(); i++){
+		intervals[i].hits=0;
+	}
+}
+int merged_interval::get_total(int ST, int SP){
+	if (SP > start and ST < stop){
+		return intervals.size();
+	}
+	return 0.;
+}
 
 
 //============================
@@ -268,6 +430,18 @@ int interval_tree::getDepth(){
 	}
 	return 1;
 }
+int interval_tree::get_total(int start, int stop){
+
+	if (left!=NULL and right!=NULL){
+		return current->get_total(start, stop) + left->get_total(start, stop) + right->get_total(start, stop);
+	}else if(left!=NULL){
+		return current->get_total(start, stop) +  left->get_total(start, stop);
+	}else if (right!=NULL){
+		return current->get_total(start, stop) +  right->get_total(start, stop);	
+	}
+	return current->get_total(start, stop);
+}
+
 void interval_tree::construct(vector<merged_interval *> D){
 	if (D.size()>0){
 		int N 		= D.size();
@@ -310,6 +484,109 @@ void interval_tree::insert_into_array(merged_interval * ARRAY , int N ){
 	if (right != NULL){
 		right->insert_into_array(ARRAY, N);
 	}
+}
+
+int interval_tree::get_hits(bool y, int start, int stop){
+	if (left!=NULL and right!=NULL){
+
+		return current->get_hits(y,start, stop) + left->get_hits(y, start, stop) + right->get_hits(y,start, stop);
+	}else if(left!=NULL){
+		return current->get_hits(y,start, stop) +  left->get_hits(y,start, stop);
+	}else if (right!=NULL){
+		return current->get_hits(y,start, stop) +  right->get_hits(y,start, stop);	
+	}
+	return 0;
+}
+
+void interval_tree::reset_hits( ){
+	current->reset_hits();
+	if (left!=NULL and right!=NULL){
+		left->reset_hits();
+		right->reset_hits();
+	}else if(left!=NULL){
+
+		left->reset_hits();
+	}else if (right!=NULL){
+		right->reset_hits();	
+	}
+}
+
+
+bool interval_tree::find(int start, int stop){
+	if (( stop > current->start) and ( start < current->stop) ){
+		return current->find(start, stop);
+	}
+	else if (stop < current->start and left!=NULL){
+		return left->find(start, stop);
+	}
+	else if (start > current->stop and right!=NULL){
+		return right->find(start, stop);
+	}else{
+		return false;
+	}
+}
+
+
+
+vector<segment*> load_bedgraphs_total(string forward_strand, 
+	string reverse_strand, int BINS, double scale, string spec_chrom){
+	bool FOUND 	= false;
+	if (spec_chrom=="all"){
+		FOUND 	= true;
+	}
+	map<string, segment*> 	G;
+	vector<segment*> segments;
+	
+	ifstream FH(forward_strand);
+	ifstream FH2(reverse_strand);
+	if (not FH){
+		cout<<"couldn't open "<<forward_strand<<endl;
+		return segments;
+	}else if (not FH2){
+		cout<<"couldn't open "<<reverse_strand<<endl;
+		return segments;
+	}
+	
+	string line, chrom;
+	int start, stop;
+	double coverage;
+	vector<string> lineArray;
+	string prevChrom="";
+	segment * S =NULL;
+	
+	while (getline(FH, line)){
+		lineArray=splitter(line, "\t");
+		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
+		if (chrom != prevChrom){
+			if (chrom == spec_chrom){
+				FOUND 	= true;
+			}
+			G[chrom] 	= new segment(chrom, start, stop );
+		}
+		G[chrom]->add2(1, double((stop + start) / 2.), coverage);
+		prevChrom=chrom;
+
+	}
+
+	while (getline(FH2, line)){
+		lineArray=splitter(line, "\t");
+		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
+		if (G.find(chrom)!= G.end()){
+			G[chrom]->add2(-1,double((stop + start) / 2.), coverage);
+		}
+	}
+	typedef map<string, segment*>::iterator it_type;
+	for (it_type i = G.begin(); i != G.end(); i++){
+		i->second->bin(BINS, scale,false);
+		segments.push_back(i->second);
+	}
+	if (not FOUND){
+		segments.clear();
+		printf("couldn't find chromosome %s in bedgraph files\n", spec_chrom.c_str());
+	}
+	return segments;
+
+
 }
 
 
@@ -403,6 +680,98 @@ void insert_bedgraph(map<string, interval_tree *> intervals, string FILE, int st
 	}else{
 		cout<<"Coudn't open: "<<FILE<<endl;
 	}
+}
+
+map<string, vector<interval> > insert_bed_file(string FILE, 
+	map<string, vector< interval >> G, string spec_chrom){
+	fstream FH(FILE);
+	if (FH){
+		string line, chrom;
+		int start, stop ;
+		vector<string> lineArray;
+		merged_interval * mi 	= NULL;
+		while (getline(FH, line)){
+			lineArray 	= splitter(line, "\t");
+			start=stoi(lineArray[1]), stop=stoi(lineArray[2]);
+			chrom 		= lineArray[0];
+			if (chrom==spec_chrom){
+				G[chrom].push_back(interval(chrom,start, stop));
+			}
+		}
+	}
+	return G;
+
+}
+
+map<string, interval_tree *> load_bidir_bed_files(string in_directory, string spec_chrom){
+	DIR *dir;
+	struct dirent *ent;
+	string FILE;
+	map<string, vector<interval>> G;
+	map<string, interval_tree *> I;
+	if ((dir = opendir (in_directory.c_str())) != NULL) {
+		/* print all the files and directories within directory */
+		while ((ent = readdir (dir)) != NULL) {
+			FILE 	= string(ent->d_name);
+			G 		= insert_bed_file(in_directory+FILE, G, spec_chrom);	
+		}
+	}else {
+		/* could not open directory */
+		cout<<"couldn't open directory: "<<in_directory<<endl;
+		return I;
+	}
+	if (G.empty()){
+		cout<<"couldn't "<<spec_chrom<<"in bed files in directory"<<endl;
+		return I;
+	}
+
+
+	closedir (dir);
+	//want to sort intervals by there ending point
+	map<string, vector<merged_interval*> > A;
+	typedef map<std::string, vector<interval>>::iterator it_type;
+	typedef map<std::string, vector<merged_interval*>>::iterator it_type_2;
+	int N, i, j;
+	int u 	= 0;
+	for(it_type c = G.begin(); c != G.end(); c++) {
+		if (G[c->first].size()>0){
+			
+		    G[c->first] 	= bubble_sort(G[c->first]);
+
+		    j 				= 0;
+		    merged_interval * I = new  merged_interval(G[c->first][0].start, G[c->first][0].stop, G[c->first][0], j);
+		    N 				= G[c->first].size();
+		    i 				= 1;
+		    bool inserted 	= false;
+		    while (i < N){
+		    	while (i<N and G[c->first][i].start < I->stop and G[c->first][i].stop > I->start ){
+		    		I->update(G[c->first][i]);
+		    		i++;
+		    	}
+		    	A[c->first].push_back(I);
+		    	inserted=true;
+		    	if (i < N){
+		    		I 	= new merged_interval(G[c->first][i].start, G[c->first][i].stop, G[c->first][i], j);
+		    		inserted=false;
+		    		j++;
+		    	}
+		    	i++;
+		    }
+			if (not inserted){
+				A[c->first].push_back(I);
+			}
+		}
+	}
+	for (it_type_2 c = A.begin(); c!=A.end(); c++ ){
+		I[c->first] 	= new interval_tree;
+		I[c->first]->construct(c->second);
+	}
+
+
+
+	return I;
+	
+
 }
 
 

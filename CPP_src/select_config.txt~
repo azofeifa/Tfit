@@ -2,7 +2,7 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~SELECTION #do not change this line
 -v 			= 1
--i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/model_fits_out_all_1/ #input directory
+-i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/test_model_out_directory/ #input directory
 -o 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/ # out directory
 -penality 	= 500 #BIC penality BIC, -2*LL + penality*K*log(n)
 -to_igv 	= 1 #output a bed file that can uploaded to IGV/UCSC genome browser

@@ -1,5 +1,5 @@
-#include "load.h"
 #include "model.h"
+#include "load.h"
 #include "template_matching.h"
 #include <math.h> 
 #include <limits>
@@ -153,8 +153,8 @@ void component::set_priors(double s_0, double s_1,
 	double l_0, double l_1, double w_0,double strand_0){
 	//============================
 	//for sigma
-	alpha_0 	= 30.46;
-	beta_0 		= 20.6;
+	alpha_0 	= 20.46;
+	beta_0 		= 10.6;
 	//============================
 	//for lambda
 	alpha_1 	= 20.823;
@@ -371,8 +371,8 @@ void component::update_parameters(double N, int K){
 		bidir.si 	= min(pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5), 10.) ;
 		
-		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 2.);
-		bidir.l 	= max(0.1, bidir.l);
+		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
+		bidir.l 	= max(0.05, bidir.l);
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
@@ -568,7 +568,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 			ll+=(LOG(vl*(pi) )*data->X[1][i]);
 			ll+=(LOG(vl*(1-pi))*data->X[2][i]);
 		}
-
+		converged=true;
+		last_diff=0;
+		components 	= new component[1];
+		components[K].initialize(0., data, 0., 0. , noise_max, pi);
 		return 1;
 	}
 	int add 	= noise_max>0;
@@ -617,8 +620,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
+		//	components[k].print();
 		       
 		}
+		//printf("%d,--------------------------------\n",t );
 	
 		//******
 		//E-step

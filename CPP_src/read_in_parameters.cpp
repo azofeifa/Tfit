@@ -30,8 +30,11 @@ params::params(){
 	p["-BETA_1"] 	= "1";
 	p["-ALPHA_2"] 	= "1";
 	p["-ALPHA_3"] 	= "1";
-
-
+	p["-template"] 	= "1";
+	p["-density"] 	= "1000";
+	p["-window"] 	= "2000";
+	p["-pad"] 		= "5000";
+ 	
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
@@ -46,6 +49,22 @@ params::params(){
 	p3["-penality"] = "1";
 	p3["-to_igv"] 	= "1";
 	p3["-to_EMG"] 	= "1";
+
+
+	p4["-v"] 				= "1";
+	p4["-i"] 				= "";
+	p4["-j"] 				= "";
+	p4["-k"] 				= "";
+	p4["-o"] 				= "1";
+	p4["-ns"] 				= "100";
+	p4["-br"] 				= "50";
+	p4["-density"] 			= "1000";
+	p4["-window"] 			= "1500";
+	p4["-chr"] 				= "all";
+	p4["-opt_res"] 			= "5";
+	p4["-np"] 				= "4";
+
+
 
 	
 	N 				= 0;
@@ -63,30 +82,51 @@ void params::help(){
 	cout<<"-r  : "<<"base pair binning resolution (default: 1)"<<endl;
 	cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 	cout<<"These parameters can also be set in seperate config file"<<endl;
-	cout<<"----------------------------------------------------------------"<<endl;
-	
+	cout<<"----------------------------------------------------------------"<<endl;	
 }
 void params::display(){
 	if (module=="MODEL"){
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
-		cout<<"-i        : "<<p["-i"]<<endl;
-		cout<<"-o        : "<<p["-o"]<<endl;
-		cout<<"-chr      : "<<p["-chr"]<<endl;
-		cout<<"-br       : "<<p["-br"]<<endl;
-		cout<<"-ns       : "<<p["-ns"]<<endl;
-		cout<<"-minK     : "<<p["-minK"]<<endl;
-		cout<<"-maxK     : "<<p["-maxK"]<<endl;
-		cout<<"-rounds   : "<<p["-rounds"]<<endl;
-		cout<<"-ct       : "<<p["-ct"]<<endl;
-		cout<<"-mi       : "<<p["-mi"]<<endl;
-		cout<<"-max_noise: "<<p["-max_noise"]<<endl;
-		cout<<"-np       : "<<p["-np"]<<endl;
-		cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
-		
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		if (p["-template"]!="1"){
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"              User Provided EMGU Parameters                     "<<endl;
+			cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
+			cout<<"-i        : "<<p["-i"]<<endl;
+			cout<<"-o        : "<<p["-o"]<<endl;
+			cout<<"-chr      : "<<p["-chr"]<<endl;
+			cout<<"-br       : "<<p["-br"]<<endl;
+			cout<<"-ns       : "<<p["-ns"]<<endl;
+			cout<<"-minK     : "<<p["-minK"]<<endl;
+			cout<<"-maxK     : "<<p["-maxK"]<<endl;
+			cout<<"-rounds   : "<<p["-rounds"]<<endl;
+			cout<<"-ct       : "<<p["-ct"]<<endl;
+			cout<<"-mi       : "<<p["-mi"]<<endl;
+			cout<<"-max_noise: "<<p["-max_noise"]<<endl;
+			cout<<"-np       : "<<p["-np"]<<endl;
+			cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
+			
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		}
+		else{
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"              User Provided EMGU Parameters                     "<<endl;
+			cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
+			cout<<"            ...coupled to template matching...                  "<<endl;	
+			cout<<"-i        : "<<p["-i"]<<endl;
+			cout<<"-o        : "<<p["-o"]<<endl;
+			cout<<"-chr      : "<<p["-chr"]<<endl;
+			cout<<"-br       : "<<p["-br"]<<endl;
+			cout<<"-ns       : "<<p["-ns"]<<endl;
+			cout<<"-rounds   : "<<p["-rounds"]<<endl;
+			cout<<"-ct       : "<<p["-ct"]<<endl;
+			cout<<"-mi       : "<<p["-mi"]<<endl;
+			cout<<"-np       : "<<p["-np"]<<endl;
+			cout<<"-density  : "<<p["-density"]<<endl;
+			cout<<"-window   : "<<p["-window"]<<endl;
+			cout<<"-pad      : "<<p["-pad"]<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		}
 	}else if (module=="FORMAT"){
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"              User Provided EMGU Parameters                     "<<endl;
@@ -102,14 +142,48 @@ void params::display(){
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"              User Provided EMGU Parameters                     "<<endl;
 		cout<<"                    (MODEL SELECTION)                        "<<endl;
-		cout<<"-i           : "<<p3["-i"]<<endl;;
-		cout<<"-o           : "<<p3["-i"]<<endl;;
-		cout<<"-penality    : "<<p3["-penality"]<<endl;;
-		cout<<"-to_igv      : "<<p3["-to_igv"]<<endl;;
-		cout<<"-to_EMG      : "<<p3["-to_EMG"]<<endl;;
+		cout<<"-i           : "<<p3["-i"]<<endl;
+		cout<<"-o           : "<<p3["-i"]<<endl;
+		cout<<"-penality    : "<<p3["-penality"]<<endl;
+		cout<<"-to_igv      : "<<p3["-to_igv"]<<endl;
+		cout<<"-to_EMG      : "<<p3["-to_EMG"]<<endl;
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-	}	
+	}else if (module=="BIDIR")	{
+		if (p4["-k"].empty()){
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"              User Provided EMGU Parameters                     "<<endl;
+			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
+			cout<<"-i           : "<<p4["-i"]<<endl;
+			cout<<"-j           : "<<p4["-j"]<<endl;
+			cout<<"-k           : "<<p4["-k"]<<endl;
+			cout<<"-o           : "<<p4["-o"]<<endl;
+			cout<<"-window      : "<<p4["-window"]<<endl;
+			cout<<"-density     : "<<p4["-density"]<<endl;
+			cout<<"-ns          : "<<p4["-ns"]<<endl;
+			cout<<"-br          : "<<p4["-br"]<<endl;
+			cout<<"-np          : "<<p4["-np"]<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		}else{
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"              User Provided EMGU Parameters                     "<<endl;
+			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
+			cout<<"                ...Running Optimization...                      "<<endl;
+			cout<<"-i           : "<<p4["-i"]<<endl;
+			cout<<"-j           : "<<p4["-j"]<<endl;
+			cout<<"-k           : "<<p4["-k"]<<endl;
+			cout<<"-o           : "<<p4["-o"]<<endl;
+			cout<<"-opt_res     : "<<p4["-opt_res"]<<endl;
+			cout<<"-chr         : "<<p4["-chr"]<<endl;
+			cout<<"-np          : "<<p4["-np"]<<endl;
+			cout<<"-ns          : "<<p4["-ns"]<<endl;
+			cout<<"-br          : "<<p4["-br"]<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
+			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+			
+		}
+	}
 }
 
 bool checkIfFileAndConfigFile(string FILE){
@@ -211,6 +285,12 @@ void read_in_config_file(string FILE, params * P){
 					}else if (not ID.empty() ){
 						not_valid.push_back(ID);
 					}
+				}else if (P->module=="BIDIR")	{
+					if (P->p4.find(ID) !=P->p4.end()){
+							P->p4[ID] 	= val;
+					}else if (not ID.empty() ){
+						not_valid.push_back(ID);
+					}
 				}
 			}	
 		}
@@ -274,6 +354,13 @@ void fillInOptions(char* argv[],params * P){
 				}else{
 					F 			= "";
 				}
+			}else if (P->module== "BIDIR"){
+				if (P->p4.find(F) !=P->p4.end()){
+					P->p4[F] 	= "1";
+					P->N+=1;
+				}else{
+					F 			= "";
+				}
 			}
 		}
 		else if (not F.empty()) {
@@ -289,6 +376,11 @@ void fillInOptions(char* argv[],params * P){
 				if (P->p3.find(F) !=P->p3.end()){
 					
 					P->p3[F]=string(*argv);
+				}
+			}else if(P->module=="BIDIR"){
+				if (P->p4.find(F) !=P->p4.end()){
+					
+					P->p4[F]=string(*argv);
 				}
 			}
 		}
