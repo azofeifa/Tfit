@@ -22,7 +22,7 @@ private:
 	vector<model_component> all_components;
 public:
 	all_model_components();
-	void insert_component(simple_c sc);
+	void insert_component(simple_c sc, double);
 };
 
 
@@ -34,7 +34,7 @@ private:
 public:
 	bidir_preds(double);
 	bidir_preds();
-	void insert_component(int, simple_c);
+	void insert_component(int, simple_c,double);
 };
 
 

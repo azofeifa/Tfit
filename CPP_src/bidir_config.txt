@@ -9,8 +9,7 @@
 
 -chr 			= chr1 #train on a specific chromosome
 -br 			= 25 #binning resolution do not consider changing
--window 		= 1500 #window to search around
--density 		= 1000 #read density cut off
+-density 		= 1360 #read density cut off
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -opt_res 		= 5 #grid search resolution
 -np 			= 4 #number of CPU cores/processors

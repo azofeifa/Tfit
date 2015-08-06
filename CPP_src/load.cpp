@@ -6,6 +6,7 @@
 #include <fstream>
 #include <map>
 #include "dirent.h"
+#include "template_matching.h"
 #include "model.h"
 #include "across_segments.h"
 using namespace std;
@@ -22,13 +23,19 @@ bidir_preds::bidir_preds(double ll){
 	noise_ll 	= ll;
 }
 bidir_preds::bidir_preds( ){}
-void bidir_preds::insert_component(int K, simple_c sc){
-	G[K].insert_component(sc);
+void bidir_preds::insert_component(int K, simple_c sc, double LL){
+	
+	G[K].insert_component(sc, LL);
 }
 
-all_model_components::all_model_components(){}
+all_model_components::all_model_components(){
+	ll 	= nINF;
+}
 
-void all_model_components::insert_component(simple_c sc){
+void all_model_components::insert_component(simple_c sc, double LL){
+	if (ll == nINF){
+		ll=LL;
+	}
 	all_components.push_back(model_component(sc));
 }
 

@@ -299,6 +299,9 @@ void run_global_template_matching(vector<segment*> segments,
 	int start, center;
 	vector<vector<double> > scores;
 	vector<double> current(5);
+	vector<string> annotations_FHW;
+	vector<string> annotations_FHW_intervals;
+	#pragma omp parallel for num_threads(np)
 	for (int i = 0; i < segments.size(); i++){
 		scores.clear();
 		double * BIC_values = new double[int(segments[i]->XN)];
@@ -313,7 +316,7 @@ void run_global_template_matching(vector<segment*> segments,
 		//write out contigous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
 			if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
-				if (BIC_values[j] >=1.0  and densities[j]>density 
+				if (BIC_values[j] >=0.95  and densities[j]>density 
 					and skews[j][0] > skew and skews[j][1]< -skew ){
 
 					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
@@ -339,33 +342,31 @@ void run_global_template_matching(vector<segment*> segments,
 
 			center 		= int((scores[j][1]+scores[j][0]) / 2.);
 			if (write_out){
-				annotation	= (segments[i]->chrom + "\t" + to_string(int(center-scores[j][3])) + "\t" + to_string(int(center+scores[j][3]))  + "\tLOAD"+
-					"\n");
 				string SCORE 	= to_string(int(scores[j][2]*100));
 				annotation 	= (segments[i]->chrom + "\t" + to_string(int(center-scores[j][3])) 
 					+ "\t" + to_string(int(center+scores[j][3]))   + "\t" + "LOAD" + "\t" + SCORE+"\t.\t" + 
 					to_string(int(center-scores[j][3]))  + "\t" + to_string(int(center+scores[j][3])) 
 					+"\t" + "0,0,255" + "\t" + "" + "\n");
 
-				FHW<<annotation;
-
+				
+				annotations_FHW.push_back(annotation);
 				annotation 	= (segments[i]->chrom + "\t" + to_string(int(int(center-scores[j][3]-scores[j][4]))) + 
 					"\t" + to_string(int(center-scores[j][3])) + "\t" + "INIT" +
 								"\t200\t" + "-" + "\t"  + to_string(int(int(center-scores[j][3]-scores[j][4]))) + 
 								"\t" + to_string(int(center-scores[j][3])) + "\t" +  
 								"0,0,255" +"\t" +"\t2\t25,0\t" + "0," + to_string(int(scores[j][4])) +  "\n" );
-				FHW<<annotation;
+				annotations_FHW.push_back(annotation);
 				annotation 	= (segments[i]->chrom + "\t" + to_string(int(int(center+scores[j][3]))) + 
 					"\t" + to_string(int(center+scores[j][3]+scores[j][4])) + "\t" + "INIT" +
 								"\t200\t" + "+" + "\t"  + to_string(int(int(center+scores[j][3] ))) + 
 								"\t" + to_string(int(center+scores[j][3]+scores[j][4])) + "\t" +  
 								"0,0,255" +"\t" +"\t2\t0,25\t" + "0," + to_string(int(scores[j][4])) +  "\n" );
-				FHW<<annotation;
-
+				annotations_FHW.push_back(annotation);
+				
 				annotation 	= (segments[i]->chrom+"\t"+ 
 					to_string(int(center-scores[j][3]-scores[j][4])) +"\t" +
-					to_string(int(center+scores[j][3]+scores[j][4])) + "\n");	
-				FHW_intervals<<annotation;
+					to_string(int(center+scores[j][3]+scores[j][4])) + "\n");
+				annotations_FHW_intervals.push_back(annotation);	
 			}
 			//want to insert into
 			vector<double> bounds(2);
@@ -374,21 +375,30 @@ void run_global_template_matching(vector<segment*> segments,
 
 			segments[i]->bidirectional_bounds.push_back(bounds);	
 		}
-	
+		for (int t =0; t < segments[i]->XN; t++ ){
+			delete skews[t];
+		}
+		
+	}
+	if (write_out){
+		for (int i = 0; i < annotations_FHW.size(); i++){
+			FHW<<annotations_FHW[i];
+		}
+		for (int i = 0; i < annotations_FHW_intervals.size(); i++){
+			FHW_intervals<<annotations_FHW_intervals[i];
+		}
 	}
 }
 
 
 void optimize(map<string, interval_tree *> I, 
 	vector<segment*> segments, double scale, int res, string out_dir, string spec_chrom, int np){
-	double window_a 		= (2000/scale);
-	double window_b 		= (3000/scale);
-	double window_delta 	= (window_b - window_a) / res;
+	double window 			= 2500/scale;
 	double density_a 		= (1000/scale);
 	double density_b 		= (3000/scale);
 	double density_delta 	= (density_b - density_a) / res;
-	double skew_a 			= 0.;
-	double skew_b 			= 0.1;
+	double skew_a 			= -0.2;
+	double skew_b 			= 0.2;
 	double skew_delta 		= (skew_b-skew_a)/res;
 	
 	double ct_a 			= 0.7;
@@ -397,7 +407,7 @@ void optimize(map<string, interval_tree *> I,
 	
 	double accuracy[res+1][res+1][res+1];
 	
-	double window, density, ct, peak, skew;
+	double density, ct, peak, skew;
 
 	int prev, prev_start, current, stop;
 	int bidir_hits 	= 0;
@@ -408,6 +418,7 @@ void optimize(map<string, interval_tree *> I,
 	int arg_j, arg_k, arg_l;
 	bool HIT;
 	bool FOUND=false;
+
 	printf("---------------------\n");
 	printf("performing optimization\n");
 	for (int i = 0; i < segments.size(); i++){ //these segments are indexed by chromosome
@@ -421,52 +432,50 @@ void optimize(map<string, interval_tree *> I,
 			for (int t =0; t < segments[i]->XN; t++ ){
 				skews[t] 	= new double[2];
 			}
-
-			for (int j =0; j <= res; j++){
-				window 	= window_a + window_delta*(j);
-				BIC_template(segments[i], BIC_values, densities, variances, lambdas, skews, window,np);
-				for (int k =0; k <= res; k++){
-					density 	= density_a+density_delta*(k);
-					for (int l =0; l <= res; l++){
-						bidir_hits 	= 0;
-						all_bidirs 	= 0;
-						min_start 	= segments[i]->X[0][0]*scale +segments[i]->start ;
+			BIC_template(segments[i], BIC_values, densities, variances, lambdas, skews, window,np);
 			
-						prev=-1, current=0;
+			for (int k =0; k <= res; k++){
+				density 	= density_a+density_delta*(k);
+				for (int l =0; l <= res; l++){
+					bidir_hits 	= 0;
+					all_bidirs 	= 0;
+					min_start 	= segments[i]->X[0][0]*scale +segments[i]->start ;
+		
+					prev=-1, current=0;
 
-						skew 	= skew_a 	+ skew_delta*(l);
-						for (int j = 1; j<segments[i]->XN-1; j++){
-							if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
-								if (BIC_values[j] >= 1.0 and densities[j]>density  
-									and skews[j][0] > skew and skews[j][1]< -skew  ){
-									prev_start 	= segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1./lambdas[j]))*scale;
-									stop 		= segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1./lambdas[j]))*scale;
-									HIT 		= I[segments[i]->chrom]->find(prev_start, stop);
-									if (HIT){
-										bidir_hits++;
-									}
-									all_bidirs++;
+					skew 	= skew_a 	+ skew_delta*(l);
+					for (int j = 1; j<segments[i]->XN-1; j++){
+						if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
+							if (BIC_values[j] >= 0.95 and densities[j]>density  
+								and skews[j][0] > skew and skews[j][1]< -skew  ){
+								prev_start 	= segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1./lambdas[j]))*scale;
+								stop 		= segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1./lambdas[j]))*scale;
+								HIT 		= I[segments[i]->chrom]->find(prev_start, stop);
+								if (HIT){
+									bidir_hits++;
 								}
+								all_bidirs++;
 							}
-							max_stop 	= segments[i]->X[0][j]*scale +segments[i]->start;
 						}
-						int single_hits 	= I[segments[i]->chrom]->get_hits(true, min_start, max_stop);
-						int all_hits 		= I[segments[i]->chrom]->get_hits(false, min_start, max_stop);
-						int peaks_total 	= I[segments[i]->chrom]->get_total(min_start, max_stop);
-						double precision 	= double(bidir_hits)/double(all_bidirs);
-						double recall 		= double(all_hits)/double(peaks_total);
-						if ( 2*((precision*recall)/(precision+recall) ) > F1  ){
-							F1			= 2*((precision*recall)/(precision+recall) ) ;
-							arg_l=l, arg_k=k, arg_j=j;
-						}
-						I[segments[0]->chrom]->reset_hits();
-					}	
-				}
-				printf("Best F1 (so far): %.3g, window: %.3gKB, density: %.3gKB, skew: %.3g, percent done: %d  \r", F1, 
-				(scale*(window_a + window_delta*(arg_j))/1000. ), (scale*(density_a+density_delta*(arg_k))/1000.), (skew_a 	+ skew_delta*(arg_l)),
-				int(100*double(j+1)/(res+1)) );
-				cout<<flush;
+						max_stop 	= segments[i]->X[0][j]*scale +segments[i]->start;
+					}
+					int single_hits 	= I[segments[i]->chrom]->get_hits(true, min_start, max_stop);
+					int all_hits 		= I[segments[i]->chrom]->get_hits(false, min_start, max_stop);
+					int peaks_total 	= I[segments[i]->chrom]->get_total(min_start, max_stop);
+					double precision 	= double(bidir_hits)/double(all_bidirs);
+					double recall 		= double(all_hits)/double(peaks_total);
+					if ( 2*((precision*recall)/(precision+recall) ) > F1  ){
+						F1			= 2*((precision*recall)/(precision+recall) ) ;
+						arg_l=l, arg_k=k ;
+					}
+					I[segments[0]->chrom]->reset_hits();
+				}	
+			printf("Best F1 (so far): %.3g, window: %.3gKB, density: %.3gKB, skew: %.3g, percent done: %d  \r", F1, 
+			((window*scale)/1000. ), (scale*(density_a+density_delta*(arg_k))/1000.), (skew_a 	+ skew_delta*(arg_l)),
+			int(100*double(k+1)/(res+1)) );
+			cout<<flush;
 			}
+			
 		}
 	}
 	if ( bidir_hits ==0 ){
@@ -475,7 +484,7 @@ void optimize(map<string, interval_tree *> I,
 		printf("\nFinished Optimization");
 		printf("\n---------------------\n");
 		run_global_template_matching( segments, out_dir,
-			window_a + window_delta*(arg_j), density_a+density_delta*(arg_k), scale, 0.,np,true);
+			window, density_a+density_delta*(arg_k), scale, 0,np,true);
 	}
 	
 		

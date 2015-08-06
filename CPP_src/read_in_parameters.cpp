@@ -59,7 +59,6 @@ params::params(){
 	p4["-ns"] 				= "100";
 	p4["-br"] 				= "50";
 	p4["-density"] 			= "1000";
-	p4["-window"] 			= "1500";
 	p4["-chr"] 				= "all";
 	p4["-opt_res"] 			= "5";
 	p4["-np"] 				= "4";
@@ -159,7 +158,6 @@ void params::display(){
 			cout<<"-k           : "<<p4["-k"]<<endl;
 			cout<<"-o           : "<<p4["-o"]<<endl;
 			cout<<"-window      : "<<p4["-window"]<<endl;
-			cout<<"-density     : "<<p4["-density"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
 			cout<<"-np          : "<<p4["-np"]<<endl;

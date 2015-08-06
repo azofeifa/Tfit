@@ -96,6 +96,11 @@ vector<simple_c> gather_all_simple_c_fits(vector<simple_c> root_simple_fits,
 	typedef map<int,int>::iterator it_type;
 	map<int, map<int, bidir_preds> > G; //map refering to segment ID and specific bidir ID
 	map<int, bidir_preds> A;
+
+	typedef map<int, map<int, bidir_preds> >::iterator it_type_2;
+	typedef map<int, bidir_preds>::iterator it_type_3;
+
+
 	int segment_id, bidir_id, Complexity, pred_bidirs_in_merged;
 	for (it_type cc=bidir_table.begin(); cc!=bidir_table.end(); cc++){
 		//cc->first is the job that we are expect it from
@@ -109,7 +114,13 @@ vector<simple_c> gather_all_simple_c_fits(vector<simple_c> root_simple_fits,
 			if (G[segment_id].find(bidir_id) == G[segment_id].end() ){
 				G[segment_id][bidir_id] 	= bidir_preds(sr.noise_ll);
 			}
-			G[segment_id][bidir_id].insert_component(Complexity, sr);
+			G[segment_id][bidir_id].insert_component(Complexity, sr, sr.ll);
+		}
+	}
+	for (it_type_2 s = G.begin(); s!=G.end(); s++){
+		printf("Segment: %d\n", s->first );
+		for (it_type_3 b = s->second.begin(); b!=s->second.end(); b++ ){
+			printf("Bidir: %d\n", b->first);
 		}
 	}
 

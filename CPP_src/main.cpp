@@ -19,9 +19,9 @@ using namespace std;
 
 
 int main(int argc, char* argv[]){
-
 	MPI::Init(argc, argv);
 
+	
 	params * P 	= new params();
     P 			= readInParameters(argv);
     if (P->EXIT){
@@ -29,10 +29,14 @@ int main(int argc, char* argv[]){
     	return 1;
 	}
 	if (P->module == "BIDIR"){
+		int nprocs = MPI::COMM_WORLD.Get_size();
+
 		int verbose 			= stoi(P->p4["-v"]);
 		if (verbose){//show current user parameters...
 			P->display();
+			printf("Running on %d node(s)\n", nprocs );
 		}
+
 		//load bed graph files into map<string, double **>;
 		string forward_bedgraph 	= P->p4["-i"] ;
 		string reverse_bedgraph 	= P->p4["-j"] ;
@@ -41,7 +45,7 @@ int main(int argc, char* argv[]){
 		string out_file_dir 		= P->p4["-o"] ;
 		int BINS 					= stoi(P->p4["-br"]);
 		double scale 				= stod(P->p4["-ns"]);
-		double window 				= stod(P->p4["-window"])/ scale;
+		double window 				= 2500/ scale;
 		double density 				= stod(P->p4["-density"]) / scale;
 		int opt_res 				= stod(P->p4["-opt_res"]);
 		int np 						= stoi(P->p4["-np"]);
@@ -85,6 +89,7 @@ int main(int argc, char* argv[]){
 
 
     else if (P->module=="MODEL"){
+    	
 
     	//==========================================
 		//Parameters
@@ -176,7 +181,7 @@ int main(int argc, char* argv[]){
 		if (root){
 			printf("Wall Time %f\n", float(elapsed_seconds)/1000.);
 		}
-		
+	
 		
 	
 	}else if (P->module=="FORMAT"){
@@ -225,6 +230,6 @@ int main(int argc, char* argv[]){
 	}
 	delete P;
 	MPI::Finalize();
-
+	
 	return 0;
 }
