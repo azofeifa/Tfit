@@ -299,9 +299,7 @@ void run_global_template_matching(vector<segment*> segments,
 	int start, center;
 	vector<vector<double> > scores;
 	vector<double> current(5);
-	vector<string> annotations_FHW;
-	vector<string> annotations_FHW_intervals;
-	#pragma omp parallel for num_threads(np)
+
 	for (int i = 0; i < segments.size(); i++){
 		scores.clear();
 		double * BIC_values = new double[int(segments[i]->XN)];
@@ -342,31 +340,33 @@ void run_global_template_matching(vector<segment*> segments,
 
 			center 		= int((scores[j][1]+scores[j][0]) / 2.);
 			if (write_out){
+				annotation	= (segments[i]->chrom + "\t" + to_string(int(center-scores[j][3])) + "\t" + to_string(int(center+scores[j][3]))  + "\tLOAD"+
+					"\n");
 				string SCORE 	= to_string(int(scores[j][2]*100));
 				annotation 	= (segments[i]->chrom + "\t" + to_string(int(center-scores[j][3])) 
 					+ "\t" + to_string(int(center+scores[j][3]))   + "\t" + "LOAD" + "\t" + SCORE+"\t.\t" + 
 					to_string(int(center-scores[j][3]))  + "\t" + to_string(int(center+scores[j][3])) 
 					+"\t" + "0,0,255" + "\t" + "" + "\n");
 
-				
-				annotations_FHW.push_back(annotation);
+				FHW<<annotation;
+
 				annotation 	= (segments[i]->chrom + "\t" + to_string(int(int(center-scores[j][3]-scores[j][4]))) + 
 					"\t" + to_string(int(center-scores[j][3])) + "\t" + "INIT" +
 								"\t200\t" + "-" + "\t"  + to_string(int(int(center-scores[j][3]-scores[j][4]))) + 
 								"\t" + to_string(int(center-scores[j][3])) + "\t" +  
 								"0,0,255" +"\t" +"\t2\t25,0\t" + "0," + to_string(int(scores[j][4])) +  "\n" );
-				annotations_FHW.push_back(annotation);
+				FHW<<annotation;
 				annotation 	= (segments[i]->chrom + "\t" + to_string(int(int(center+scores[j][3]))) + 
 					"\t" + to_string(int(center+scores[j][3]+scores[j][4])) + "\t" + "INIT" +
 								"\t200\t" + "+" + "\t"  + to_string(int(int(center+scores[j][3] ))) + 
 								"\t" + to_string(int(center+scores[j][3]+scores[j][4])) + "\t" +  
 								"0,0,255" +"\t" +"\t2\t0,25\t" + "0," + to_string(int(scores[j][4])) +  "\n" );
-				annotations_FHW.push_back(annotation);
-				
+				FHW<<annotation;
+
 				annotation 	= (segments[i]->chrom+"\t"+ 
 					to_string(int(center-scores[j][3]-scores[j][4])) +"\t" +
-					to_string(int(center+scores[j][3]+scores[j][4])) + "\n");
-				annotations_FHW_intervals.push_back(annotation);	
+					to_string(int(center+scores[j][3]+scores[j][4])) + "\n");	
+				FHW_intervals<<annotation;
 			}
 			//want to insert into
 			vector<double> bounds(2);
@@ -375,18 +375,7 @@ void run_global_template_matching(vector<segment*> segments,
 
 			segments[i]->bidirectional_bounds.push_back(bounds);	
 		}
-		for (int t =0; t < segments[i]->XN; t++ ){
-			delete skews[t];
-		}
-		
-	}
-	if (write_out){
-		for (int i = 0; i < annotations_FHW.size(); i++){
-			FHW<<annotations_FHW[i];
-		}
-		for (int i = 0; i < annotations_FHW_intervals.size(); i++){
-			FHW_intervals<<annotations_FHW_intervals[i];
-		}
+	
 	}
 }
 
