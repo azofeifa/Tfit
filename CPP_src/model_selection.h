@@ -2,7 +2,8 @@
 #define model_selection_H
 #include <string>
 #include <vector>
-
+#include <map>
+#include "load.h"
 #include "model.h"
 using namespace std;
 class model{
@@ -37,5 +38,6 @@ public:
 
 
 void run_model_selection(string, string, double );
-
+map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
+	map<int, map<int, bidir_preds> > , double );
 #endif

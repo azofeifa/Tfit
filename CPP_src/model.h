@@ -14,7 +14,7 @@ public:
 	double r_forward, r_reverse; //running total
 	double delta_a, delta_b;
 	UNI();
-	UNI(double, double, double, int, int);
+	UNI(double, double, double, int, int, double);
 	double pdf(double,int);	
 	string print();
 
@@ -56,6 +56,8 @@ public:
 	NOISE noise; 
 
 	bool type;
+
+	bool EXIT;
 
 	//=====================================
 	//parameters to simulate from

@@ -7,6 +7,7 @@
 #include <map>
 #include "model.h"
 #include "across_segments.h"
+#include "load.h"
 #include "template_matching.h"
 using namespace std;
 model::model(int k, double LL){
@@ -29,6 +30,11 @@ void S::add_model(int k, double ll ){
 double BIC(double K, double ll, double N, double penality){
 	return -2*ll + penality*(K+1)*6*log(N);
 }
+
+double BIC2(double K, double ll, double N, double penality){
+	return -2*ll + penality*K*log(N);
+}
+
 
 string S::print_best(){
 	string text = "";
@@ -120,10 +126,10 @@ void model::add_component(bool bidir , vector<string> line_array, int K){
 	}else{
 		if (K >0){
 			elongations.push_back(UNI(stod(line_array[0]), stod(line_array[1]),
-				stod(line_array[2]),stoi(line_array[3]), 0 ));
+				stod(line_array[2]),stoi(line_array[3]), 0, stod(line_array[4]) ));
 		}else{
 			elongations.push_back(UNI(stod(line_array[0]), stod(line_array[1]),
-				stod(line_array[2]),stoi(line_array[3]), 1));
+				stod(line_array[2]),stoi(line_array[3]), 1, stod(line_array[4]) ));
 		
 		}
 	}
@@ -296,11 +302,21 @@ void run_model_selection(string in_directory, string out_directory, double penal
 			} 
 		}
 	}
-
-
-
-
-
-
-	
 }
+
+
+map<int, map<int, bidir_preds> > run_model_selection_bidir_template( 
+	map<int, map<int, bidir_preds> > G, double penality ){;
+
+	typedef map<int, map<int, bidir_preds> >::iterator it_type_2;
+	typedef map<int, bidir_preds>::iterator it_type_3;
+	for (it_type_2 s = G.begin(); s!=G.end(); s++){
+		for (it_type_3 b = s->second.begin(); b!=s->second.end(); b++ ){
+			b->second.model_selection(penality);
+		}
+	}
+	return G;
+}
+
+
+

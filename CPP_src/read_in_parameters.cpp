@@ -32,7 +32,7 @@ params::params(){
 	p["-ALPHA_3"] 	= "1";
 	p["-template"] 	= "1";
 	p["-density"] 	= "1000";
-	p["-window"] 	= "2000";
+	p["-confidence"]= "0.95";
 	p["-pad"] 		= "5000";
  	
 
@@ -111,18 +111,18 @@ void params::display(){
 			cout<<"              User Provided EMGU Parameters                     "<<endl;
 			cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
 			cout<<"            ...coupled to template matching...                  "<<endl;	
-			cout<<"-i        : "<<p["-i"]<<endl;
-			cout<<"-o        : "<<p["-o"]<<endl;
-			cout<<"-chr      : "<<p["-chr"]<<endl;
-			cout<<"-br       : "<<p["-br"]<<endl;
-			cout<<"-ns       : "<<p["-ns"]<<endl;
-			cout<<"-rounds   : "<<p["-rounds"]<<endl;
-			cout<<"-ct       : "<<p["-ct"]<<endl;
-			cout<<"-mi       : "<<p["-mi"]<<endl;
-			cout<<"-np       : "<<p["-np"]<<endl;
-			cout<<"-density  : "<<p["-density"]<<endl;
-			cout<<"-window   : "<<p["-window"]<<endl;
-			cout<<"-pad      : "<<p["-pad"]<<endl;
+			cout<<"-i         : "<<p["-i"]<<endl;
+			cout<<"-o         : "<<p["-o"]<<endl;
+			cout<<"-chr       : "<<p["-chr"]<<endl;
+			cout<<"-br        : "<<p["-br"]<<endl;
+			cout<<"-ns        : "<<p["-ns"]<<endl;
+			cout<<"-rounds    : "<<p["-rounds"]<<endl;
+			cout<<"-ct        : "<<p["-ct"]<<endl;
+			cout<<"-mi        : "<<p["-mi"]<<endl;
+			cout<<"-np        : "<<p["-np"]<<endl;
+			cout<<"-density   : "<<p["-density"]<<endl;
+			cout<<"-confidence: "<<p["-confidence"]<<endl;
+			cout<<"-pad       : "<<p["-pad"]<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 		}

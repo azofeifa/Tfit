@@ -245,7 +245,7 @@ double BIC(double ** X,  double * variances,double * lambdas,
 
 }
 
-void BIC_template(segment * data, double * BIC_values, double * densities, 
+void BIC_template(segment * data, double * BIC_values, double * densities, double * densities_r,
 	double * variances,double * lambdas, double ** skews ,double window, int np){
 	double vl;
 	int NN 	= int(data->XN);
@@ -262,13 +262,19 @@ void BIC_template(segment * data, double * BIC_values, double * densities,
 		if (k > 0 and j < data->XN ){
 				double N_pos,N_neg,NN;
 				N_pos=0,NN=0,N_neg=0;
-				for (int i = k; i < j; i++ ){
-					NN+=(data->X[1][i]+data->X[2][i]);
-					N_pos+=data->X[1][i];
-					N_neg+=data->X[2][i];
+				for (int u = k; u < j; u++ ){
+					NN+=(data->X[1][u]+data->X[2][u]);
+					if (data->X[0][u] > data->X[0][i]){
+						N_pos+=data->X[1][u];
+					}
+					if (data->X[0][u] < data->X[0][i]){
+						N_neg+=data->X[2][u];
+					}
 				}
 				if (N_pos >0 and N_neg > 0){
-					densities[i] 	= NN/(data->X[0][j]-data->X[0][k]);
+					densities[i] 	= N_pos/(data->X[0][j]-data->X[0][k]);
+					densities_r[i] 	= N_neg/(data->X[0][j]-data->X[0][k]);
+					
 					BIC_values[i] 	= BIC(data->X, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN );
 				}
 		}else{
@@ -281,7 +287,7 @@ void BIC_template(segment * data, double * BIC_values, double * densities,
 
 void run_global_template_matching(vector<segment*> segments, 
 	string out_dir,  double window, double density,
-	double scale, double skew, int np, bool write_out){
+	double scale, double ct, int np, bool write_out){
 	string out_file  			= out_dir+"bidirectional_hits_IGV.bed";
 	string interval_out_file 	= out_dir+"bidirectional_hits_intervals.bed";
 	ofstream FHW;
@@ -299,42 +305,58 @@ void run_global_template_matching(vector<segment*> segments,
 	int start, center;
 	vector<vector<double> > scores;
 	vector<double> current(5);
-
+	start=0, stop=0;
 	for (int i = 0; i < segments.size(); i++){
 		scores.clear();
 		double * BIC_values = new double[int(segments[i]->XN)];
 		double * densities= new double[int(segments[i]->XN)];
+		double * densities_r 	= new double[int(segments[i]->XN)];
 		double * variances= new double[int(segments[i]->XN)];
 		double * lambdas= new double[int(segments[i]->XN)];
 		double ** skews = new double*[int(segments[i]->XN)] ;
 		for (int t =0; t < segments[i]->XN; t++ ){
 			skews[t] 	= new double[2];
 		}
-		BIC_template(segments[i], BIC_values, densities, variances, lambdas,skews, window, np);
+		BIC_template(segments[i], BIC_values, densities, densities_r, variances, lambdas,skews, window, np);
 		//write out contigous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
-			if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
-				if (BIC_values[j] >=0.95  and densities[j]>density 
-					and skews[j][0] > skew and skews[j][1]< -skew ){
+			// if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
+			// 	if ( densities[j]>density and densities_r[j]>density
+			// 		and skews[j][0] > 0 and skews[j][1]< 0 ){
 
-					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-					current[0] 	= start, current[1]=stop, current[2]=BIC_values[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
-					if (scores.empty()){
-						current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
-						scores.push_back(current);
-					}else{
-						N 			= scores.size();
-						if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
-							if (scores[N-1][2] < BIC_values[j]){
-								scores[N-1] = current;	
-							}
-						}else{
-							scores.push_back(current);
-						}
-					}
+			// 		start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+			// 		stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+			// 		current[0] 	= start, current[1]=stop, current[2]=BIC_values[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
+			// 		if (scores.empty()){
+			// 			current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
+			// 			scores.push_back(current);
+			// 		}else{
+			// 			N 			= scores.size();
+			// 			if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
+			// 				if (scores[N-1][2] < BIC_values[j]){
+			// 					scores[N-1] = current;	
+			// 				}
+			// 			}else{
+			// 				scores.push_back(current);
+			// 			}
+			// 		}
+			// 	}
+			// }
+			if ( densities[j]>density and densities_r[j] > density
+			 		and skews[j][0] > 0 and skews[j][1]< 0 and BIC_values[j] > 0 ){
+				if (start!=0){
+					stop 	= int(segments[i]->X[0][j]*scale+segments[i]->start);
+				}else{
+					start 	= int(segments[i]->X[0][j]*scale+segments[i]->start);
 				}
 			}
+			else if (start!=0 and stop!= 0){
+
+				current[0] 	= start, current[1]=stop, current[2]=(stop-start)/2., current[3]=(stop-start)/2., current[4]=(stop-start)/2.;
+				scores.push_back(current);
+				start=0, stop=0;
+			}
+
 		}
 		for (int j = 0; j < scores.size();j++){
 
@@ -364,8 +386,8 @@ void run_global_template_matching(vector<segment*> segments,
 				FHW<<annotation;
 
 				annotation 	= (segments[i]->chrom+"\t"+ 
-					to_string(int(center-scores[j][3]-scores[j][4])) +"\t" +
-					to_string(int(center+scores[j][3]+scores[j][4])) + "\n");	
+					to_string(int(center-scores[j][2] )) +"\t" +
+					to_string(int(center+scores[j][2] )) + "\n");	
 				FHW_intervals<<annotation;
 			}
 			//want to insert into
@@ -383,11 +405,11 @@ void run_global_template_matching(vector<segment*> segments,
 void optimize(map<string, interval_tree *> I, 
 	vector<segment*> segments, double scale, int res, string out_dir, string spec_chrom, int np){
 	double window 			= 2500/scale;
-	double density_a 		= (1000/scale);
+	double density_a 		= (100/scale);
 	double density_b 		= (3000/scale);
 	double density_delta 	= (density_b - density_a) / res;
-	double skew_a 			= -0.2;
-	double skew_b 			= 0.2;
+	double skew_a 			= 0.;
+	double skew_b 			= 1.;
 	double skew_delta 		= (skew_b-skew_a)/res;
 	
 	double ct_a 			= 0.7;
@@ -413,15 +435,16 @@ void optimize(map<string, interval_tree *> I,
 	for (int i = 0; i < segments.size(); i++){ //these segments are indexed by chromosome
 		if (segments[i]->chrom==spec_chrom){
 			FOUND 	= true;
-			double * BIC_values = new double[int(segments[i]->XN)];
-			double * densities= new double[int(segments[i]->XN)];
-			double * variances= new double[int(segments[i]->XN)];
-			double * lambdas= new double[int(segments[i]->XN)];
-			double ** skews = new double*[int(segments[i]->XN)] ;
+			double * BIC_values 	= new double[int(segments[i]->XN)];
+			double * densities 		= new double[int(segments[i]->XN)];
+			double * densities_r 	= new double[int(segments[i]->XN)];
+			double * variances 		= new double[int(segments[i]->XN)];
+			double * lambdas 		= new double[int(segments[i]->XN)];
+			double ** skews 		= new double*[int(segments[i]->XN)];
 			for (int t =0; t < segments[i]->XN; t++ ){
 				skews[t] 	= new double[2];
 			}
-			BIC_template(segments[i], BIC_values, densities, variances, lambdas, skews, window,np);
+			BIC_template(segments[i], BIC_values, densities, densities_r, variances, lambdas, skews, window,np);
 			
 			for (int k =0; k <= res; k++){
 				density 	= density_a+density_delta*(k);
@@ -435,7 +458,7 @@ void optimize(map<string, interval_tree *> I,
 					skew 	= skew_a 	+ skew_delta*(l);
 					for (int j = 1; j<segments[i]->XN-1; j++){
 						if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
-							if (BIC_values[j] >= 0.95 and densities[j]>density  
+							if ( densities[j]>density and densities_r[j]> density  
 								and skews[j][0] > skew and skews[j][1]< -skew  ){
 								prev_start 	= segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1./lambdas[j]))*scale;
 								stop 		= segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1./lambdas[j]))*scale;

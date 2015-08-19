@@ -20,12 +20,13 @@ struct simple_c{
 	//IDS[1] 	= complexity, number of fitted models
 	//IDS[2] 	= number of predicted bidirs
 	//IDS[3] 	= bidir prediction, (possible merged segment)
-	double ps[9];
+	double ps[10];
 	
 //	string write_out();
 
 };
 vector<simple_c> run_model_accross_segments_template(vector<segment*>, 
 	params *);
+string get_header(params *);
 
 #endif

@@ -196,7 +196,8 @@ classifier fit_noise(params *P){
 	return clf;
 }
 vector<simple_c> get_max(vector<classifier> clfs, 
-	double noise_ll, int seg, int complexity, int found_bidirs, int bidir_ID){
+	double noise_ll, int seg, int complexity, int found_bidirs,
+	 int bidir_ID, double NN){
 	double max = nINF;
 	classifier argmax;
 	vector<simple_c> scs;
@@ -218,7 +219,8 @@ vector<simple_c> get_max(vector<classifier> clfs,
 		sc.ps[6] 	= 0;
 		sc.ps[7] 	= 0; 
 		sc.ps[8] 	= 0;
-		sc.ll 	= max, sc.noise_ll 	= noise_ll;		
+		sc.ps[9] 	= NN;
+		sc.ll 		= max, sc.noise_ll 	= noise_ll;		
 		
 		scs.push_back(sc);
 	}else{
@@ -236,8 +238,7 @@ vector<simple_c> get_max(vector<classifier> clfs,
 			scc.ps[6] 	= argmax.components[c].reverse.w;
 			scc.ps[7] 	= argmax.components[c].forward.b; 
 			scc.ps[8] 	= argmax.components[c].reverse.a;
-
-
+			scc.ps[9] 	= NN;
 			scc.ll 	= max, scc.noise_ll 	= noise_ll;		
 			scs.push_back(scc);
 			
@@ -278,7 +279,7 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 				clfs[t].fit(s->bidirectional_data[j], mu_seeds);
 			}
 			vector<simple_c> bidir_components = get_max(clfs, noise_ll, seg, k, 
-				s->bidirectional_data[j]->counts, j );
+				s->bidirectional_data[j]->counts, j, s->bidirectional_data[j]->N );
 			for (int b=0; b < bidir_components.size(); b++){
 				fits.push_back(bidir_components[b]);
 			}

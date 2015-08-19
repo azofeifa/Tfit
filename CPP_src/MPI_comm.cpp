@@ -49,18 +49,7 @@ void send_bidir_size(vector<simple_c> fits){
 }
 
 
-
-// void commit_MPI_simple_c_struct(MPI_Datatype mystruct){
-// 	int blocklens[8]={1,1,1, 1 ,3,3,3,2};
-// 	MPI_Datatype old_types[8]={MPI_INT, MPI_INT, MPI_DOUBLE, MPI_DOUBLE,
-// 								MPI_DOUBLE, MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
-// 	MPI_Aint indices[8] = {0, sizeof(int), sizeof(double), sizeof(double),
-// 							sizeof(double), sizeof(double), sizeof(double), sizeof(double)  };
-// 	MPI_Type_struct( 2, blocklens, indices, old_types, &mystruct );
-// 	MPI_Type_commit( &mystruct );
-	
-// }
-vector<simple_c> gather_all_simple_c_fits(vector<simple_c> root_simple_fits, 
+map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_simple_fits, 
 	map<int,int> bidir_table, int N, int nproc ){ //for root, N expected number
 	int count 	= N/nproc;
 	vector<simple_c> all_fits ;
@@ -68,11 +57,9 @@ vector<simple_c> gather_all_simple_c_fits(vector<simple_c> root_simple_fits,
 		all_fits.push_back(root_simple_fits[j]);
 	}
 	MPI_Datatype mystruct;
-	//int blocklens[8]={1,1,1, 1 ,3,3,3,2};
-	int blocklens[4]={1, 1,4,9};
+	int blocklens[4]={1, 1,4,10};
 	
-	// MPI_Datatype old_types[8]={MPI_INT, MPI_INT, MPI_DOUBLE, MPI_DOUBLE,
-	// 							MPI_DOUBLE, MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
+	
 	MPI_Datatype old_types[4] 	={MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[4];
 	MPI_Aint intex, doublex;
@@ -83,10 +70,15 @@ vector<simple_c> gather_all_simple_c_fits(vector<simple_c> root_simple_fits,
 
 
 
-	displacements[0] = (MPI_Aint) 0;
-	displacements[1] = doublex;
-	displacements[2] = doublex+doublex;
-	displacements[3] = doublex+doublex+intex*4 ;
+	// displacements[0] = (MPI_Aint) 0;
+	// displacements[1] = doublex;
+	// displacements[2] = doublex+doublex;
+	// displacements[3] = doublex+doublex+intex*4 ;
+	displacements[0] 	= offsetof(simple_c, ll);
+	displacements[1] 	= offsetof(simple_c, noise_ll);
+	displacements[2] 	= offsetof(simple_c, IDS);
+	displacements[3] 	= offsetof(simple_c, ps);
+	
 	
 	MPI_Type_struct( 4, blocklens, displacements, old_types, &mystruct );
 	MPI_Type_commit( &mystruct );
@@ -102,37 +94,33 @@ vector<simple_c> gather_all_simple_c_fits(vector<simple_c> root_simple_fits,
 
 
 	int segment_id, bidir_id, Complexity, pred_bidirs_in_merged;
+	int total_bidir_preds 	= 0;
 	for (it_type cc=bidir_table.begin(); cc!=bidir_table.end(); cc++){
 		//cc->first is the job that we are expect it from
 		for (int j = 0; j < cc->second ; j++){
 			MPI_Recv(&sr, 1, mystruct, cc->first, j, MPI_COMM_WORLD,&status);
 			
-			segment_id=sr.IDS[0]+cc->first*count , bidir_id=sr.IDS[3], Complexity=sr.IDS[2], pred_bidirs_in_merged=sr.IDS[1];
+			segment_id=sr.IDS[0]+cc->first*count , bidir_id=sr.IDS[3], Complexity=sr.IDS[1], pred_bidirs_in_merged=sr.IDS[2];
 			if (G.find(segment_id) == G.end()  ){
 				G[segment_id] 	= A;
 			}
 			if (G[segment_id].find(bidir_id) == G[segment_id].end() ){
-				G[segment_id][bidir_id] 	= bidir_preds(sr.noise_ll);
+				G[segment_id][bidir_id] 	= bidir_preds(sr.noise_ll, sr.ps[9]);
 			}
 			G[segment_id][bidir_id].insert_component(Complexity, sr, sr.ll);
+			total_bidir_preds++;
 		}
 	}
-	for (it_type_2 s = G.begin(); s!=G.end(); s++){
-		printf("Segment: %d\n", s->first );
-		for (it_type_3 b = s->second.begin(); b!=s->second.end(); b++ ){
-			printf("Bidir: %d\n", b->first);
-		}
-	}
-
+	printf("total number of bidirectional segments: %d\n", total_bidir_preds );
 	
 
-	return all_fits;
+	return G;
 }
 
 void send_all_simple_c_fits(vector<simple_c> root_simple_fits ){ //slaves
 	//need to setup MPI derived datatype for simple_c struct
 	MPI_Datatype mystruct;
-	int blocklens[4]={1, 1,4,9};
+	int blocklens[4]={1, 1,4,10};
 	MPI_Datatype old_types[4] = {MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[4];
 	MPI_Aint intex, doublex;
@@ -143,10 +131,15 @@ void send_all_simple_c_fits(vector<simple_c> root_simple_fits ){ //slaves
 
 
 
-	displacements[0] = (MPI_Aint) 0;
-	displacements[1] = doublex;
-	displacements[2] = doublex+doublex;
-	displacements[3] = doublex+doublex+intex*4 ;
+	// displacements[0] = (MPI_Aint) 0;
+	// displacements[1] = doublex;
+	// displacements[2] = doublex+doublex;
+	// displacements[3] = doublex+doublex+intex*4 ;
+	
+	displacements[0] 	= offsetof(simple_c, ll);
+	displacements[1] 	= offsetof(simple_c, noise_ll);
+	displacements[2] 	= offsetof(simple_c, IDS);
+	displacements[3] 	= offsetof(simple_c, ps);
 	
 	
 

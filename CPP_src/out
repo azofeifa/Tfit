@@ -1,0 +1,1051 @@
+----------------------------------------------------------------
+              User Provided EMGU Parameters                     
+                 (RUNNING MIXTURE MODEL)                        
+            ...coupled to template matching...                  
+-i         : /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3_selected_formatted.tsv
+-o         : /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/
+-chr       : all
+-br        : 10
+-ns        : 100
+-rounds    : 10
+-ct        : 0.0001
+-mi        : 2000
+-np        : 4
+-density   : 1360
+-confidence: 0.9
+-pad       : 5000
+----------------------------------------------------------------
+Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu
+Running on 5 nodes
+total number of segments: 15
+N: 8896.000000
+N: 701753.000000
+N: 4240.000000
+N: 92526.000000
+N: 622348.000000
+N: 395996.000000
+N: 27665.000000
+N: 154627.000000
+N: 16979.000000
+N: 79006.000000
+N: 221285.000000
+N: 41692.000000
+N: 168090.000000
+N: 369048.000000
+N: 14476.000000
+N: 23238.000000
+N: 236782.000000
+N: 127234.000000
+N: 67205.000000
+N: 43350.000000
+N: 352583.000000
+N: 108092.000000
+N: 61168.000000
+N: 652011.000000
+N: 56840.000000
+N: 40948.000000
+N: 203611.000000
+N: 179116.000000
+N: 76457.000000
+N: 34279.000000
+N: 432947.000000
+N: 30550.000000
+N: 26479.000000
+N: 40454.000000
+N: 157943.000000
+N: 3733.000000
+N: 51061.000000
+N: 35900.000000
+N: 4027.000000
+N: 269246.000000
+N: 15242.000000
+N: 76223.000000
+N: 744637.000000
+N: 42050.000000
+N: 369897.000000
+N: 16744.000000
+N: 14400.000000
+N: 259602.000000
+N: 270495.000000
+N: 357248.000000
+N: 23062.000000
+N: 105364.000000
+N: 20265.000000
+N: 23400.000000
+N: 22300.000000
+N: 16300.000000
+N: 268515.000000
+N: 39044.000000
+N: 282718.000000
+N: 146490.000000
+N: 31886.000000
+N: 15761.000000
+N: 8718.000000
+N: 7000.000000
+N: 2197.000000
+N: 26180.000000
+N: 325230.000000
+N: 43868.000000
+N: 165400.000000
+N: 37545.000000
+N: 37687.000000
+N: 128565.000000
+N: 49990.000000
+N: 127774.000000
+Node 1 ran 36 model fits
+Node 2 ran 32 model fits
+Node 3 ran 77 model fits
+Node 4 ran 104 model fits
+Recieved N: 0.000000
+Recieved N: 92526.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 108092.000000
+Recieved N: 203611.000000
+Recieved N: 34279.000000
+Recieved N: 4240.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 67205.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 4027.000000
+Recieved N: 395996.000000
+Recieved N: 0.000000
+Recieved N: 41692.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 56840.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 269246.000000
+Recieved N: 76223.000000
+Recieved N: 270495.000000
+Recieved N: 105364.000000
+Recieved N: 43868.000000
+Recieved N: 165400.000000
+Recieved N: 0.000000
+Recieved N: 128565.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 221285.000000
+Recieved N: 236782.000000
+Recieved N: 40948.000000
+Recieved N: 0.000000
+Recieved N: 51061.000000
+Recieved N: 0.000000
+Recieved N: 42050.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 23062.000000
+Recieved N: 20265.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+Recieved N: 282718.000000
+Recieved N: 146490.000000
+Recieved N: 31886.000000
+Recieved N: 0.000000
+Recieved N: 8718.000000
+Recieved N: 7000.000000
+Recieved N: 2197.000000
+Recieved N: 26180.000000
+Recieved N: 0.000000
+Recieved N: 0.000000
+total number of bidirectional segments: 249
+...performing model selection...
+Segment: 3
+Bidir Pred: 0
+--------------------------
+Noise LL: -46014.443786, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -495189.739439, Noise BIC Score: 990390.914123, N: 92526.000000
+K: 1, LL: -406715.328484, Noise BIC Score: 813510.703683
+K: 2, LL: -395235.676168, Noise BIC Score: 790631.445766
+BEST: 2
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -86363.171683, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -81032.854308, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Segment: 4
+Bidir Pred: 0
+--------------------------
+Noise LL: -73725.639683, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -74332.747500, Noise BIC Score: -inf
+K: 3, LL: -70492.273258, Noise BIC Score: -inf
+K: 4, LL: -69668.028290, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -1890823.318988, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -547220.916534, Noise BIC Score: 1094453.423806, N: 108092.000000
+K: 1, LL: -415634.762487, Noise BIC Score: 831350.660140
+K: 2, LL: -398256.309536, Noise BIC Score: 796674.889405
+BEST: 2
+--------------------------
+Segment: 5
+Bidir Pred: 0
+--------------------------
+Noise LL: -1043226.155752, Noise BIC Score: 2086464.535471, N: 203611.000000
+K: 1, LL: -806320.279984, Noise BIC Score: 1612726.127735
+K: 2, LL: -796044.616351, Noise BIC Score: 1592260.368235
+K: 3, LL: -799394.541564, Noise BIC Score: 1599045.786427
+BEST: 2
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -181508.532764, Noise BIC Score: 363027.507816, N: 34279.000000
+K: 1, LL: -143354.816568, Noise BIC Score: 286782.729154
+K: 2, LL: -135635.347753, Noise BIC Score: 271416.887540
+BEST: 2
+--------------------------
+Segment: 6
+Bidir Pred: 0
+--------------------------
+Noise LL: -21341.018724, Noise BIC Score: 42690.389767, N: 4240.000000
+K: 1, LL: -26902.056333, Noise BIC Score: 53862.578896
+K: 2, LL: -26601.985367, Noise BIC Score: 53320.903193
+BEST: 0
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -3350689.116025, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -861479.608518, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 3
+--------------------------
+Noise LL: -1906252.916205, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Segment: 7
+Bidir Pred: 0
+--------------------------
+Noise LL: -353072.394492, Noise BIC Score: 706155.904487, N: 67205.000000
+K: 1, LL: -287080.369945, Noise BIC Score: 574238.548411
+K: 2, LL: -286021.479192, Noise BIC Score: 572198.575425
+BEST: 2
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -308379.853088, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -3445289.440765, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -2811115.647804, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 3
+--------------------------
+Noise LL: -914841.936038, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -840791.342792, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Segment: 8
+Bidir Pred: 0
+--------------------------
+Noise LL: -177097.595091, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -169194.160725, Noise BIC Score: -inf
+K: 3, LL: -166004.215379, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -20787.281135, Noise BIC Score: 41582.863048, N: 4027.000000
+K: 1, LL: -22297.274932, Noise BIC Score: 44652.655304
+K: 2, LL: -17944.842665, Noise BIC Score: 36005.896208
+BEST: 2
+--------------------------
+Segment: 9
+Bidir Pred: 0
+--------------------------
+Noise LL: -2109685.951261, Noise BIC Score: 4219384.791681, N: 395996.000000
+K: 1, LL: -2086852.983607, Noise BIC Score: 4173796.191330
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -416009.664484, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -220568.359722, Noise BIC Score: 441147.357508, N: 41692.000000
+K: 1, LL: -210904.120392, Noise BIC Score: 421882.707236
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+Bidir Pred: 3
+--------------------------
+Noise LL: -116845.362033, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -111271.218518, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 4
+--------------------------
+Noise LL: -225542.083043, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -171688.107154, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Segment: 10
+Bidir Pred: 0
+--------------------------
+Noise LL: -281726.271964, Noise BIC Score: 563463.491924, N: 56840.000000
+K: 1, LL: -214637.221858, Noise BIC Score: 429351.079684
+K: 2, LL: -210208.641467, Noise BIC Score: 420570.554872
+K: 3, LL: -209949.984326, Noise BIC Score: 420129.876559
+BEST: 3
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -148873.452109, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -143640.458778, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -131312.570926, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -128095.640303, Noise BIC Score: -inf
+K: 3, LL: -125704.205549, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 3
+--------------------------
+Noise LL: -1426596.228570, Noise BIC Score: 2853204.960521, N: 269246.000000
+K: 1, LL: -1136459.446147, Noise BIC Score: 2273006.415959
+K: 2, LL: -1110861.981596, Noise BIC Score: 2221899.010522
+BEST: 2
+--------------------------
+Bidir Pred: 4
+--------------------------
+Noise LL: -376575.839477, Noise BIC Score: 753162.920373, N: 76223.000000
+K: 1, LL: -353970.583235, Noise BIC Score: 708019.856399
+K: 2, LL: -339853.996872, Noise BIC Score: 679865.373603
+BEST: 2
+--------------------------
+Segment: 11
+Bidir Pred: 0
+--------------------------
+Noise LL: -1457858.791394, Noise BIC Score: 2915730.090797, N: 270495.000000
+K: 1, LL: -1154694.549511, Noise BIC Score: 2309476.655084
+K: 2, LL: -1134082.982080, Noise BIC Score: 2268341.076285
+BEST: 2
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -550968.115981, Noise BIC Score: 1101947.797138, N: 105364.000000
+K: 1, LL: -374728.132095, Noise BIC Score: 749537.220425
+K: 2, LL: -751674.821554, Noise BIC Score: 1503511.555576
+K: 3, LL: -749826.529982, Noise BIC Score: 1499895.928666
+K: 4, LL: -748108.292982, Noise BIC Score: 1496540.410901
+K: 5, LL: -325347.519288, Noise BIC Score: 651099.819746
+BEST: 5
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -219560.436524, Noise BIC Score: 439131.561988, N: 43868.000000
+K: 1, LL: -166061.622987, Noise BIC Score: 332198.068556
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+Bidir Pred: 3
+--------------------------
+Noise LL: -880854.828969, Noise BIC Score: 1761721.674060, N: 165400.000000
+K: 1, LL: -681856.929619, Noise BIC Score: 1363797.972092
+K: 2, LL: -675072.190052, Noise BIC Score: 1350312.605812
+BEST: 2
+--------------------------
+Bidir Pred: 4
+--------------------------
+Noise LL: -190707.302892, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -186018.096454, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 5
+--------------------------
+Noise LL: -666999.176932, Noise BIC Score: 1334010.118053, N: 128565.000000
+K: 1, LL: -414417.386366, Noise BIC Score: 828917.122061
+K: 2, LL: -407940.685606, Noise BIC Score: 816046.069871
+BEST: 2
+--------------------------
+Bidir Pred: 6
+--------------------------
+Noise LL: -255215.770444, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -inf, Noise BIC Score: nan
+K: 5, LL: -240937.182366, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 7
+--------------------------
+Noise LL: -674267.750778, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Segment: 12
+Bidir Pred: 0
+--------------------------
+Noise LL: -1180100.087151, Noise BIC Score: 2360212.481508, N: 221285.000000
+K: 1, LL: -934993.793789, Noise BIC Score: 1870073.738026
+K: 2, LL: -918055.401498, Noise BIC Score: 1836283.103891
+BEST: 2
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -1239840.852609, Noise BIC Score: 2479694.080113, N: 236782.000000
+K: 1, LL: -1043849.170674, Noise BIC Score: 2087784.965615
+K: 2, LL: -1009710.255051, Noise BIC Score: 2019593.758635
+BEST: 2
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -207285.945246, Noise BIC Score: 414582.510551, N: 40948.000000
+K: 1, LL: -184507.621293, Noise BIC Score: 369089.582994
+K: 2, LL: -168674.894303, Noise BIC Score: 337498.469422
+K: 3, LL: -161248.950847, Noise BIC Score: 322720.922917
+BEST: 3
+--------------------------
+Segment: 13
+Bidir Pred: 0
+--------------------------
+Noise LL: -20167.593375, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -16271.313045, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -271519.221709, Noise BIC Score: 543049.284195, N: 51061.000000
+K: 1, LL: -282244.783668, Noise BIC Score: 564565.452770
+K: 2, LL: -243863.876699, Noise BIC Score: 487879.524265
+K: 3, LL: -239119.384842, Noise BIC Score: 478466.425986
+BEST: 3
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -78677.605240, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -inf, Noise BIC Score: nan
+K: 5, LL: -86589.015145, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 3
+--------------------------
+Noise LL: -226533.183033, Noise BIC Score: 453077.012680, N: 42050.000000
+K: 1, LL: -209296.442560, Noise BIC Score: 418667.411424
+K: 2, LL: -192007.622662, Noise BIC Score: 384164.297930
+BEST: 2
+--------------------------
+Bidir Pred: 4
+--------------------------
+Noise LL: -80971.527634, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -97425.339488, Noise BIC Score: -inf
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 5
+--------------------------
+Noise LL: -72341.012727, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -79311.412206, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 6
+--------------------------
+Noise LL: -119249.862287, Noise BIC Score: 238509.770516, N: 23062.000000
+K: 1, LL: -121279.973237, Noise BIC Score: 242630.268064
+K: 2, LL: -110256.669748, Noise BIC Score: 220653.982677
+K: 3, LL: -108665.813165, Noise BIC Score: 217542.591102
+K: 4, LL: -107364.642887, Noise BIC Score: 215010.572136
+BEST: 4
+--------------------------
+Bidir Pred: 7
+--------------------------
+Noise LL: -99701.133508, Noise BIC Score: 199412.183666, N: 20265.000000
+K: 1, LL: -99027.114504, Noise BIC Score: 198123.645561
+K: 2, LL: -96552.067407, Noise BIC Score: 193242.967922
+K: 3, LL: -94448.682851, Noise BIC Score: 189105.615364
+BEST: 3
+--------------------------
+Bidir Pred: 8
+--------------------------
+Noise LL: -112939.227732, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 9
+--------------------------
+Noise LL: -110711.562488, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -106701.366441, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 10
+--------------------------
+Noise LL: -81069.088567, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 11
+--------------------------
+Noise LL: -1453035.804462, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 12
+--------------------------
+Noise LL: -207821.129442, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 13
+--------------------------
+Noise LL: -1506954.938818, Noise BIC Score: 3013922.429841, N: 282718.000000
+K: 1, LL: -1232166.454844, Noise BIC Score: 2464420.775125
+K: 2, LL: -1216685.560870, Noise BIC Score: 2433546.852612
+BEST: 2
+--------------------------
+Bidir Pred: 14
+--------------------------
+Noise LL: -768481.313339, Noise BIC Score: 1536974.521390, N: 146490.000000
+K: 1, LL: -574453.913512, Noise BIC Score: 1148991.090010
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -562863.087625, Noise BIC Score: 1125975.964211
+BEST: 3
+--------------------------
+Bidir Pred: 15
+--------------------------
+Noise LL: -166325.376780, Noise BIC Score: 332661.123482, N: 31886.000000
+K: 1, LL: -169126.219871, Noise BIC Score: 338325.029198
+K: 2, LL: -149988.635671, Noise BIC Score: 300122.450255
+BEST: 2
+--------------------------
+Bidir Pred: 16
+--------------------------
+Noise LL: -82580.967622, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -75585.773574, Noise BIC Score: -inf
+K: 3, LL: -73571.560182, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Bidir Pred: 17
+--------------------------
+Noise LL: -44471.808215, Noise BIC Score: 88952.689576, N: 8718.000000
+K: 1, LL: -47078.145686, Noise BIC Score: 94219.803387
+K: 2, LL: -inf, Noise BIC Score: inf
+BEST: 0
+--------------------------
+Bidir Pred: 18
+--------------------------
+Noise LL: -34892.945215, Noise BIC Score: 69794.744095, N: 7000.000000
+K: 1, LL: -34943.222779, Noise BIC Score: 69948.421217
+K: 2, LL: -37463.583039, Noise BIC Score: 75051.117393
+BEST: 0
+--------------------------
+Bidir Pred: 19
+--------------------------
+Noise LL: -10795.482162, Noise BIC Score: 21598.659173, N: 2197.000000
+K: 1, LL: -12748.104002, Noise BIC Score: 25550.071941
+K: 2, LL: -11541.853796, Noise BIC Score: 23191.435464
+BEST: 0
+--------------------------
+Segment: 14
+Bidir Pred: 0
+--------------------------
+Noise LL: -128492.498737, Noise BIC Score: 256995.170225, N: 26180.000000
+K: 1, LL: -124504.603861, Noise BIC Score: 249080.416979
+K: 2, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+Bidir Pred: 1
+--------------------------
+Noise LL: -1733905.968213, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+Bidir Pred: 2
+--------------------------
+Noise LL: -188429.112132, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -181244.813096, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -46014.443786, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -495189.739439, Noise BIC Score: 990390.914123, N: 92526.000000
+K: 1, LL: -406715.328484, Noise BIC Score: 813510.703683
+K: 2, LL: -395235.676168, Noise BIC Score: 790631.445766
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -86363.171683, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -81032.854308, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -73725.639683, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -74332.747500, Noise BIC Score: -inf
+K: 3, LL: -70492.273258, Noise BIC Score: -inf
+K: 4, LL: -69668.028290, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -1890823.318988, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -547220.916534, Noise BIC Score: 1094453.423806, N: 108092.000000
+K: 1, LL: -415634.762487, Noise BIC Score: 831350.660140
+K: 2, LL: -398256.309536, Noise BIC Score: 796674.889405
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -1043226.155752, Noise BIC Score: 2086464.535471, N: 203611.000000
+K: 1, LL: -806320.279984, Noise BIC Score: 1612726.127735
+K: 2, LL: -796044.616351, Noise BIC Score: 1592260.368235
+K: 3, LL: -799394.541564, Noise BIC Score: 1599045.786427
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -181508.532764, Noise BIC Score: 363027.507816, N: 34279.000000
+K: 1, LL: -143354.816568, Noise BIC Score: 286782.729154
+K: 2, LL: -135635.347753, Noise BIC Score: 271416.887540
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -21341.018724, Noise BIC Score: 42690.389767, N: 4240.000000
+K: 1, LL: -26902.056333, Noise BIC Score: 53862.578896
+K: 2, LL: -26601.985367, Noise BIC Score: 53320.903193
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -3350689.116025, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -861479.608518, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -1906252.916205, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -353072.394492, Noise BIC Score: 706155.904487, N: 67205.000000
+K: 1, LL: -287080.369945, Noise BIC Score: 574238.548411
+K: 2, LL: -286021.479192, Noise BIC Score: 572198.575425
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -308379.853088, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -3445289.440765, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -2811115.647804, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -914841.936038, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -840791.342792, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -177097.595091, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -169194.160725, Noise BIC Score: -inf
+K: 3, LL: -166004.215379, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -20787.281135, Noise BIC Score: 41582.863048, N: 4027.000000
+K: 1, LL: -22297.274932, Noise BIC Score: 44652.655304
+K: 2, LL: -17944.842665, Noise BIC Score: 36005.896208
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -2109685.951261, Noise BIC Score: 4219384.791681, N: 395996.000000
+K: 1, LL: -2086852.983607, Noise BIC Score: 4173796.191330
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+--------------------------
+Noise LL: -416009.664484, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -220568.359722, Noise BIC Score: 441147.357508, N: 41692.000000
+K: 1, LL: -210904.120392, Noise BIC Score: 421882.707236
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+--------------------------
+Noise LL: -116845.362033, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -111271.218518, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -225542.083043, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -171688.107154, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -281726.271964, Noise BIC Score: 563463.491924, N: 56840.000000
+K: 1, LL: -214637.221858, Noise BIC Score: 429351.079684
+K: 2, LL: -210208.641467, Noise BIC Score: 420570.554872
+K: 3, LL: -209949.984326, Noise BIC Score: 420129.876559
+BEST: 3
+--------------------------
+--------------------------
+Noise LL: -148873.452109, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -143640.458778, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -131312.570926, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -128095.640303, Noise BIC Score: -inf
+K: 3, LL: -125704.205549, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -1426596.228570, Noise BIC Score: 2853204.960521, N: 269246.000000
+K: 1, LL: -1136459.446147, Noise BIC Score: 2273006.415959
+K: 2, LL: -1110861.981596, Noise BIC Score: 2221899.010522
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -376575.839477, Noise BIC Score: 753162.920373, N: 76223.000000
+K: 1, LL: -353970.583235, Noise BIC Score: 708019.856399
+K: 2, LL: -339853.996872, Noise BIC Score: 679865.373603
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -1457858.791394, Noise BIC Score: 2915730.090797, N: 270495.000000
+K: 1, LL: -1154694.549511, Noise BIC Score: 2309476.655084
+K: 2, LL: -1134082.982080, Noise BIC Score: 2268341.076285
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -550968.115981, Noise BIC Score: 1101947.797138, N: 105364.000000
+K: 1, LL: -374728.132095, Noise BIC Score: 749537.220425
+K: 2, LL: -751674.821554, Noise BIC Score: 1503511.555576
+K: 3, LL: -749826.529982, Noise BIC Score: 1499895.928666
+K: 4, LL: -748108.292982, Noise BIC Score: 1496540.410901
+K: 5, LL: -325347.519288, Noise BIC Score: 651099.819746
+BEST: 5
+--------------------------
+--------------------------
+Noise LL: -219560.436524, Noise BIC Score: 439131.561988, N: 43868.000000
+K: 1, LL: -166061.622987, Noise BIC Score: 332198.068556
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+--------------------------
+Noise LL: -880854.828969, Noise BIC Score: 1761721.674060, N: 165400.000000
+K: 1, LL: -681856.929619, Noise BIC Score: 1363797.972092
+K: 2, LL: -675072.190052, Noise BIC Score: 1350312.605812
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -190707.302892, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -186018.096454, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -666999.176932, Noise BIC Score: 1334010.118053, N: 128565.000000
+K: 1, LL: -414417.386366, Noise BIC Score: 828917.122061
+K: 2, LL: -407940.685606, Noise BIC Score: 816046.069871
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -255215.770444, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -inf, Noise BIC Score: nan
+K: 5, LL: -240937.182366, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -674267.750778, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -1180100.087151, Noise BIC Score: 2360212.481508, N: 221285.000000
+K: 1, LL: -934993.793789, Noise BIC Score: 1870073.738026
+K: 2, LL: -918055.401498, Noise BIC Score: 1836283.103891
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -1239840.852609, Noise BIC Score: 2479694.080113, N: 236782.000000
+K: 1, LL: -1043849.170674, Noise BIC Score: 2087784.965615
+K: 2, LL: -1009710.255051, Noise BIC Score: 2019593.758635
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -207285.945246, Noise BIC Score: 414582.510551, N: 40948.000000
+K: 1, LL: -184507.621293, Noise BIC Score: 369089.582994
+K: 2, LL: -168674.894303, Noise BIC Score: 337498.469422
+K: 3, LL: -161248.950847, Noise BIC Score: 322720.922917
+BEST: 3
+--------------------------
+--------------------------
+Noise LL: -20167.593375, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -16271.313045, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -271519.221709, Noise BIC Score: 543049.284195, N: 51061.000000
+K: 1, LL: -282244.783668, Noise BIC Score: 564565.452770
+K: 2, LL: -243863.876699, Noise BIC Score: 487879.524265
+K: 3, LL: -239119.384842, Noise BIC Score: 478466.425986
+BEST: 3
+--------------------------
+--------------------------
+Noise LL: -78677.605240, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+K: 4, LL: -inf, Noise BIC Score: nan
+K: 5, LL: -86589.015145, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -226533.183033, Noise BIC Score: 453077.012680, N: 42050.000000
+K: 1, LL: -209296.442560, Noise BIC Score: 418667.411424
+K: 2, LL: -192007.622662, Noise BIC Score: 384164.297930
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -80971.527634, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -97425.339488, Noise BIC Score: -inf
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -72341.012727, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -79311.412206, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -119249.862287, Noise BIC Score: 238509.770516, N: 23062.000000
+K: 1, LL: -121279.973237, Noise BIC Score: 242630.268064
+K: 2, LL: -110256.669748, Noise BIC Score: 220653.982677
+K: 3, LL: -108665.813165, Noise BIC Score: 217542.591102
+K: 4, LL: -107364.642887, Noise BIC Score: 215010.572136
+BEST: 4
+--------------------------
+--------------------------
+Noise LL: -99701.133508, Noise BIC Score: 199412.183666, N: 20265.000000
+K: 1, LL: -99027.114504, Noise BIC Score: 198123.645561
+K: 2, LL: -96552.067407, Noise BIC Score: 193242.967922
+K: 3, LL: -94448.682851, Noise BIC Score: 189105.615364
+BEST: 3
+--------------------------
+--------------------------
+Noise LL: -112939.227732, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -110711.562488, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -106701.366441, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -81069.088567, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -1453035.804462, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+K: 3, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -207821.129442, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -1506954.938818, Noise BIC Score: 3013922.429841, N: 282718.000000
+K: 1, LL: -1232166.454844, Noise BIC Score: 2464420.775125
+K: 2, LL: -1216685.560870, Noise BIC Score: 2433546.852612
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -768481.313339, Noise BIC Score: 1536974.521390, N: 146490.000000
+K: 1, LL: -574453.913512, Noise BIC Score: 1148991.090010
+K: 2, LL: -inf, Noise BIC Score: inf
+K: 3, LL: -562863.087625, Noise BIC Score: 1125975.964211
+BEST: 3
+--------------------------
+--------------------------
+Noise LL: -166325.376780, Noise BIC Score: 332661.123482, N: 31886.000000
+K: 1, LL: -169126.219871, Noise BIC Score: 338325.029198
+K: 2, LL: -149988.635671, Noise BIC Score: 300122.450255
+BEST: 2
+--------------------------
+--------------------------
+Noise LL: -82580.967622, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -75585.773574, Noise BIC Score: -inf
+K: 3, LL: -73571.560182, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -44471.808215, Noise BIC Score: 88952.689576, N: 8718.000000
+K: 1, LL: -47078.145686, Noise BIC Score: 94219.803387
+K: 2, LL: -inf, Noise BIC Score: inf
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -34892.945215, Noise BIC Score: 69794.744095, N: 7000.000000
+K: 1, LL: -34943.222779, Noise BIC Score: 69948.421217
+K: 2, LL: -37463.583039, Noise BIC Score: 75051.117393
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -10795.482162, Noise BIC Score: 21598.659173, N: 2197.000000
+K: 1, LL: -12748.104002, Noise BIC Score: 25550.071941
+K: 2, LL: -11541.853796, Noise BIC Score: 23191.435464
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -128492.498737, Noise BIC Score: 256995.170225, N: 26180.000000
+K: 1, LL: -124504.603861, Noise BIC Score: 249080.416979
+K: 2, LL: -inf, Noise BIC Score: inf
+BEST: 1
+--------------------------
+--------------------------
+Noise LL: -1733905.968213, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -inf, Noise BIC Score: nan
+BEST: 0
+--------------------------
+--------------------------
+Noise LL: -188429.112132, Noise BIC Score: -inf, N: 0.000000
+K: 1, LL: -inf, Noise BIC Score: nan
+K: 2, LL: -181244.813096, Noise BIC Score: -inf
+BEST: 0
+--------------------------
+Wall Time 111.788000

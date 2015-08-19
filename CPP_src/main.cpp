@@ -26,6 +26,7 @@ int main(int argc, char* argv[]){
     P 			= readInParameters(argv);
     if (P->EXIT){
     	printf("exiting...\n");
+    	MPI::Finalize();
     	return 1;
 	}
 	if (P->module == "BIDIR"){
@@ -54,14 +55,16 @@ int main(int argc, char* argv[]){
 			reverse_bedgraph, BINS, scale, spec_chrom);
 		if (segments.empty()){
 			printf("exiting...\n");
-			return 0;
+			MPI::Finalize();
+			return 1;
 		}
 		if (not optimize_directory.empty()){
 			map<string, interval_tree *> I = load_bidir_bed_files(optimize_directory, 
 				spec_chrom);
 			if (I.empty()){
 				printf("exiting...\n");
-				return 0;
+				MPI::Finalize();
+				return 1;
 			}
 			clock_t t;
 			chrono::time_point<chrono::system_clock> start, end;
@@ -76,15 +79,18 @@ int main(int argc, char* argv[]){
 			printf ("CPU: %d , %f\n",t,((float)t)/CLOCKS_PER_SEC);
 			printf("Wall Time: %f\n", (elapsed_seconds/1000.));
 			free_segments(segments);
+			MPI::Finalize();
 		
-			return 1;			
+			return 0;			
 		}
 
 
 
 		run_global_template_matching(segments, out_file_dir, window, density,scale,0., np, true );
 		free_segments(segments);
-		return 1;
+		MPI::Finalize();
+	
+		return 0;
 	}
 
 
@@ -106,16 +112,18 @@ int main(int argc, char* argv[]){
 		
 		if (verbose and rank==0){//show current user parameters...
 			P->display();
-			printf("Running on %d nodes\n", nprocs );
+			printf("Running on %d node(s)\n", nprocs );
 		}
 
 		//==========================================
-		vector<segment*> segments	= load_EMGU_format_file(formatted_file, P->p["-chr"]);
+		vector<segment*> segments		= load_EMGU_format_file(formatted_file, P->p["-chr"]);
+		vector<segment*> all_segments  	= segments;
 		if (segments.empty()){
 			cout<<"segments was not populated"<<endl;
 			cout<<"exiting"<<endl;
 			delete P;
-			return 0;
+			MPI::Finalize();
+			return 1;
 
 		}
 		segments 	= slice_segments(segments, rank, nprocs);
@@ -135,7 +143,8 @@ int main(int argc, char* argv[]){
 			//need to write a function to insert eRNA predictions 
 			//for each segment
 			run_global_template_matching(segments, "", 
-				stod(P->p["-window"])/stod(P->p["-ns"]), stod(P->p["-density"])/stod(P->p["-ns"]) ,stod(P->p["-ns"]) ,0., 
+				2500/stod(P->p["-ns"]), stod(P->p["-density"])/stod(P->p["-ns"]) ,
+				stod(P->p["-ns"]) ,stod(P->p["-confidence"]), 
 				stoi(P->p["-np"]), false );
 			//now we want to collapse all segments into one large vector<segment *>
 		}
@@ -149,6 +158,7 @@ int main(int argc, char* argv[]){
 		t = clock();
 		vector<simple_c> fits;
 		vector<simple_c> all_fits;
+		map<int, map<int, bidir_preds> > G;
 		if (not template_match){
 			run_model_accross_segments(segments, P);
 		}else{//need to write a function to fit bidirectionals in isolation...
@@ -166,13 +176,15 @@ int main(int argc, char* argv[]){
 		}
 		//now we want to collate all the results;
 		if (root){
-			all_fits 	= gather_all_simple_c_fits(fits, bidir_number_table, interval_number, nprocs);
+			G 	= gather_all_simple_c_fits(fits, bidir_number_table, interval_number, nprocs);
 		}else{
 			send_all_simple_c_fits(fits);
 		}
-
-
-
+		//need to perform model selection
+		if (root){
+			G 	= run_model_selection_bidir_template(G, 1.);
+			write_out_bidir_fits(all_segments, G, P);
+		}
 		free_segments(segments);
 		end = chrono::system_clock::now();
 		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
@@ -226,7 +238,8 @@ int main(int argc, char* argv[]){
 	else {
 		printf("Could not understand module or not provided...\n");
 		printf("exiting\n");
-		return 0;
+		MPI::Finalize();
+		return 1;
 	}
 	delete P;
 	MPI::Finalize();

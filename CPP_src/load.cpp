@@ -8,6 +8,7 @@
 #include "dirent.h"
 #include "template_matching.h"
 #include "model.h"
+#include "read_in_parameters.h"
 #include "across_segments.h"
 using namespace std;
 //========================
@@ -19,12 +20,39 @@ model_component::model_component(simple_c sc){
 }
 
 
-bidir_preds::bidir_preds(double ll){
+bidir_preds::bidir_preds(double ll, double NN){
 	noise_ll 	= ll;
+	N=NN;
 }
-bidir_preds::bidir_preds( ){}
-void bidir_preds::insert_component(int K, simple_c sc, double LL){
+void bidir_preds::model_selection(double penality){
+	typedef map<int, all_model_components >::iterator it_type;
+	BIC_score 	= -2*noise_ll + 1*log(N);
+	double curr_BIC_score;
+	argK 	= 0;
+	printf("--------------------------\n");
+	printf("Noise LL: %f, Noise BIC Score: %f, N: %f\n", noise_ll, BIC_score, N );
+	for (it_type s = G.begin(); s!=G.end(); s++){
+		curr_BIC_score 	= -2*s->second.ll + penality*s->first*7*log(N);
+		if (curr_BIC_score < BIC_score){
+			BIC_score 	= curr_BIC_score, argK 	= s->first;
+		}
+		printf("K: %d, LL: %f, Noise BIC Score: %f\n", s->first
+		, s->second.ll, curr_BIC_score  );
 	
+
+	}
+	if (argK!= 0){
+		arg_all_model_components 	= G[argK];
+	
+	}
+	printf("BEST: %d\n", argK);
+	printf("--------------------------\n");
+	
+}
+bidir_preds::bidir_preds( ){
+	noise_ll=0, N=0;
+}
+void bidir_preds::insert_component(int K, simple_c sc, double LL){
 	G[K].insert_component(sc, LL);
 }
 
@@ -33,9 +61,7 @@ all_model_components::all_model_components(){
 }
 
 void all_model_components::insert_component(simple_c sc, double LL){
-	if (ll == nINF){
-		ll=LL;
-	}
+	ll=LL;
 	all_components.push_back(model_component(sc));
 }
 
@@ -83,6 +109,7 @@ void segment::add(int strand, double x, double y){
 	}else if (strand==-1){
 		reverse.push_back(v2);
 	}
+	N+=(x+y);
 }
 void segment::add2(int strand, double x, double y){
 	vector<double> v2(2);
@@ -118,7 +145,7 @@ void segment::bin(double delta, double scale, bool erase){
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}
-	
+	N 				= 0;
 	XN 				= BINS;
 	//===================
 	//populate bin ranges
@@ -137,9 +164,10 @@ void segment::bin(double delta, double scale, bool erase){
 		while (j < BINS and X[0][j] <=forward[i][0]){
 			j++;
 		}
-		X[1][j-1]+=forward[i][1];
-
-		N+=forward[i][1];
+		if (j < BINS and forward[i][0]<= X[0][j]){
+			X[1][j-1]+=forward[i][1];
+			N+=forward[i][1];
+		}
 	}
 	j 	=0;
 	//===================
@@ -148,8 +176,10 @@ void segment::bin(double delta, double scale, bool erase){
 		while (j < BINS and X[0][j] <=reverse[i][0]){
 			j++;
 		}
-		X[2][j-1]+=reverse[i][1];
-		N+=reverse[i][1];
+		if (j < BINS and reverse[i][0]<= X[0][j]){
+			X[2][j-1]+=reverse[i][1];
+			N+=reverse[i][1];
+		}
 	}
 	//===================
 	//scale data down for numerical stability
@@ -483,7 +513,6 @@ void interval_tree::insert(double x, double y, int strand){
 	}
 }
 void interval_tree::insert_into_array(merged_interval * ARRAY , int N ){
-	//printf("%d, %d\n", ID , N);
 	ARRAY[ID] 	= *current;
 	if (left!=NULL){
 		left->insert_into_array(ARRAY, N);
@@ -811,7 +840,42 @@ void write_out(string FILE, map<string, interval_tree *> A){
 	}
 }
 
+void write_out_bidir_fits( vector<segment*> segments, 
+	map<int, map<int, bidir_preds> > G, params * P){
 
+	int N 			= segments.size();
+	string out_dir 	= P->p["-o"]; 
+	string out_file_template 	= out_dir+"model_fits_out_bidir_" + P->p["-chr"]+"_";
+	string out_file 			= check_file(out_file_template, 1);
+	
+	ofstream FHW;
+	
+	FHW.open(out_file_template+ "1" + ".bed");
+	//FHW<<get_header(P);
+	double scale 	= stod(P->p["-ns"]);
+
+	typedef map<int, map<int, bidir_preds> >::iterator it_type_2;
+	typedef map<int, bidir_preds>::iterator it_type_3;
+	double center, left , right; 
+	for (it_type_2 s = G.begin(); s!=G.end(); s++){
+		for (it_type_3 b = s->second.begin(); b!=s->second.end(); b++ ){
+			if (b->second.argK!=0){
+				for (int i = 0; i < b->second.arg_all_model_components.all_components.size(); i++){
+					center 	= b->second.arg_all_model_components.all_components[i].mu*scale + segments[s->first]->start;
+					left 	= center-b->second.arg_all_model_components.all_components[i].si*scale;
+					right 	= center+b->second.arg_all_model_components.all_components[i].si*scale;	
+					FHW<<( 	segments[s->first]->chrom + "\t" + 
+							to_string(int(left)) + "\t" + 
+							to_string(int(right))+" \n");
+					cout<<( 	segments[s->first]->chrom + "\t" + 
+							to_string(int(left)) + "\t" + 
+							to_string(int(right))+" \n")	;
+				}
+			}
+
+		}
+	}
+}
 
 
 

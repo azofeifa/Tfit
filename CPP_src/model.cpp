@@ -59,15 +59,12 @@ NOISE::NOISE(double A, double B, double W, double PI){
 //Uniform Class
 double UNI::pdf(double x, int strand){ //probability density function
 	double p;
-	if (strand != st){
-		return 0.;
-	}
+
 	if ( a<= x and x <=b){
-		p=w / abs(b- a);
-		if (checkNumber(p)){
-			return p;
-		}
-		return 0;
+
+		p= w / abs(b- a);
+		p= p*pow(pi, max(0, strand) )*pow(1.-pi, max(0, -strand) );
+		return p;
 	}
 	return 0;
 }
@@ -77,8 +74,7 @@ string UNI::print(){
 	+ "," + to_string(w) + "," + to_string(pi));
 	return text;
 }	
-UNI::UNI(double start, double stop, double w_i, int strand, int POS){
-
+UNI::UNI(double start, double stop, double w_i, int strand, int POS, double Pi){
 	a 		= start;
 	b 		= stop;
 	w 		= w_i;
@@ -89,6 +85,11 @@ UNI::UNI(double start, double stop, double w_i, int strand, int POS){
 	}else{
 		pi=0;
 	}
+	//===================
+	//this oversets the constraint that uniform must take either 
+	//forward or reverse data points
+	pi 		= Pi;
+	//===================
 	delta_a=0;
 	delta_b=0;
 	ri_forward=0, ri_reverse=0;
@@ -209,7 +210,7 @@ bool check_uniform_support(component c, int forward){
 
 void component::initialize(double mu, segment * data , int K, double scale, double noise_w, 
 	double noise_pi){//random seeds...
-	
+	EXIT=false;
 	if (noise_w>0){
 		noise 	= NOISE(data->minX, data->maxX, 
 			noise_w, noise_pi);
@@ -238,15 +239,25 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		int j 		= get_nearest_position(data, mu, dist);
 		
 		b_forward 	= data->X[0][j];
-		forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j);
-		
+		if (b_forward < (mu+(1.0/lambda)) ){
+			printf("HERE1\n");
+			forward 	= UNI(data->minX, data->maxX, 0., 1, j, 0.5);
+		}
+		else{	
+			forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j, 0.5);
+		}	
 		dist 		= (-1.0/lambda) - sigma - dist_lengths(mt);
 		j 			= get_nearest_position(  data, mu, dist);
 		
 		a_reverse 	= data->X[0][j];
 
 		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
-		reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j);
+		if (a_reverse > mu-(1.0/lambda) ){
+			printf("HERE2\n");
+			reverse 	= UNI(data->minX, data->maxX, 0., -1, j,0.5);
+		}else{
+			reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
+		}
 		type 		= 1;
 	}
 
@@ -282,12 +293,13 @@ double component::evaluate(double x, int st){
 	if (st==1){
 		bidir.ri_forward 	= bidir.pdf(x, st);
 		forward.ri_forward 	= forward.pdf(x, st);
-		return bidir.ri_forward + forward.ri_forward;
+		reverse.ri_forward 	= reverse.pdf(x,st);
+		return bidir.ri_forward + forward.ri_forward + reverse.ri_forward;
 	}
 	bidir.ri_reverse 	= bidir.pdf(x, st);
 	reverse.ri_reverse 	= reverse.pdf(x, st);
-		
-	return bidir.ri_reverse + reverse.ri_reverse;
+	forward.ri_reverse 	= forward.pdf(x, st);
+	return bidir.ri_reverse + reverse.ri_reverse + forward.ri_reverse;
 }
 double component::pdf(double x, int st){
 	if (type==0){
@@ -311,20 +323,25 @@ void component::add_stats(double x, double y, int st, double normalize){
 		}
 
 	}else{
-		double vl, vl2;
+		double vl, vl2, vl3;
 		if (st==1){
 			vl 	= bidir.ri_forward / normalize;
 			vl2 = forward.ri_forward/normalize;
+			vl3 = reverse.ri_forward/normalize;
 			bidir.ri_forward=0, forward.ri_forward=0;
 			bidir.r_forward+=(vl*y);
 			forward.r_forward+=(vl2*y);
+			reverse.r_forward+=(vl3*y);
 		
 		}else{
 			vl 	= bidir.ri_reverse / normalize;
 			vl2 = reverse.ri_reverse / normalize;
+			vl3 = forward.ri_reverse / normalize;
 			bidir.ri_reverse=0, reverse.ri_reverse=0;
 			bidir.r_reverse+=(vl*y);
+
 			reverse.r_reverse+=(vl2*y);
+			forward.r_reverse+=(vl3*y);
 		}
 		//now adding all the conditional expections for the convolution
 		double current_EY 	= bidir.EY(x, st);
@@ -340,8 +357,8 @@ void component::add_stats(double x, double y, int st, double normalize){
 void component::reset(){
 	if (type){
 		bidir.ey=0, bidir.ex=0, bidir.ex2=0, bidir.r_reverse=0, bidir.r_forward=0;
-		bidir.ri_forward=0, forward.ri_forward=0;
-		bidir.ri_reverse=0, reverse.ri_reverse=0;
+		bidir.ri_forward=0, forward.ri_forward=0, forward.ri_reverse=0;
+		bidir.ri_reverse=0, reverse.ri_reverse=0, reverse.ri_forward=0;
 		forward.r_forward=0, forward.r_reverse=0, reverse.r_reverse=0, reverse.r_forward=0;
 		forward.delta_a=0, forward.delta_b=0, reverse.delta_a=0, reverse.delta_b=0;
 	}else{
@@ -368,15 +385,23 @@ void component::update_parameters(double N, int K){
 		bidir.mu 	= bidir.ex / (r+0.001);
 
 		
-		bidir.si 	= min(pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
-			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5), 10.) ;
-		
+		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
+			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
+		if (bidir.si >= 75.){//this component is blowing up
+			EXIT 	= true;
+		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
-		bidir.l 	= max(0.05, bidir.l);
+		if (bidir.l < 0.005){//this component is blowing up
+			EXIT 	= true;
+		}
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		forward.a 	= bidir.mu + (1.0 /bidir.l), reverse.b=bidir.mu - (1.0 / bidir.l);
+		//update PIS, this is obviously overwritten if we start the EM seeder with 0/1
+		forward.pi 	= (forward.r_forward + 1) / (forward.r_forward + forward.r_reverse+2);
+		reverse.pi 	= (reverse.r_forward + 1)/ (reverse.r_forward + reverse.r_reverse+2);
+
 
 	}
 }
@@ -620,10 +645,14 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
-		//	components[k].print();
+			if (components[k].EXIT){
+				converged=false, ll=nINF;
+				return 0;
+			}
+			components[k].print();
 		       
 		}
-		//printf("%d,--------------------------------\n",t );
+		printf("%d,--------------------------------\n",t );
 	
 		//******
 		//E-step
@@ -672,7 +701,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		}
 
 		last_diff=abs(ll-prevll);
-		//printf("%f,%f,%d\n", ll, last_diff, t  );
+		printf("%f,%f,%d\n", ll, last_diff, t  );
 		prevll=ll;
 		// for (int c = 0; c<K;c++){
 		// 	components[c].print();
