@@ -152,10 +152,31 @@ void sample_variance(double ** X, double mu, double * array, int j,int k){
 		N_forward+=X[1][i];
 		N_reverse+=X[2][i];
 	}
+	double s;
 	array[0] 	= array[0] / N_forward;
 	array[1] 	= array[1] / N_reverse;
 }
 
+void sample_variance2(double ** X, double mu, double * array, int j,int k){
+	double N_forward, N_reverse;
+	array[0] 	= 0;
+	array[1] 	= 0;
+	N_forward=0, N_reverse=0;
+	for (int i =k; i < j;i++ ){
+		if (X[0][i] > mu){
+			array[0]+=pow(X[0][i]-mu,2)*X[1][i];
+			N_forward+=X[1][i];
+		}
+		if (X[0][i]<mu){
+			array[1]+=pow(X[0][i]-mu,2)*X[2][i];
+			N_reverse+=X[2][i];
+	
+		}
+	}
+	double s;
+	array[0] 	= array[0] / N_forward;
+	array[1] 	= array[1] / N_reverse;	
+}
 void sample_skew(double **X , double mu, double * sample_variances, double * sample_skews, int j, int k){
 	double N_forward, N_reverse;
 	sample_skews[0] 	= 0;
@@ -171,15 +192,15 @@ void sample_skew(double **X , double mu, double * sample_variances, double * sam
 	sample_skews[0]/=pow(sample_variances[0], 3/2.);
 	sample_skews[1]/=pow(sample_variances[1], 3/2.);	
 }
-double moment_estimate_lambda(double ** X, double mu,int j, int k){
+double moment_estimate_lambda(double ** X, double mu,int j, int k ){
 	double N_forward, N_reverse;
 	double means[2];
 	means[0]=0;
 	means[1]=0;
 	for (int i = k; i < j ;i++){
 		means[0]+=X[0][i]*X[1][i];
-		means[1]+=X[0][i]*X[2][i];
 		N_forward+=X[1][i];
+		means[1]+=X[0][i]*X[2][i];
 		N_reverse+=X[2][i];		
 	}
 	return 1.0 / (0.5*((means[0]/N_forward) - (means[1]/N_reverse) ));
@@ -199,7 +220,7 @@ double get_mean(double ** X, int j,int k,int s){
 	return SUM/N;
 }
 
-double BIC(double ** X,  double * variances,double * lambdas, 
+double BIC(double ** X,  double * avgLL, double * variances,double * lambdas, 
 	double ** skews, double mu, int i, int j, int k , double pi){
 	double a 	= X[0][k];
 	double b 	= X[0][j];	
@@ -233,6 +254,7 @@ double BIC(double ** X,  double * variances,double * lambdas,
 		uni_ll+=(LOG(	pi / (b-a) )*X[1][i]   + LOG((1-pi )/(b-a) )*X[2][i] ); 
 		N+=(X[1][i]+X[2][i]);
 	}
+	avgLL[i] 				= emg_ll / N;
 	double BIC_score_emg 	= -2*emg_ll + 3*LOG(N) ;
 	double BIC_score_uni 	= -2*uni_ll + 1*LOG(N) ;
 	double score 			= BIC_score_uni / BIC_score_emg;
@@ -245,7 +267,7 @@ double BIC(double ** X,  double * variances,double * lambdas,
 
 }
 
-void BIC_template(segment * data, double * BIC_values, double * densities, double * densities_r,
+void BIC_template(segment * data, double * avgLL, double * BIC_values, double * densities, double * densities_r,
 	double * variances,double * lambdas, double ** skews ,double window, int np){
 	double vl;
 	int NN 	= int(data->XN);
@@ -272,10 +294,10 @@ void BIC_template(segment * data, double * BIC_values, double * densities, doubl
 					}
 				}
 				if (N_pos >0 and N_neg > 0){
-					densities[i] 	= N_pos/(data->X[0][j]-data->X[0][k]);
-					densities_r[i] 	= N_neg/(data->X[0][j]-data->X[0][k]);
+					densities[i] 	= N_pos/(data->X[0][j]-data->X[0][i]);
+					densities_r[i] 	= N_neg/(data->X[0][i]-data->X[0][k]);
 					
-					BIC_values[i] 	= BIC(data->X, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN );
+					BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN );
 				}
 		}else{
 			BIC_values[i] 	= 0;
@@ -287,218 +309,192 @@ void BIC_template(segment * data, double * BIC_values, double * densities, doubl
 
 void run_global_template_matching(vector<segment*> segments, 
 	string out_dir,  double window, double density,
-	double scale, double ct, int np, bool write_out){
-	string out_file  			= out_dir+"bidirectional_hits_IGV.bed";
-	string interval_out_file 	= out_dir+"bidirectional_hits_intervals.bed";
+	double scale, double ct, int np, double skew){
 	ofstream FHW;
 	ofstream FHW_intervals;
-
-	if (write_out){
-		
-		FHW.open(out_file);
-		FHW_intervals.open(interval_out_file);
-		FHW<<"track description=\"BiDirectional Calls\"  cgColour1=white cgColour2=yellow cgColour3=red height=30\n";
-	}
+	
 	string annotation;
 	int prev, prev_start, stop;
 	int N;
 	int start, center;
 	vector<vector<double> > scores;
 	vector<double> current(5);
-	start=0, stop=0;
+	vector<string> INFOS;
+
 	for (int i = 0; i < segments.size(); i++){
 		scores.clear();
-		double * BIC_values = new double[int(segments[i]->XN)];
-		double * densities= new double[int(segments[i]->XN)];
+		double * avgLL 			= new double[int(segments[i]->XN)];
+		double * BIC_values 	= new double[int(segments[i]->XN)];
+		double * densities 		= new double[int(segments[i]->XN)];
 		double * densities_r 	= new double[int(segments[i]->XN)];
-		double * variances= new double[int(segments[i]->XN)];
-		double * lambdas= new double[int(segments[i]->XN)];
-		double ** skews = new double*[int(segments[i]->XN)] ;
+		double * variances 		= new double[int(segments[i]->XN)];
+		double * lambdas 		= new double[int(segments[i]->XN)];
+		double ** skews 		= new double*[int(segments[i]->XN)] ;
 		for (int t =0; t < segments[i]->XN; t++ ){
 			skews[t] 	= new double[2];
 		}
-		BIC_template(segments[i], BIC_values, densities, densities_r, variances, lambdas,skews, window, np);
+		BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np);
 		//write out contigous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
-			// if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
-			// 	if ( densities[j]>density and densities_r[j]>density
-			// 		and skews[j][0] > 0 and skews[j][1]< 0 ){
 
-			// 		start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-			// 		stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-			// 		current[0] 	= start, current[1]=stop, current[2]=BIC_values[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
-			// 		if (scores.empty()){
-			// 			current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
-			// 			scores.push_back(current);
-			// 		}else{
-			// 			N 			= scores.size();
-			// 			if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
-			// 				if (scores[N-1][2] < BIC_values[j]){
-			// 					scores[N-1] = current;	
-			// 				}
-			// 			}else{
-			// 				scores.push_back(current);
-			// 			}
-			// 		}
-			// 	}
-			// }
-			if ( densities[j]>density and densities_r[j] > density
-			 		and skews[j][0] > 0 and skews[j][1]< 0 and BIC_values[j] > 0 ){
-				if (start!=0){
-					stop 	= int(segments[i]->X[0][j]*scale+segments[i]->start);
-				}else{
-					start 	= int(segments[i]->X[0][j]*scale+segments[i]->start);
+			if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
+				if (BIC_values[j] >=ct  and densities[j]>density and densities_r[j]>density and skews[j][0] > skew and skews[j][1] < -skew){
+
+					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+					current[0] 	= start, current[1]=stop, current[2]=BIC_values[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
+					if (scores.empty()){
+						current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
+						scores.push_back(current);
+						INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
+					}else{
+						N 			= scores.size();
+						if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
+							if (scores[N-1][2] < BIC_values[j]){
+								scores[N-1] = current;	
+							}
+						}else{
+							INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
+							scores.push_back(current);
+						}
+					}
 				}
 			}
-			else if (start!=0 and stop!= 0){
-
-				current[0] 	= start, current[1]=stop, current[2]=(stop-start)/2., current[3]=(stop-start)/2., current[4]=(stop-start)/2.;
-				scores.push_back(current);
-				start=0, stop=0;
-			}
-
 		}
 		for (int j = 0; j < scores.size();j++){
 
 			center 		= int((scores[j][1]+scores[j][0]) / 2.);
-			if (write_out){
-				annotation	= (segments[i]->chrom + "\t" + to_string(int(center-scores[j][3])) + "\t" + to_string(int(center+scores[j][3]))  + "\tLOAD"+
-					"\n");
-				string SCORE 	= to_string(int(scores[j][2]*100));
-				annotation 	= (segments[i]->chrom + "\t" + to_string(int(center-scores[j][3])) 
-					+ "\t" + to_string(int(center+scores[j][3]))   + "\t" + "LOAD" + "\t" + SCORE+"\t.\t" + 
-					to_string(int(center-scores[j][3]))  + "\t" + to_string(int(center+scores[j][3])) 
-					+"\t" + "0,0,255" + "\t" + "" + "\n");
-
-				FHW<<annotation;
-
-				annotation 	= (segments[i]->chrom + "\t" + to_string(int(int(center-scores[j][3]-scores[j][4]))) + 
-					"\t" + to_string(int(center-scores[j][3])) + "\t" + "INIT" +
-								"\t200\t" + "-" + "\t"  + to_string(int(int(center-scores[j][3]-scores[j][4]))) + 
-								"\t" + to_string(int(center-scores[j][3])) + "\t" +  
-								"0,0,255" +"\t" +"\t2\t25,0\t" + "0," + to_string(int(scores[j][4])) +  "\n" );
-				FHW<<annotation;
-				annotation 	= (segments[i]->chrom + "\t" + to_string(int(int(center+scores[j][3]))) + 
-					"\t" + to_string(int(center+scores[j][3]+scores[j][4])) + "\t" + "INIT" +
-								"\t200\t" + "+" + "\t"  + to_string(int(int(center+scores[j][3] ))) + 
-								"\t" + to_string(int(center+scores[j][3]+scores[j][4])) + "\t" +  
-								"0,0,255" +"\t" +"\t2\t0,25\t" + "0," + to_string(int(scores[j][4])) +  "\n" );
-				FHW<<annotation;
-
-				annotation 	= (segments[i]->chrom+"\t"+ 
-					to_string(int(center-scores[j][2] )) +"\t" +
-					to_string(int(center+scores[j][2] )) + "\n");	
-				FHW_intervals<<annotation;
-			}
 			//want to insert into
 			vector<double> bounds(2);
-			bounds[0]=(center-scores[j][3]-scores[j][4] - segments[i]->start)/scale; 
-			bounds[1]=(center+scores[j][3]+scores[j][4] - segments[i]->start)/scale ;
-
+			// bounds[0]=(center-scores[j][3]-scores[j][4] - segments[i]->start)/scale; 
+			// bounds[1]=(center+scores[j][3]+scores[j][4] - segments[i]->start)/scale ;
+			bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
 			segments[i]->bidirectional_bounds.push_back(bounds);	
 		}
-	
+		
 	}
 }
 
 
 void optimize(map<string, interval_tree *> I, 
 	vector<segment*> segments, double scale, int res, string out_dir, string spec_chrom, int np){
-	double window 			= 2500/scale;
+	double window_a 		= 500/scale;
+	double window_b 		= 3000/scale;
+	double window_delta 	= (window_b - window_a) / res;
+	
 	double density_a 		= (100/scale);
-	double density_b 		= (3000/scale);
+	double density_b 		= (5000/scale);
 	double density_delta 	= (density_b - density_a) / res;
-	double skew_a 			= 0.;
+	double skew_a 			= -1;
 	double skew_b 			= 1.;
 	double skew_delta 		= (skew_b-skew_a)/res;
 	
-	double ct_a 			= 0.7;
-	double ct_b 			= 1.;
+	double ct_a 			= 0.9;
+	double ct_b 			= 1.2;
 	double ct_delta 		= (ct_b - ct_a) / res;
 	
 	double accuracy[res+1][res+1][res+1];
 	
-	double density, ct, peak, skew;
+	double density, ct, peak, skew, window;
 
 	int prev, prev_start, current, stop;
 	int bidir_hits 	= 0;
 	int all_bidirs 	= 0;
+	int no_hits 	= 0;
 	int min_start 	= 0;
 	int max_stop 	= 0;
 	double F1 		= 0;
-	int arg_j, arg_k, arg_l;
+	int arg_j, arg_k, arg_l, arg_v;
 	bool HIT;
 	bool FOUND=false;
+	double skew_sum_f, skew_N_f;
+	double skew_sum_r, skew_N_r;
 
+	bool GOOD=true;
 	printf("---------------------\n");
 	printf("performing optimization\n");
 	for (int i = 0; i < segments.size(); i++){ //these segments are indexed by chromosome
 		if (segments[i]->chrom==spec_chrom){
 			FOUND 	= true;
-			double * BIC_values 	= new double[int(segments[i]->XN)];
-			double * densities 		= new double[int(segments[i]->XN)];
-			double * densities_r 	= new double[int(segments[i]->XN)];
-			double * variances 		= new double[int(segments[i]->XN)];
-			double * lambdas 		= new double[int(segments[i]->XN)];
-			double ** skews 		= new double*[int(segments[i]->XN)];
-			for (int t =0; t < segments[i]->XN; t++ ){
-				skews[t] 	= new double[2];
-			}
-			BIC_template(segments[i], BIC_values, densities, densities_r, variances, lambdas, skews, window,np);
-			
-			for (int k =0; k <= res; k++){
-				density 	= density_a+density_delta*(k);
-				for (int l =0; l <= res; l++){
-					bidir_hits 	= 0;
-					all_bidirs 	= 0;
-					min_start 	= segments[i]->X[0][0]*scale +segments[i]->start ;
+			for (int v =0 ; v < res; v++){
+				window 	= window_a + window_delta*v;
+				double * avgLL 		= new double[int(segments[i]->XN)];
 		
-					prev=-1, current=0;
+				double * BIC_values = new double[int(segments[i]->XN)];
+				double * densities= new double[int(segments[i]->XN)];
+				double * densities_r= new double[int(segments[i]->XN)];
+				
+				double * variances= new double[int(segments[i]->XN)];
+				double * lambdas= new double[int(segments[i]->XN)];
+				double ** skews = new double*[int(segments[i]->XN)] ;
+				for (int t =0; t < segments[i]->XN; t++ ){
+					skews[t] 	= new double[2];
+				}
+				BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas, skews, window,np);
+				
+				for (int k =0; k <= res; k++){
+					density 	= density_a+density_delta*(k);
+					for (int l =0; l <= res; l++){
+						bidir_hits 	= 0;
+						all_bidirs 	= 0;
+						min_start 	= segments[i]->X[0][0]*scale +segments[i]->start ;
+			
+						prev=-1, current=0;
 
-					skew 	= skew_a 	+ skew_delta*(l);
-					for (int j = 1; j<segments[i]->XN-1; j++){
-						if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
-							if ( densities[j]>density and densities_r[j]> density  
-								and skews[j][0] > skew and skews[j][1]< -skew  ){
-								prev_start 	= segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1./lambdas[j]))*scale;
-								stop 		= segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1./lambdas[j]))*scale;
-								HIT 		= I[segments[i]->chrom]->find(prev_start, stop);
-								if (HIT){
-									bidir_hits++;
+						ct 	= ct_a 	+ ct_delta*(l);
+						for (int j = 1; j<segments[i]->XN-1; j++){
+							if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
+								if (BIC_values[j] >= ct and densities[j]>density and densities_r[j] > density 
+									and skews[j][0] > 0.1 and skews[j][1]< -0.1  ){
+									prev_start 	= segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1./lambdas[j]))*scale;
+									stop 		= segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1./lambdas[j]))*scale;
+									HIT 		= I[segments[i]->chrom]->find(prev_start, stop);
+									if (HIT){
+										bidir_hits++;
+									}
+									all_bidirs++;
 								}
-								all_bidirs++;
 							}
+							max_stop 	= segments[i]->X[0][j]*scale +segments[i]->start;
 						}
-						max_stop 	= segments[i]->X[0][j]*scale +segments[i]->start;
-					}
-					int single_hits 	= I[segments[i]->chrom]->get_hits(true, min_start, max_stop);
-					int all_hits 		= I[segments[i]->chrom]->get_hits(false, min_start, max_stop);
-					int peaks_total 	= I[segments[i]->chrom]->get_total(min_start, max_stop);
-					double precision 	= double(bidir_hits)/double(all_bidirs);
-					double recall 		= double(all_hits)/double(peaks_total);
-					if ( 2*((precision*recall)/(precision+recall) ) > F1  ){
-						F1			= 2*((precision*recall)/(precision+recall) ) ;
-						arg_l=l, arg_k=k ;
-					}
-					I[segments[0]->chrom]->reset_hits();
-				}	
-			printf("Best F1 (so far): %.3g, window: %.3gKB, density: %.3gKB, skew: %.3g, percent done: %d  \r", F1, 
-			((window*scale)/1000. ), (scale*(density_a+density_delta*(arg_k))/1000.), (skew_a 	+ skew_delta*(arg_l)),
-			int(100*double(k+1)/(res+1)) );
-			cout<<flush;
+						int single_hits 	= I[segments[i]->chrom]->get_hits(true, min_start, max_stop);
+						int all_hits 		= I[segments[i]->chrom]->get_hits(false, min_start, max_stop);
+						int peaks_total 	= I[segments[i]->chrom]->get_total(min_start, max_stop);
+						double precision 	= double(bidir_hits)/double(all_bidirs);
+						double recall 		= double(bidir_hits)/double(peaks_total);
+						if ( 2*((precision*recall)/(precision+recall) ) > F1  ){
+							F1			= 2*((precision*recall)/(precision+recall) ) ;
+							arg_l=l, arg_k=k , arg_v=v;
+							GOOD 		= true;
+						}
+						I[segments[0]->chrom]->reset_hits();
+					}	
+				printf("Best F1 (so far): %.3g, window: %.3gKB, density: %.3gKB, ct: %.3g, percent done: %d  \r", F1, 
+				( (window_a + window_delta*arg_v)*scale/1000.  ), (scale*(density_a+density_delta*(arg_k))/1000.), (ct_a 	+ ct_delta*(arg_l)),
+				int(100*double(v+1)/(res+1)) );
+				cout<<flush;
+				}
 			}
 			
 		}
 	}
-	if ( bidir_hits ==0 ){
+	if ( not GOOD ){
 		printf("optimization failed\n");
 	}else{
 		printf("\nFinished Optimization");
 		printf("\n---------------------\n");
 		run_global_template_matching( segments, out_dir,
-			window, density_a+density_delta*(arg_k), scale, 0,np,true);
+			window_a + window_delta*arg_v, density_a+density_delta*(arg_k), scale, ct_a 	+ ct_delta*(arg_l),np,0);
+		ofstream FHW;
+		FHW.open(out_dir+"bidirectional_hits_intervals.bed");
+		for (int i = 0; i < segments.size();i++){
+			for (int j = 0; j < segments[i]->bidirectional_bounds.size();j++){
+				FHW<<segments[i]->chrom<<"\t"<<to_string(int( segments[i]->bidirectional_bounds[j][0] ))<<"\t"<<to_string(int( segments[i]->bidirectional_bounds[j][1] ))<<endl;
+			}
+		}
+
+
 	}
-	
 		
 }
 

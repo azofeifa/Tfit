@@ -20,7 +20,8 @@ class component_elongation:
 		self.ri 		= {1:0., -1:0.}
 		self.type 	 	= ty
 		self.bidir 		= bidir_component #bidirectional component to which this belongs
-		setattr(self.bidir, self.type, self) 	
+		if self.bidir is not None:
+			setattr(self.bidir, self.type, self) 	
 		self.c 			= classifier #larger classifier wrapper, which has the hyperparameters
 		self.j 			= j #index of data from which b came from
 		self.remove 	= False
@@ -79,7 +80,10 @@ class component_elongation:
 			self.r[-1]+=r
 		
 	def pdf(self, z,s,move_a=0, move_b=0):
-		return int((s==1 and self.type=="forward") or (s==-1 and self.type=="reverse") or self.type=="noise")*int(self.a+move_a<=z<=self.b+move_b)*(self.w / abs((self.b+move_b) - (self.a + move_a) ))
+		vl 	= int((s==1 and self.type=="forward") or (s==-1 and self.type=="reverse") or self.type=="noise" or self.type=="uniform_model")*int(self.a+move_a<=z<=self.b+move_b)*(self.w / abs((self.b+move_b) - (self.a + move_a) ))
+		if s== 1:
+			return vl*self.pi
+		return vl*(1-self.pi)
 	
 class component_bidir:
 	def __init__(self, mu, si, l, w,pi , classifier):
@@ -248,7 +252,9 @@ class EMGU:
 		self.rvs,self.ll 			= None, None #final group of components
 	def pdf(self, x,s):
 		assert self.rvs is not None, "need to running fit before evalauting mixture pdf"
-		return sum([rv.pdf(x, s) for rv in self.rvs])
+		vl 	= sum([rv.pdf(x, s) for rv in self.rvs ])
+		print vl
+		return vl
 
 
 	def LOG(self, x):
@@ -350,8 +356,11 @@ class EMGU:
 		self.minX, self.maxX 	= minX, maxX
 		if self.K==0: #testing if the data fits a uniform distribution only
 			pi 			= np.sum(X[:,1]) / np.sum(X[:,1:])
+			noise_w 	= 0.001
+			reg_w 		= 0.999
 			vl 			= 1.0 / float(maxX-minX)
-			self.ll 	= sum([self.LOG(vl*pi) * y for y in X[:,1]]) + sum([self.LOG(vl*(1-pi))*y for y in X[:,2]])
+			self.ll 	= sum([self.LOG(vl*pi  ) * y for y in X[:,1]]) + sum([self.LOG(vl*(1-pi)  )*y for y in X[:,2]])
+			
 			self.rvs 	= [component_elongation(minX, maxX, 1.0, pi, None, "uniform_model", self, X.shape[0])]
 			return self.rvs, self.ll
 
@@ -370,8 +379,8 @@ class EMGU:
 		self.uniform_rate= (maxX-minX)/(1*self.K)
 
 		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self) for k in range(self.K)] 
-		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], pis[k][1], bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
-		uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], pis[k][2], bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
+		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
+		uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
 		if self.noise:
 			uniforms+=[component_elongation(minX, maxX, self.noise_max, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
@@ -380,12 +389,12 @@ class EMGU:
 		ll, prevll 			= 0., -np.inf
 		st 					= time.clock()
 		while t < self.max_it and not converged:
-			self.rvs 		= [c for c in components if c.type!="noise"]
-			self.draw(X)
+			self.rvs 		= [c for c in components ]
+			#self.draw(X)
 			
-			for rv in self.rvs:
-				if rv.type=="EMGU":
-					print rv
+			# for rv in self.rvs:
+			# 	if rv.type=="EMGU":
+			# 		print rv
 			
 			#######
 			#E-step
@@ -409,11 +418,7 @@ class EMGU:
 			
 			N 	= sum([sum(c.r.values()) for c in components])
 			for k,c in enumerate(components):
-				if  c.check():
-					c.reset()
-					self.resets+=1
-				else:
-					c.set_new_parameters(N)
+				c.set_new_parameters(N)
 				
 				
 			#check which components blew up and reset
@@ -440,7 +445,10 @@ class EMGU:
 	def draw(self, X):
 		assert self.rvs is not None, "need to run fit before drawing"
 		F 			= plt.figure(figsize=(15,10))
+
 		ax 			= F.add_subplot(111)
+		print self.compute_log_likelihood(X, self.rvs)
+		ax.set_title("LL: " + str(sum(map(lambda i: math.log(self.pdf(X[i,0], 1))*X[i,1] , range(len(X)))) + sum(map(lambda i: math.log(self.pdf(X[i,0], -1))*X[i,2] , range(len(X)) ) ) ) )
 		ax.bar(X[:,0],  X[:,1] / float(np.sum(X[:,1:]) ), color="blue", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		ax.bar(X[:,0], -X[:,2] / float(np.sum(X[:,1:])), color="red", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		xs 			= np.linspace(X[0,0], X[-1,0], 1000)
@@ -456,18 +464,44 @@ class EMGU:
 
 
 if __name__ == "__main__":
+
+	#-124020.007205
+	#-120376.261402
+	# 29692.0
+	N 	= 29692.0
 	#==================================
 	#testing MAP-EM procedure
 	X 	= simulate.runOne(mu=0, s=0.1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
 		N=1000, SHOW=False, bins=300, noise=True )
-	#X 	= load.grab_specific_region("chr1",6229860,6303055, SHOW=False, bins=300 )
-	# X[:,0]-=min(X[:,0])
-	# X[:,0]/=500.
+	#2,518,131-2,523,183
+	X 	= load.grab_specific_region("chr1",2518131,2523183, SHOW=False, bins=300 )
+	X[:,0]-=min(X[:,0])
+	X[:,0]/=100.
+	print np.sum(X[:,1:])
 	# print max(X[:,0])
 
 	clf = EMGU(noise=True, K=1,noise_max=0.3,moveUniformSupport=3,max_it=200, cores=1, 
+		seed=False)
+	clfN = EMGU(noise=True, K=0,noise_max=0.3,moveUniformSupport=3,max_it=200, cores=1, 
 		seed=True)
+
 	clf.fit(X)
 	clf.draw(X)
+	#print clf.ll
+	rvs, ll 	= clfN.fit(X)
+	clfN.draw(X)
+	BICU 	= -2*ll + 1*math.log(N)
+	BICN 	= -2*-120376.261402 + 7*math.log(N)
+	D 		= -2*ll + 2*(-120376.261402)
+	print ll, BICU, BICN, BICU < BICN
 	#==================================
 	
+
+
+
+
+
+
+
+
+

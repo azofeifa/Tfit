@@ -2,7 +2,7 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~MODEL #do not change this line
 -v 			= 1
--i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/test_file_2.tsv
+-i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3_selected_formatted.tsv
 -o 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/
 -br 		= 10 #binning resolution
 -ns 		= 100 #normalizing scale
@@ -12,7 +12,7 @@
 -ct 		= 0.0001 #EM convergence threshold difference
 -mi 		= 2000 #Number of EM iterations before it is aborted
 -max_noise	= 0.05 #weight of the random/uniform noise component
--template 	= 0 #run window, template pattern matching
+-template 	= 1 #run window, template pattern matching
 -density 	= 1360 #bidirectional density cutff (given -template option)
 -confidence = 1.1 #bidirectional density cutff (given -template option)
 -np 	   	= 4 #number of cores/CPUs to run on

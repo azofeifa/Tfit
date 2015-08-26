@@ -106,6 +106,8 @@ public:
 	int fit(segment *,vector<double>);
 	classifier(int, double, int, double, double, double, double
 		, double, double, double, double);
+	classifier(int, double, int, double, double, double, double
+		, double, double, double, double, bool);
 	classifier();
 	void free_classifier();
 	string print_out_components();
@@ -116,6 +118,7 @@ public:
 	component * components;
 	bool converged;
 	double r_mu;
+	bool move_l;
 	double ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3;
 };
 

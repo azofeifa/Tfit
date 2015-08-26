@@ -10,20 +10,22 @@
 #include "model.h"
 #include "read_in_parameters.h"
 #include "across_segments.h"
+#include <cmath>
 using namespace std;
 //========================
 //model fit wrapper classes
 model_component::model_component(){}
+
 model_component::model_component(simple_c sc){
 	mu 	= sc.ps[0],si = sc.ps[1], l = sc.ps[2], w_e = sc.ps[3], pi = sc.ps[4];
 	f_b = sc.ps[7], f_w = sc.ps[5], r_a = sc.ps[8], r_w = sc.ps[6];
 }
 
-
 bidir_preds::bidir_preds(double ll, double NN){
 	noise_ll 	= ll;
 	N=NN;
 }
+
 void bidir_preds::model_selection(double penality){
 	typedef map<int, all_model_components >::iterator it_type;
 	BIC_score 	= -2*noise_ll + 1*log(N);
@@ -47,11 +49,12 @@ void bidir_preds::model_selection(double penality){
 	}
 	printf("BEST: %d\n", argK);
 	printf("--------------------------\n");
-	
 }
+
 bidir_preds::bidir_preds( ){
 	noise_ll=0, N=0;
 }
+
 void bidir_preds::insert_component(int K, simple_c sc, double LL){
 	G[K].insert_component(sc, LL);
 }
@@ -65,22 +68,20 @@ void all_model_components::insert_component(simple_c sc, double LL){
 	all_components.push_back(model_component(sc));
 }
 
-
-
-
-//========================
-//segment class
 segment::segment(string chr, int st, int sp){
 	chrom	= chr;
 	start	= st;
 	stop	= sp;
 	N 		= 0;
 	minX=st, maxX=sp;
-	counts 	= 0;
+	counts 	= 1;
+	XN 		= 0;
 }
+
 segment::segment(){
 	N 		= 0;
-	counts 	= 0;
+	counts 	= 1;
+	XN 		= 0;
 }
 
 string segment::write_out(){
@@ -111,6 +112,7 @@ void segment::add(int strand, double x, double y){
 	}
 	N+=(x+y);
 }
+
 void segment::add2(int strand, double x, double y){
 	vector<double> v2(2);
 	v2[0] 	= x;
@@ -134,7 +136,6 @@ void segment::add2(int strand, double x, double y){
 		reverse.push_back(v2);
 	}
 }
-
 
 void segment::bin(double delta, double scale, bool erase){
 	X 				= new double*[3];
@@ -227,8 +228,6 @@ void segment::bin(double delta, double scale, bool erase){
 	forward.clear();
 	reverse.clear();
 }
-
-
 
 void segment::insert_bidirectional_data(int pad){
 
@@ -343,6 +342,27 @@ vector<segment*> load_EMGU_format_file(string FILE, string spec){
 	return segments;
 }
 
+vector<vector<double> > interval_sort(vector<vector<double> > A){
+	bool GOOD=false;
+	vector<double> cp;
+	if (not A.size()){
+		return A;
+	}
+	while (not GOOD){
+		GOOD=true;
+		for (int i =1; i < A.size(); i++){
+			if (A[i][0] < A[i-1][0]){
+				cp 		= A[i-1];
+				A[i-1] 	= A[i];
+				A[i] 	= cp;
+				GOOD=false;
+			}
+		}
+	}
+	return A;
+}
+
+
 
 void BIN(vector<segment*> segments, int BINS, double scale, bool erase){
 	for (int i = 0 ; i < segments.size() ; i ++){
@@ -355,6 +375,7 @@ void BIN(vector<segment*> segments, int BINS, double scale, bool erase){
 interval::interval(){
 	hits 	= 0;
 };
+
 interval::interval(string chr, int st, int sp){
 	chrom 	= chr;
 	start 	= st;
@@ -363,8 +384,6 @@ interval::interval(string chr, int st, int sp){
 };
 
 void interval::insert(double x, double y, int strand){
-
-
 }
 
 vector<interval> bubble_sort(vector<interval> X){
@@ -382,7 +401,9 @@ vector<interval> bubble_sort(vector<interval> X){
 	}
 	return X;
 }
+
 merged_interval::merged_interval(){};
+
 merged_interval::merged_interval(int st, int sp, interval unit, int i){
 	start 	= st;
 	stop 	= sp;
@@ -396,6 +417,7 @@ void merged_interval::update(interval insert){
 		intervals.push_back(insert);
 	}
 }
+
 void merged_interval::insert(double x,double y, int strand){
 	if (strand == 1){
 		for (int i=0; i < intervals.size(); i++){
@@ -413,6 +435,7 @@ void merged_interval::insert(double x,double y, int strand){
 		}
 	}
 }
+
 bool merged_interval::find(int ST, int SP){
 	bool FOUND=false;
 	for (int i = 0; i < intervals.size(); i++){
@@ -423,6 +446,7 @@ bool merged_interval::find(int ST, int SP){
 	}
 	return FOUND;
 }
+
 int merged_interval::get_hits(bool y, int ST, int SP){
 	int HITS = 0;
 	for (int i = 0; i < intervals.size(); i++){
@@ -436,11 +460,13 @@ int merged_interval::get_hits(bool y, int ST, int SP){
 	}
 	return HITS;
 }
+
 void merged_interval::reset_hits(){
 	for (int i = 0; i < intervals.size(); i++){
 		intervals[i].hits=0;
 	}
 }
+
 int merged_interval::get_total(int ST, int SP){
 	if (SP > start and ST < stop){
 		return intervals.size();
@@ -448,15 +474,15 @@ int merged_interval::get_total(int ST, int SP){
 	return 0.;
 }
 
-
-//============================
-//interval tree stuff
+//================================================================================================
+//interval tree code
 
 interval_tree::interval_tree(){
 	left 	= NULL;
 	right 	= NULL;
 	current = NULL;
 };
+
 int interval_tree::getDepth(){
 	if (left!=NULL and right!=NULL){
 		return 1 + left->getDepth() + right->getDepth();
@@ -467,6 +493,7 @@ int interval_tree::getDepth(){
 	}
 	return 1;
 }
+
 int interval_tree::get_total(int start, int stop){
 
 	if (left!=NULL and right!=NULL){
@@ -547,7 +574,6 @@ void interval_tree::reset_hits( ){
 	}
 }
 
-
 bool interval_tree::find(int start, int stop){
 	if (( stop > current->start) and ( start < current->stop) ){
 		return current->find(start, stop);
@@ -562,7 +588,8 @@ bool interval_tree::find(int start, int stop){
 	}
 }
 
-
+//================================================================================================
+//loading from file functions...need to clean this up...
 
 vector<segment*> load_bedgraphs_total(string forward_strand, 
 	string reverse_strand, int BINS, double scale, string spec_chrom){
@@ -621,12 +648,7 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 		printf("couldn't find chromosome %s in bedgraph files\n", spec_chrom.c_str());
 	}
 	return segments;
-
-
 }
-
-
-
 
 map<string, vector<merged_interval*> >  load_intervals(string FILE, int pad){
 
@@ -690,7 +712,6 @@ map<string, vector<merged_interval*> >  load_intervals(string FILE, int pad){
 	return A;
 }
 
-
 void insert_bedgraph(map<string, interval_tree *> intervals, string FILE, int strand){
 
 	ifstream FH(FILE);
@@ -736,7 +757,6 @@ map<string, vector<interval> > insert_bed_file(string FILE,
 		}
 	}
 	return G;
-
 }
 
 map<string, interval_tree *> load_bidir_bed_files(string in_directory, string spec_chrom){
@@ -806,10 +826,107 @@ map<string, interval_tree *> load_bidir_bed_files(string in_directory, string sp
 
 
 	return I;
-	
-
 }
 
+vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G, 
+	string forward_file, string reverse_file, int pad){
+	typedef map<string , vector<vector<double> > >::iterator it_type;
+	typedef map<string, vector<segment *> >::iterator it_type_2;
+	vector<segment*> segments;
+	map<string, vector<segment*> > A;
+	map<string, vector<segment*> > B;
+	segment * S;
+	for (it_type i = G.begin(); i != G.end(); i++){
+		G[i->first] 	= interval_sort(i->second);
+		for (int j = 0; j < G[i->first].size(); j++){
+			S 			= new segment(i->first, int(G[i->first][j][0] )-pad, int(G[i->first][j][1])+pad);
+			B[i->first].push_back(S);
+		}
+	}
+
+	int N,j;
+	//we want to merge the overlaping calls
+	for (it_type_2 i = B.begin(); i!=B.end();i++){
+		N 	= i->second.size(), j 	= 1;
+		S 	= i->second[0];
+		while (j < N){
+			while (j < N and i->second[j]->start < S->stop and i->second[j]->stop > S->start  ){
+				double center1=(S->start + S->stop) /2.;
+				double center2=(i->second[j]->start + i->second[j]->stop) /2.;
+				
+				double dist = abs(center2-center1);
+				if (dist > 1000){
+					S->counts+=1;
+				}
+				S->start 	= min(i->second[j]->start, S->start), S->stop 	= max(i->second[j]->stop,S->stop );
+				j++;
+			}
+			A[i->first].push_back(S);
+			if (j < N){
+				S 			= i->second[j];
+			}
+		}
+	}
+	
+	vector<string> FILES = {forward_file, reverse_file};
+	int strands[2] 		= {1,-1};
+	int start, stop;
+	double coverage;
+	N 	= 0,j 	= 0;
+	int strand 	= 1;
+	int o_st, o_sp;
+	vector<string> lineArray;
+	string chrom, prevchrom, line;
+	for (int i =0;i<2;i++){
+		strand 	= strands[i];
+		ifstream FH(FILES[i]);
+		if (FH){
+			prevchrom="";
+			while (getline(FH, line)){
+				lineArray 	= splitter(line, "\t");
+				chrom 		= lineArray[0];
+				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+				if (prevchrom!=chrom){
+					if (A.find(chrom)!=A.end()){
+						N 	= A[chrom].size(), j = 0;
+					}else{
+						N 	= 0,j=0;
+					}
+				}
+				while (j < N and A[chrom][j]->stop < start){
+					j++;
+				}
+				if (j < N and A[chrom][j]->start < stop){ //overlap!
+					o_st 	= max(A[chrom][j]->start, start);
+					o_sp 	= min(A[chrom][j]->stop, stop);
+					for (int u = o_st; u < o_sp; u++){
+						A[chrom][j]->add(strand, double(u), coverage );
+					}
+				}
+				prevchrom 	= chrom;
+			}
+			
+		}else{
+			cout<<"could not open: "<<FILES[i]<<endl;
+			segments.clear();
+
+			return segments;
+		}
+		FH.close();
+	}
+	
+	for (it_type_2 i = A.begin(); i!=A.end();i++){
+		for (int j = 0; j < i->second.size();j++){
+			segments.push_back(i->second[j]);
+		}
+	}
+	
+	return segments;
+}
+
+
+//================================================================================================
+//write out to file functions
 
 void write_out(string FILE, map<string, interval_tree *> A){
 	typedef map<string, interval_tree *>::iterator it_type;
@@ -820,23 +937,24 @@ void write_out(string FILE, map<string, interval_tree *> A){
 	
 	for(it_type c = A.begin(); c != A.end(); c++) {
 		N 	= A[c->first]->getDepth();
-		merged_interval array[N];
-		A[c->first]->insert_into_array(array,N);
+		merged_interval * Array  = new merged_interval[N];
+		A[c->first]->insert_into_array(Array,N);
 		for (int i = 0; i < N;i++){
-			for (int j = 0; j < array[i].intervals.size(); j++ ){
-				if (array[i].intervals[j].forward_x.size()>0 and array[i].intervals[j].reverse_x.size()>0){
-					FHW<<"#"<<c->first<<","<<to_string(array[i].intervals[j].start)<<","<<to_string(array[i].intervals[j].stop)<<endl;
+			for (int j = 0; j < Array[i].intervals.size(); j++ ){
+				if (Array[i].intervals[j].forward_x.size()>0 and Array[i].intervals[j].reverse_x.size()>0){
+					FHW<<"#"<<c->first<<","<<to_string(Array[i].intervals[j].start)<<","<<to_string(Array[i].intervals[j].stop)<<endl;
 					FHW<<"~forward"<<endl;
-					for (int k = 0; k < array[i].intervals[j].forward_x.size(); k++ ){
-						FHW<<to_string(int(array[i].intervals[j].forward_x[k]))<<","<<to_string(array[i].intervals[j].forward_y[k])<<endl;
+					for (int k = 0; k < Array[i].intervals[j].forward_x.size(); k++ ){
+						FHW<<to_string(int(Array[i].intervals[j].forward_x[k]))<<","<<to_string(Array[i].intervals[j].forward_y[k])<<endl;
 					}
 					FHW<<"~reverse"<<endl;
-					for (int k = 0; k < array[i].intervals[j].reverse_x.size(); k++ ){
-						FHW<<to_string(int(array[i].intervals[j].reverse_x[k]))<<","<<to_string(array[i].intervals[j].reverse_y[k])<<endl;
+					for (int k = 0; k < Array[i].intervals[j].reverse_x.size(); k++ ){
+						FHW<<to_string(int(Array[i].intervals[j].reverse_x[k]))<<","<<to_string(Array[i].intervals[j].reverse_y[k])<<endl;
 					}
 				}
 			}
 		}
+		delete[] Array;
 	}
 }
 
@@ -873,6 +991,17 @@ void write_out_bidir_fits( vector<segment*> segments,
 				}
 			}
 
+		}
+	}
+}
+
+void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir){
+	typedef map<string , vector<vector<double> > >::iterator it_type;
+	ofstream FHW;
+	FHW.open(out_dir+"bidirectional_hits_intervals.bed");
+	for (it_type c = G.begin(); c!=G.end(); c++){
+		for (int i = 0; i < c->second.size(); i++){
+			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<endl;
 		}
 	}
 }

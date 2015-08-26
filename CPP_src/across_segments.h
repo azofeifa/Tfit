@@ -27,6 +27,7 @@ struct simple_c{
 };
 vector<simple_c> run_model_accross_segments_template(vector<segment*>, 
 	params *);
+vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *>, params *);
 string get_header(params *);
 
 #endif

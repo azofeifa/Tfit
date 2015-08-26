@@ -13,8 +13,9 @@
 -mi 		= 2000 #Number of EM iterations before it is aborted
 -max_noise	= 0.05 #weight of the random/uniform noise component
 -template 	= 1 #run window, template pattern matching
--density 	= 1360 #bidirectional density cutff (given -template option)
--confidence = 1.1 #bidirectional density cutff (given -template option)
+-density 	= 4410 #bidirectional density cutff (given -template option)
+-window 	= 700 #window to search around
+-ct 		= 0.9 #bidirectional density cutff (given -template option)
 -np 	   	= 4 #number of cores/CPUs to run on
 -chr 		= all #specific chromosome to process on?
 -r_mu 		= 1 #seed EM randomally from the peak finder

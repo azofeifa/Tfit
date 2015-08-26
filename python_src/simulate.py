@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math as m
 def runOne(mu=0, s=1, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=1000, SHOW=False , bins=200, noise=False ):
-	print s
 	forward 	 = list(np.random.normal(mu, s, int(N*we*pie)) + np.random.exponential(l, int(N*we*pie) ))
-	forward 	+= list(np.random.uniform(mu, lr, int(N*wr*pir)))
+	#forward 	+= list(np.random.uniform(mu, lr, int(N*wr*pir)))
 	
 	reverse 	 = list(np.random.normal(mu, s, int(N*we*(1-pie))) - np.random.exponential(l, int(N*we*(1-pie) )))
-	reverse 	+= list(np.random.uniform(ll, mu, int(N*wl*(1-pil))))
+	#reverse 	+= list(np.random.uniform(ll, mu, int(N*wl*(1-pil))))
 
 	#simulate noise?
 	if noise:
@@ -58,6 +58,36 @@ def BIN(forward, reverse, bins, SHOW=False):
 		plt.bar(X[:,0], -X[:,2], color="red", width = (X[-1,0]- X[0,0]) / bins)
 		plt.show()
 	return nX
+def weighted_mean(x,y):
+	N 	= sum(y)
+	return sum([x[i]*y[i] for i in range(len(x))])/float(N)
+def weird_variance(x,y,mu,direct):
+	S 	= 0
+	N 	= 0
+	for i in range(len(x)):
+		if direct==1 and x[i] < mu:
+			S+=pow(x[i]-mu,2)*y[i]
+			N+=y[i]
+			pass
+		elif direct==-1 and x[i] > mu:
+			S+=pow(x[i]-mu,2)*y[i]
+			N+=y[i]
+	return S/N
+
+if __name__=="__main__":
+	X 	= runOne(mu=0, s=20, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=10000, SHOW=False , bins=200, noise=False )
+	mu 	= 0.5*(weighted_mean(X[:,0], X[:,1])+weighted_mean(X[:,0], X[:,2]))
+	l 	= 0.5*(weighted_mean(X[:,0], X[:,1])-weighted_mean(X[:,0], X[:,2]))
+	print mu,l
+	print m.sqrt(weird_variance(X[:,0], X[:,1], mu, 1))
+	print m.sqrt(weird_variance(X[:,0], X[:,2], mu, -1))
+	
+	bins 	= len(X)
+	plt.bar(X[:,0], X[:,1],width = (X[-1,0]- X[0,0]) / bins,alpha=0.2)
+	plt.bar(X[:,0], -X[:,2], color="red",width = (X[-1,0]- X[0,0]) / bins,alpha=0.2)
+
+	plt.scatter([mu], [0], s=20)
+	plt.show()
 
 
 

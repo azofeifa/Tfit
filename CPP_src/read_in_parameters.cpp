@@ -32,7 +32,8 @@ params::params(){
 	p["-ALPHA_3"] 	= "1";
 	p["-template"] 	= "1";
 	p["-density"] 	= "1000";
-	p["-confidence"]= "0.95";
+	p["-window"] 	= "1000";
+	p["-ct"] 		= "0.95";
 	p["-pad"] 		= "5000";
  	
 
@@ -55,13 +56,34 @@ params::params(){
 	p4["-i"] 				= "";
 	p4["-j"] 				= "";
 	p4["-k"] 				= "";
+	p4["-optimize"] 		= "0";
 	p4["-o"] 				= "1";
 	p4["-ns"] 				= "100";
 	p4["-br"] 				= "50";
 	p4["-density"] 			= "1000";
+	p4["-window"] 			= "1000";
+	p4["-ct"] 				= "0.9";
+	
 	p4["-chr"] 				= "all";
 	p4["-opt_res"] 			= "5";
 	p4["-np"] 				= "4";
+	p4["-MLE"] 				= "1";
+	p4["-pad"] 				= "3000";
+
+	p4["-rounds"] 			= "10";
+	p4["-ct"] 				= "0.0001";
+	p4["-max_noise"] 		= "0.05";
+	p4["-mi"] 				= "300";
+	p4["-r_mu"] 			= "0";
+	p4["-ALPHA_0"] 			= "1";
+	p4["-BETA_0"] 			= "1";
+	p4["-ALPHA_1"] 			= "1";
+	p4["-BETA_1"] 			= "1";
+	p4["-ALPHA_2"] 			= "1";
+	p4["-ALPHA_3"] 			= "1";
+	
+
+
 
 
 
@@ -121,7 +143,7 @@ void params::display(){
 			cout<<"-mi        : "<<p["-mi"]<<endl;
 			cout<<"-np        : "<<p["-np"]<<endl;
 			cout<<"-density   : "<<p["-density"]<<endl;
-			cout<<"-confidence: "<<p["-confidence"]<<endl;
+			cout<<"-ct        : "<<p["-ct"]<<endl;
 			cout<<"-pad       : "<<p["-pad"]<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
@@ -149,7 +171,7 @@ void params::display(){
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 	}else if (module=="BIDIR")	{
-		if (p4["-k"].empty()){
+		if (p4["-optimize"]=="0"){
 			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"              User Provided EMGU Parameters                     "<<endl;
 			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
@@ -158,9 +180,14 @@ void params::display(){
 			cout<<"-k           : "<<p4["-k"]<<endl;
 			cout<<"-o           : "<<p4["-o"]<<endl;
 			cout<<"-window      : "<<p4["-window"]<<endl;
+			cout<<"-ct          : "<<p4["-ct"]<<endl;
+			cout<<"-density     : "<<p4["-density"]<<endl;
+			cout<<"-MLE         : "<<p4["-MLE"]<<endl;
+			cout<<"-pad         : "<<p4["-pad"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
 			cout<<"-np          : "<<p4["-np"]<<endl;
+
 			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 		}else{

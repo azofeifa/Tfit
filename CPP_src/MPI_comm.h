@@ -11,4 +11,8 @@ map<int,int> get_all_bidir_sizes(vector<simple_c>, int);
 void send_bidir_size(vector<simple_c>);
 map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c>, map<int,int>, int , int );
 void send_all_simple_c_fits(vector<simple_c>);
+map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> ,
+vector<segment *>, int, int );
+	
+
 #endif

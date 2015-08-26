@@ -240,7 +240,6 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		
 		b_forward 	= data->X[0][j];
 		if (b_forward < (mu+(1.0/lambda)) ){
-			printf("HERE1\n");
 			forward 	= UNI(data->minX, data->maxX, 0., 1, j, 0.5);
 		}
 		else{	
@@ -253,7 +252,6 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 
 		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
 		if (a_reverse > mu-(1.0/lambda) ){
-			printf("HERE2\n");
 			reverse 	= UNI(data->minX, data->maxX, 0., -1, j,0.5);
 		}else{
 			reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
@@ -268,7 +266,7 @@ void component::print(){
 		string text 	= bidir.print()+ "\n";
 		text+=forward.print()+ "\n";
 		text+=reverse.print() + "\n";
-		printf(text.c_str());
+		cout<<text;
 	}else{
 		cout<<"NOISE: " << noise.w<<"," <<noise.pi<<endl;
 	}
@@ -282,6 +280,7 @@ string component::write_out(){
 
 		return text;
 	}
+	return "";
 }
 
 
@@ -413,6 +412,7 @@ bool component::check_elongation_support(){
 	else if(reverse.b <= reverse.a and bidir.mu==0){
 		return true;
 	}
+	return false;
 }
 
 
@@ -571,6 +571,27 @@ classifier::classifier(int k, double ct, int mi, double nm,
 	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
 	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
 
+	move_l = true;
+
+}
+classifier::classifier(int k, double ct, int mi, double nm,
+	double R_MU, double alpha_0, double beta_0,
+	double alpha_1, double beta_1, double alpha_2,double alpha_3, bool MOVE){
+	K 						= k ;
+	seed 					= true;
+	convergence_threshold 	= ct;
+	max_iterations 			= mi;
+	noise_max 				= nm;
+	p 						= 0.8;
+	last_diff 				= 0;
+	r_mu 					= R_MU;
+
+	//=============================
+	//hyperparameters
+	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
+	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
+
+	move_l 	= MOVE;
 
 }
 
@@ -649,11 +670,9 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 				converged=false, ll=nINF;
 				return 0;
 			}
-			components[k].print();
 		       
 		}
-		printf("%d,--------------------------------\n",t );
-	
+		
 		//******
 		//E-step
 		for (int i =0; i < data->XN;i++){
@@ -695,13 +714,18 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		ll 	= calc_log_likelihood(components, K+add, data);
 		//******
 		//Move Uniform support		
-		ll 	= move_uniforom_support(components, K, add, data,move, ll);
+		if (move_l){
+			ll 	= move_uniforom_support(components, K, add, data,move, ll);
+		}
 		if (abs(ll-prevll)<convergence_threshold){
 			converged=true;
 		}
-
+		if (not isfinite(ll)){
+			ll 	= nINF;
+			return 0;	
+		}
 		last_diff=abs(ll-prevll);
-		printf("%f,%f,%d\n", ll, last_diff, t  );
+
 		prevll=ll;
 		// for (int c = 0; c<K;c++){
 		// 	components[c].print();

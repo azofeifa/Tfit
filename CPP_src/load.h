@@ -53,6 +53,7 @@ public:
 	vector< vector<double> > forward;
 	vector< vector<double> > reverse;
 	int counts;
+	vector<double> centers;
 	segment(string, int , int);
 	segment();
 	string write_out();
@@ -138,6 +139,9 @@ map<string, interval_tree *> load_bidir_bed_files(string,
 void write_out_bidir_fits( vector<segment*>, 
 	map<int, map<int, bidir_preds> >, params *);
 
+void write_out_bidirs(map<string , vector<vector<double> > >, string);
 
+vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
+	string , string, int );
 
 #endif
