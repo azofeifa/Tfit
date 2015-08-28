@@ -143,7 +143,7 @@ void segment::bin(double delta, double scale, bool erase){
 	SCALE 			= scale;
 	int BINS;
 	BINS 		= (maxX-minX)/delta;
-	
+	start = minX, stop=maxX;
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}
