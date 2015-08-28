@@ -28,5 +28,5 @@
 -mi 			= 2000 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
 -optimize 		= 0 #whether or not we should train on the bed files in the -k dir
-
+-show_seeds 		= 1 #show the pseudo moment estimators that the MLE will be fit on
 

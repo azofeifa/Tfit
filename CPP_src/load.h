@@ -5,6 +5,7 @@
 #include <map>
 #include "read_in_parameters.h"
 using namespace std;
+class final_model_output;
 class simple_c;
 class model_component{
 public:
@@ -143,5 +144,8 @@ void write_out_bidirs(map<string , vector<vector<double> > >, string);
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
 	string , string, int );
+
+void write_out_MLE_model_info(vector<final_model_output>, params *);
+
 
 #endif

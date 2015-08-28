@@ -26,11 +26,12 @@ public:
 	double k_ll;
 	double scale;
 	int start;
+	string chrom;
 	vector<rsimple_c> components;
-	final_model_output(string, int,vector<rsimple_c>, double, double,double,int );
+	final_model_output(string, string, int,vector<rsimple_c>, double, double,double,int );
 	final_model_output();
 	string write_out_config();
-	string write_out_IGV();
+	string write_out_bed();
 
 };
 

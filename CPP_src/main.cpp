@@ -92,7 +92,15 @@ int main(int argc, char* argv[]){
 			run_global_template_matching(segments, out_file_dir, window, 
 				density,scale,ct, np,-0.1 );	
 		}
-		map<string , vector<vector<double> > > G = gather_all_bidir_predicitions(all_segments, segments , rank, nprocs, out_file_dir);
+		map<string , vector<vector<double> > > G;
+		if (P->p4["-show_seeds"] == "1"){
+			G = gather_all_bidir_predicitions(all_segments, 
+				segments , rank, nprocs, out_file_dir);
+		}else{
+			G = gather_all_bidir_predicitions(all_segments, 
+				segments , rank, nprocs, "");
+			
+		}
 		vector<segment *> bidir_segments;
 		if (not G.empty()  ){
 			bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
@@ -105,6 +113,7 @@ int main(int argc, char* argv[]){
 		map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
 		if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
 			vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
+			write_out_MLE_model_info(A, P);
 		}
 
 

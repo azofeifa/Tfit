@@ -81,6 +81,7 @@ params::params(){
 	p4["-BETA_1"] 			= "1";
 	p4["-ALPHA_2"] 			= "1";
 	p4["-ALPHA_3"] 			= "1";
+	p4["-show_seeds"] 		= "0";
 	
 
 

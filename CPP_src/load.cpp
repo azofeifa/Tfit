@@ -10,6 +10,7 @@
 #include "model.h"
 #include "read_in_parameters.h"
 #include "across_segments.h"
+#include "model_selection.h"
 #include <cmath>
 using namespace std;
 //========================
@@ -1015,13 +1016,43 @@ void write_out_bidir_fits( vector<segment*> segments,
 void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir){
 	typedef map<string , vector<vector<double> > >::iterator it_type;
 	ofstream FHW;
-	FHW.open(out_dir+"bidirectional_hits_intervals.bed");
+	FHW.open(out_dir+"prelim_bidir_hits.bed");
 	for (it_type c = G.begin(); c!=G.end(); c++){
 		for (int i = 0; i < c->second.size(); i++){
 			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<endl;
 		}
 	}
 }
+
+string getp4_param_header(params * P){
+	string header 	= "";
+	return header;
+}
+
+void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
+	string out_file_dir 	= P->p4["-o"];
+	//so we want to write out two files:
+	//(1) a specific file format with all parameter estimates listed
+	//(2) a bed file showing final bidir predictions (1 standard deviation)
+
+	ofstream FHW_bed;
+	ofstream FHW_config;
+	
+	FHW_bed.open(out_file_dir+"bidirectional_hits_intervals.bed");
+	FHW_config.open(out_file_dir+"parameters_out.tsv");
+	
+	for (int i = 0; i < A.size(); i++){
+		FHW_bed<<A[i].write_out_bed();
+		FHW_config<<A[i].write_out_config();
+	}
+
+	FHW_bed.close();
+	FHW_config.close();
+
+
+
+}
+
 
 
 

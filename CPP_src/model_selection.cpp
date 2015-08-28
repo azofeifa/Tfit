@@ -319,8 +319,9 @@ map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
 	return G;
 }
 
-final_model_output::final_model_output(string h, int k, 
+final_model_output::final_model_output(string chr, string h, int k, 
 	vector<rsimple_c> rcs, double n_ll, double K_ll, double ns, int st ){
+	chrom 	= chr;
 	start 	= st;
 	scale 	= ns;
 	header 	= h;
@@ -378,6 +379,16 @@ string final_model_output::write_out_config(){
 	line+="\n";
 	return line;
 
+}
+
+string final_model_output::write_out_bed(){
+	string line 	= "";
+	for (int k = 0; k < components.size(); k++){
+		int center 	= (components[k].ps[2]*scale + start);
+		int std 	= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
+		line+=chrom + "\t" + to_string(center-std) + "\t" + to_string(center+std) + "\n";
+	}
+	return line;
 }
 
 vector<int> get_scores(map<string, map<int, vector<rsimple_c> > > G, double penality){
@@ -468,6 +479,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	double noise_ll;
 	double k_ll;
 	int start;
+	string chr;
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
 		vector<rsimple_c> components;
 		if (B->second.find(1)==B->second.end()){//everybody should have at least one model fit
@@ -475,13 +487,14 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 		}else{
 			noise_ll 		= B->second[1][0].ps[0];
 			start 			= B->second[1][0].st_sp[0];
+			chr 			= B->second[1][0].chrom;
 			if (B->second.find(scores[i])!=B->second.end()){
 				components 	= B->second[scores[i]];
 				k_ll 		= components[0].ps[1];
 			}else{
 				k_ll 		= nINF;
 			}
-			A.push_back( final_model_output(B->first, scores[i], components, noise_ll, k_ll, scale,start ) );
+			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start ) );
 		}
 		i++;
 		

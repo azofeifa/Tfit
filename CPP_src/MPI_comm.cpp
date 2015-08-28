@@ -157,7 +157,8 @@ struct bounds2{
 public:
 	int D[3];
 };
-map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, vector<segment *> segments , 
+map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, 
+	vector<segment *> segments , 
 	int rank, int nprocs, string out_file_dir){
 
 	map<string , vector<vector<double> > > G;
