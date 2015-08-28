@@ -5,6 +5,7 @@
 #include <map>
 #include "load.h"
 #include "model.h"
+#include "MPI_comm.h"
 using namespace std;
 class model{
 public:
@@ -17,6 +18,22 @@ public:
 	void add_component(bool, vector<string>, int);
 
 };
+class final_model_output{
+public:
+	string header;
+	int K;
+	double noise_ll;
+	double k_ll;
+	double scale;
+	int start;
+	vector<rsimple_c> components;
+	final_model_output(string, int,vector<rsimple_c>, double, double,double,int );
+	final_model_output();
+	string write_out_config();
+	string write_out_IGV();
+
+};
+
 
 class S{
 public:
@@ -40,4 +57,7 @@ public:
 void run_model_selection(string, string, double );
 map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
 	map<int, map<int, bidir_preds> > , double );
+
+void optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > >, params *);
+
 #endif

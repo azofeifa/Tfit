@@ -386,7 +386,7 @@ void component::update_parameters(double N, int K){
 		
 		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
-		if (bidir.si >= 75.){//this component is blowing up
+		if (bidir.si >= 10.){//this component is blowing up
 			EXIT 	= true;
 		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
@@ -427,7 +427,7 @@ bool component::check_elongation_support(){
 double sum(double * X, int N){
 	double vl=0;
 	for (int i = 0; i < N; i++){
-		vl=(vl+X[i]);
+		vl+=X[i];
 	}
 	return vl;
 
@@ -610,9 +610,14 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	if (K==0){
 		//calc_likeihood coming from uniform model, only
 		ll 	= 0;
+		double SS 	= 0;
 		for (int i = 0; i < data->XN; i ++){
 			ll+=(LOG(vl*(pi) )*data->X[1][i]);
 			ll+=(LOG(vl*(1-pi))*data->X[2][i]);
+			SS+=data->X[1][i];
+		}
+		if (not isfinite(ll) or ll==nINF){
+			printf("%f, %f, %f\n",SS ,data->minX, data->maxX );
 		}
 		converged=true;
 		last_diff=0;

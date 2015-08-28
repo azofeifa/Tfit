@@ -7,7 +7,7 @@
 -k 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/optimize_bidir_directory/ #directory of bed files to optimize to
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/ #output file directory
 -chr 			= chr1 #train on a specific chromosome
--br 			= 25 #binning resolution do not consider changing
+-br 			= 100 #binning resolution do not consider changing
 -density 		= 4410 #read density cut off
 -window 		= 700 #window
 -pad 			= 3000
@@ -23,9 +23,10 @@
 -BETA_1 		= 1 #prior for lambda
 -ALPHA_2 		= 1 #prior for weights
 -ALPHA_3 		= 10000 #prior for strand probs
--rounds 		= 4 #number of random EM initializations
+-rounds 		= 5 #number of random EM initializations
 -ct 			= 0.0001 #EM convergence threshold difference
 -mi 			= 2000 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
+-optimize 		= 0 #whether or not we should train on the bed files in the -k dir
 
 

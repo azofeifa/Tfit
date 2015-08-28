@@ -64,7 +64,7 @@ int main(int argc, char* argv[]){
 		}
 		vector<segment*> all_segments  	= segments;
 		
-		segments 					= slice_segments(segments, rank, nprocs);
+		segments 						= slice_segments(segments, rank, nprocs);
 		if (not optimize_directory.empty() and rank==0 and not segments.empty() ){
 			map<string, interval_tree *> I = load_bidir_bed_files(optimize_directory, 
 				spec_chrom);
@@ -92,17 +92,19 @@ int main(int argc, char* argv[]){
 			run_global_template_matching(segments, out_file_dir, window, 
 				density,scale,ct, np,-0.1 );	
 		}
-		map<string , vector<vector<double> > > G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs);
+		map<string , vector<vector<double> > > G = gather_all_bidir_predicitions(all_segments, segments , rank, nprocs, out_file_dir);
 		vector<segment *> bidir_segments;
 		if (not G.empty()  ){
 			bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
 		}
 		vector<simple_c> fits;
 		if (not bidir_segments.empty()){
-			BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]), true);
+			BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
 			fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
-
+		}
+		map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
+		if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
+			optimize_model_selection_bidirs(rcG, P);
 		}
 
 

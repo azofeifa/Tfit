@@ -1,0 +1,18 @@
+----------------------------------------------------------------
+              User Provided EMGU Parameters                     
+                 (BIDIRECTIONAL DETECTOR)                       
+-i           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-k           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/optimize_bidir_directory/
+-o           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-window      : 700
+-ct          : 0.0001
+-density     : 4410
+-MLE         : 1
+-pad         : 3000
+-ns          : 100
+-br          : 100
+-np          : 4
+----------------------------------------------------------------
+Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu
+Running on 5 node(s)

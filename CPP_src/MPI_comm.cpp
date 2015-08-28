@@ -65,7 +65,7 @@ map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_
 		all_fits.push_back(root_simple_fits[j]);
 	}
 	MPI_Datatype mystruct;
-	int blocklens[4]={1, 1,4,10};
+	int blocklens[4]={1, 1,4,12};
 	
 	
 	MPI_Datatype old_types[4] 	={MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
@@ -118,7 +118,7 @@ map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_
 void send_all_simple_c_fits(vector<simple_c> root_simple_fits ){ //slaves
 	//need to setup MPI derived datatype for simple_c struct
 	MPI_Datatype mystruct;
-	int blocklens[4]={1, 1,4,10};
+	int blocklens[4]={1, 1,4,12};
 	MPI_Datatype old_types[4] = {MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[4];
 	MPI_Aint intex, doublex;
@@ -157,7 +157,9 @@ struct bounds2{
 public:
 	int D[3];
 };
-map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, vector<segment *> segments , int rank, int nprocs){
+map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, vector<segment *> segments , 
+	int rank, int nprocs, string out_file_dir){
+
 	map<string , vector<vector<double> > > G;
 	map<string , vector<vector<double> > > A;
 	//insert data from root
@@ -239,6 +241,9 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 			}
 		}
 	}
+	if (rank==0 and not out_file_dir.empty()){
+		write_out_bidirs(G, out_file_dir);
+	}
 	if (rank==0){
 		N 	= collections.size();
 		int count 	= N/ nprocs;
@@ -281,11 +286,88 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 		A[all[final_collections[i].D[0]]->chrom ].push_back(BB);
 	}
 	return A;
-
 }
 
 
+rsimple_c::rsimple_c(){};
+rsimple_c transform(simple_c sc, vector<segment *> segments ){
+	string chrom 	= segments[sc.IDS[0]]->chrom;
+	rsimple_c rc;
+	for (int i = 0; i < 5; i++){
+		if (i < chrom.size()){
+			rc.chrom[i] 	= chrom[i];
+		}else{
+			rc.chrom[i] 	= '\0';
+		}
+	}
+	rc.st_sp[0]=segments[sc.IDS[0]]->start,rc.st_sp[1]=segments[sc.IDS[0]]->stop;
+	rc.st_sp[2]=sc.IDS[0], 	rc.st_sp[3]=sc.IDS[1], rc.st_sp[4]=sc.IDS[2];
 
+	rc.ps[0]=sc.noise_ll,rc.ps[1]=sc.ll;
+	for (int i = 0; i < 12; i++){
+		rc.ps[i+2]=sc.ps[i];
+	}
+	return rc;
+}
+
+map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segment *> segments, 
+	vector<simple_c> fits, int rank, int nprocs)
+{
+
+	//make MPI derived data type
+	rsimple_c rc;
+	MPI_Datatype mystruct;
+	
+	int blocklens[3]={5,5,14};
+	MPI_Datatype old_types[3] = {MPI_INT, MPI_CHAR, MPI_DOUBLE}; 
+	MPI_Aint displacements[3];
+	displacements[0] 	= offsetof(rsimple_c, st_sp);
+	displacements[1] 	= offsetof(rsimple_c, chrom);
+	displacements[2] 	= offsetof(rsimple_c, ps);
+	
+	
+	MPI_Type_create_struct( 3, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+	
+	vector<rsimple_c> rsimple_c_fits;
+	for (int i = 0; i < fits.size(); i++){
+		rsimple_c_fits.push_back(transform(fits[i], segments ));
+	}
+		//first want to send the number of bidirs 
+	int S;
+	if (rank==0){
+		for (int j = 1; j < nprocs; j++){
+			MPI_Recv(&S, 1, MPI_INT, j, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+			for (int b = 0; b < S; b++){
+				MPI_Recv(&rc, 1, mystruct, j, b, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
+				rsimple_c_fits.push_back(rc);
+			}
+		}				
+	}else{	
+		S 	= rsimple_c_fits.size();
+		MPI_Send(&S, 1, MPI_INT, 0,1, MPI_COMM_WORLD);
+		for (int b = 0; b < S; b++){
+			MPI_Send(&rsimple_c_fits[b], 1, mystruct, 0, b, MPI_COMM_WORLD);			
+		}
+	}
+	map<string, map<int, vector<rsimple_c> > > G;
+	if (rank==0){
+		//want to reorient
+		int K;
+		string ID;
+		for (int i =0; i < rsimple_c_fits.size(); i++)
+		{
+			rc 	= rsimple_c_fits[i];
+			ID 	= string(rc.chrom) + ":" + to_string(rc.st_sp[0]) + "-" + to_string(rc.st_sp[1]);
+			K 	= rc.st_sp[3] ;
+			G[ID][K].push_back(rc);
+		}
+		
+	}
+
+
+	return G;
+}
 
 
 

@@ -142,7 +142,7 @@ void segment::bin(double delta, double scale, bool erase){
 	SCALE 			= scale;
 	int BINS;
 	BINS 		= (maxX-minX)/delta;
-
+	
 	for (int j = 0 ; j < 3;j++){
 		X[j] 		= new double[BINS];
 	}
@@ -150,7 +150,8 @@ void segment::bin(double delta, double scale, bool erase){
 	XN 				= BINS;
 	//===================
 	//populate bin ranges
-	X[0][0] 		= minX;
+	X[0][0] 		= double(minX);
+	X[1][0]=0,X[2][0]=0;
 	for (int i = 1; i < BINS; i++){
 		X[0][i] 	= X[0][i-1] + delta;
 		X[1][i] 	= 0;
@@ -213,6 +214,9 @@ void segment::bin(double delta, double scale, bool erase){
 				j++;
 			}
 		}
+		if (realN!=j){
+			printf("WHAT? %d,%d\n", j, realN);
+		}
 		//clear previous memory
 		for (int i = 0; i < 3; i ++){
 			delete X[i];
@@ -222,8 +226,17 @@ void segment::bin(double delta, double scale, bool erase){
 		XN 				= realN;
 	}
 	if (scale){
+		if (not centers.empty()){
+			for (int i = 0; i < centers.size(); i++){
+				centers[i]=(centers[i]-minX)/scale;			
+			}
+		}
 		maxX 			= (maxX-minX)/scale;
 		minX 			=0;
+	}
+	double S=0;
+	for (int i = 0; i < XN; i++){
+		S+=X[1][i];
 	}
 	forward.clear();
 	reverse.clear();
@@ -849,21 +862,25 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 	for (it_type_2 i = B.begin(); i!=B.end();i++){
 		N 	= i->second.size(), j 	= 1;
 		S 	= i->second[0];
+		S->centers.push_back((S->start + S->stop) /2.);
 		while (j < N){
 			while (j < N and i->second[j]->start < S->stop and i->second[j]->stop > S->start  ){
 				double center1=(S->start + S->stop) /2.;
 				double center2=(i->second[j]->start + i->second[j]->stop) /2.;
 				
 				double dist = abs(center2-center1);
+				S->centers.push_back(center2);
 				if (dist > 1000){
 					S->counts+=1;
 				}
 				S->start 	= min(i->second[j]->start, S->start), S->stop 	= max(i->second[j]->stop,S->stop );
 				j++;
 			}
+
 			A[i->first].push_back(S);
 			if (j < N){
 				S 			= i->second[j];
+		
 			}
 		}
 	}
