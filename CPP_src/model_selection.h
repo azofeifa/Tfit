@@ -58,6 +58,6 @@ void run_model_selection(string, string, double );
 map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
 	map<int, map<int, bidir_preds> > , double );
 
-void optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > >, params *);
+vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > >, params *);
 
 #endif

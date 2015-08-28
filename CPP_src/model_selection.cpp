@@ -338,27 +338,33 @@ string final_model_output::write_out_config(){
 
 	string line 	= header + "\t";
 	line+=to_string(noise_ll) +"," + to_string(k_ll)+"\t";
+	string addition="";
 	if (not components.empty()){
 		for (int i = 2; i < 14;i++){
+			addition 	= "";
 			for (int k = 0; k < components.size(); k++){
-				if (i == 2 or i == 9 or i==10){
-					line+=to_string(components[k].ps[i]*scale + start)+",";
-				}else if(i==3 ){
-					line+=to_string(components[k].ps[i]*scale  )+",";
-				}else if (i==4){
-					line+=to_string((1. / components[k].ps[i])*scale  )+",";	
-				}
-				else{
-					line+=to_string(components[k].ps[i])+",";
-				}
-				if (k+1==components.size()){
-					line 	= line.substr(0, line.size() );
+				if (i==13 and k == 0){
+					addition=to_string(components[k].ps[i]);
+				}else if (i < 13) {
+					if (i == 2 or i == 9 or i==10){
+						addition+=to_string(components[k].ps[i]*scale + start)+",";
+					}else if(i==3 ){
+						addition+=to_string(components[k].ps[i]*scale  )+",";
+					}else if (i==4){
+						addition+=to_string((1. / components[k].ps[i])*scale  )+",";	
+					}
+					else{
+						addition+=to_string(components[k].ps[i])+",";
+					}
+					if (k+1==components.size()){
+						addition 	= addition.substr(0, addition.size()-1 );
+					}
 				}
 			}
 			if (i+1 < 14){
-				line+="\t";
+				addition+="\t";
 			}
-
+			line+=addition;
 		}
 	}else{
 		for (int i = 2; i < 14;i++){
@@ -408,7 +414,7 @@ vector<int> get_scores(map<string, map<int, vector<rsimple_c> > > G, double pena
 	}
 	return best_models;
 }
-void optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > G, params * P){
+vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > G, params * P){
 	double scale 	= stod(P->p4["-ns"]);
 	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
 	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
@@ -480,10 +486,7 @@ void optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > 
 		i++;
 		
 	}
-	for (int i = 0; i < A.size();i++){
-		string line 	= A[i].write_out_config();
-		printf("%s", line.c_str());
-	}
+	return A;
 }
 
 

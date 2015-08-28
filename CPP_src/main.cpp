@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
 		}
 		map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
 		if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
-			optimize_model_selection_bidirs(rcG, P);
+			vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
 		}
 
 
