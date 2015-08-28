@@ -1,5 +1,5 @@
 #Name the job
-#PBS -N merging_data_types
+#PBS -N merging_data
 ### Specify the number of nodes/cores
 #PBS -l nodes=1:ppn=1
 
@@ -40,7 +40,7 @@ fi
 
 src=/Users/azofeifa/Lab/EMG/analysis/merge_data_types.py
 root=/Users/azofeifa/
-model_first_directory=${root}Lab/gro_seq_files/HCT116/EMG_out_files/DMSO_ND_intervals_model_fits_3/
+model_first_directory=${root}Lab/gro_seq_files/HCT116/EMG_out_files/DMSO_ND_intervals_model_fits_2/
 refseq_file=${root}genome_files/RefSeqHG19.txt
 dbSNP_directory=${root}dbSNP/
 ENCODE_directory=${root}ENCODE/HCT116/

@@ -39,7 +39,7 @@ fi
 
 
 src=/Users/azofeifa/Lab/EMG/analysis/make_ChIP_counts.py
-merge_data_out=/Users/azofeifa/Lab/gro_seq_files/HCT116/old_merged_data_file.txt
+merge_data_out=/Users/azofeifa/Lab/gro_seq_files/HCT116/merged_data_file.txt
 out_file_name=/Users/azofeifa/Lab/gro_seq_files/HCT116/counted_data
 python $src $merge_data_out $out_file_name
 
