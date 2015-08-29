@@ -132,12 +132,12 @@ int sample_centers(vector<double> centers, double p){
 	random_device rd;
 	mt19937 mt(rd());
 	default_random_engine generator;
-	geometric_distribution<int> distribution(p);
+	uniform_int_distribution<int> distribution(0,centers.size()-1);
 	int i 	= distribution(mt);
-	int s 	= centers.size()-1;
-	if (i > s){
-		return s;
-	}
+	//int s 	= centers.size()-1;
+	// if (i > s){
+	// 	return s;
+	// }
 	return i;
 }
 
