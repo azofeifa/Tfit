@@ -1,7 +1,7 @@
 #Name the job
-#PBS -N EMG_formatting
+#PBS -N bi_detect
 
-#PBS -l nodes=1:ppn=32
+#PBS -l nodes=20:ppn=32
 
 ### Allocate the amount of memory needed
 #PBS -l pmem=1gb
@@ -14,7 +14,7 @@
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/  
 
 ### Set your email address
-#PBS -m a
+#PBS -m ae
 #PBS -M jgazofeifa@gmail.com
 
 
@@ -41,5 +41,6 @@ out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 
 forward_bedgraph=DMSO2_3.pos.BedGraph
 reverse_bedgraph=DMSO2_3.neg.BedGraph
-
-$src $config_file -i ${bedgraph_directory}$forward_bedgraph -j ${bedgraph_directory}$reverse_bedgraph -k ""   -o ${out_directory}$out_file -np 32
+mpi=/opt/openmpi/1.6.4/bin/mpirun
+nodes=20
+$mpi -np $nodes $src $config_file -i ${bedgraph_directory}$forward_bedgraph -j ${bedgraph_directory}$reverse_bedgraph -o $out_directory

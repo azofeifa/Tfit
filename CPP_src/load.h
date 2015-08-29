@@ -3,24 +3,24 @@
 #include <string>
 #include <vector>
 #include <map>
-
+#include "read_in_parameters.h"
 using namespace std;
+class final_model_output;
 class simple_c;
 class model_component{
-private:
+public:
 	double mu, si, l, w_e, pi;
 	double f_b, f_w;
 	double r_a, r_w;
-public:
+
 	model_component(simple_c sc);
 	model_component();
 };
 
 class all_model_components{
-private:
+public:
 	double ll;
 	vector<model_component> all_components;
-public:
 	all_model_components();
 	void insert_component(simple_c sc, double);
 };
@@ -28,13 +28,18 @@ public:
 
 
 class bidir_preds{
-private:
-	double noise_ll ;
-	map<int, all_model_components > G;
 public:
-	bidir_preds(double);
+	double noise_ll ;
+	double N;
+	map<int, all_model_components > G;
+	all_model_components best_component;
+	bidir_preds(double, double);
 	bidir_preds();
 	void insert_component(int, simple_c,double);
+	void model_selection(double);
+	int argK;
+	double BIC_score;
+	all_model_components arg_all_model_components;
 };
 
 
@@ -49,6 +54,7 @@ public:
 	vector< vector<double> > forward;
 	vector< vector<double> > reverse;
 	int counts;
+	vector<double> centers;
 	segment(string, int , int);
 	segment();
 	string write_out();
@@ -130,4 +136,16 @@ vector<segment*> load_bedgraphs_total(string,
 	string, int , double, string);
 map<string, interval_tree *> load_bidir_bed_files(string,
 	string);
+
+void write_out_bidir_fits( vector<segment*>, 
+	map<int, map<int, bidir_preds> >, params *);
+
+void write_out_bidirs(map<string , vector<vector<double> > >, string);
+
+vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
+	string , string, int );
+
+void write_out_MLE_model_info(vector<final_model_output>, params *);
+
+
 #endif

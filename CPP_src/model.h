@@ -14,7 +14,7 @@ public:
 	double r_forward, r_reverse; //running total
 	double delta_a, delta_b;
 	UNI();
-	UNI(double, double, double, int, int);
+	UNI(double, double, double, int, int, double);
 	double pdf(double,int);	
 	string print();
 
@@ -56,6 +56,8 @@ public:
 	NOISE noise; 
 
 	bool type;
+
+	bool EXIT;
 
 	//=====================================
 	//parameters to simulate from
@@ -104,6 +106,8 @@ public:
 	int fit(segment *,vector<double>);
 	classifier(int, double, int, double, double, double, double
 		, double, double, double, double);
+	classifier(int, double, int, double, double, double, double
+		, double, double, double, double, bool);
 	classifier();
 	void free_classifier();
 	string print_out_components();
@@ -114,6 +118,7 @@ public:
 	component * components;
 	bool converged;
 	double r_mu;
+	bool move_l;
 	double ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3;
 };
 

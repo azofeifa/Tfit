@@ -4,18 +4,18 @@
 -v 			= 1
 -i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3_selected_formatted.tsv
 -o 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/
--br			= 10 #binning resolution
--ns			= 100 #normalizing scale
+-br 		= 10 #binning resolution
+-ns 		= 100 #normalizing scale
 -minK 		= 1  #min number of models to consider
 -maxK		= 4 #max number of models to consider
 -rounds 	= 4 #number of random EM initializations
--ct 	    = 0.0001 #EM convergence threshold difference
--mi 	    = 2000 #Number of EM iterations before it is aborted
+-ct 		= 0.0001 #EM convergence threshold difference
+-mi 		= 2000 #Number of EM iterations before it is aborted
 -max_noise	= 0.05 #weight of the random/uniform noise component
 -template 	= 1 #run window, template pattern matching
--window 	= 2000 #bidirectional window search (given -template option)
--density 	= 1000 #bidirectional density cutff (given -template option)
--np 	    = 4 #number of cores/CPUs to run on
+-density 	= 1360 #bidirectional density cutff (given -template option)
+-confidence = 1.1 #bidirectional density cutff (given -template option)
+-np 	   	= 4 #number of cores/CPUs to run on
 -chr 		= all #specific chromosome to process on?
 -r_mu 		= 1 #seed EM randomally from the peak finder
 -ALPHA_0 	= 1 #prior for sigma
@@ -23,5 +23,6 @@
 -ALPHA_1 	= 1 #prior for lambda
 -BETA_1 	= 1 #prior for lambda
 -ALPHA_2 	= 1 #prior for weights
--ALPHA_3 	= 100 #prior for strand probs
+-ALPHA_3 	= 10000 #prior for strand probs
+-pad 		= 5000 #pad around bidirectional template
 

@@ -1,14 +1,19 @@
 #This is a config file for running the BIDIR module
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~BIDIR #do not change this line
--v 			= 1 #verbose output
--i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph #FStitch forward strand bedgraph
--j 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph #FStitch reverse strand bedgraph
--o 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/ #output file directory
--chr 		= chr1 #specific chromosome
--confidence  		= 0.95 #how confident do you want to be, value between 0 and 1
--si 			= 300 #template standard deviation
--l 			= 0.003 #template initiation
--br 			= 50 $binning resolution do not consider changing
--ns 			= 100 #scaling, would not consider changing
+-v     	       	      	= 1 #verbose output
+-i			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph #FStitch forward strand bedgraph
+-j 	  		= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph #FStitch reverse strand bedgraph
+-k 	  		= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/optimize_bidir_directory/ #directory of bed files to optimize to
+-o 	  		= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/ #output file directory
+-chr 			= chr1 #train on a specific chromosome
+-br 			= 25 #binning resolution do not consider changing
+-density 		= 4410 #read density cut off
+-window 		= 700 #window
+-ct 			= 0.9 #confidence threshold
+-ns 			= 100 #scaling for numerical stability, would not consider changing
+-opt_res 		= 5 #grid search resolution
+-np 			= 4 #number of CPU cores/processors
+
+
 

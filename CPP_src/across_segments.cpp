@@ -4,10 +4,10 @@
 #include "model.h"
 #include "template_matching.h"
 #include <iostream>
-#include "omp.h"
 #include <fstream>
 #include <map>
 #include <time.h>
+#include "omp.h"
 using namespace std;
 
 const string currentDateTime() {
@@ -181,6 +181,16 @@ vector<classifier> get_vector_classifiers(params * P, int K){
 	}
 	return clfs;
 }
+
+vector<classifier> get_vector_classifiers2(params * P, int K){
+	vector<classifier> clfs(stoi(P->p4["-rounds"]));
+	for (int i =0 ; i< stoi(P->p4["-rounds"]); i++ ){
+		clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
+			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
+			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false );
+	}
+	return clfs;
+}
 classifier fit_noise(params *P){
 	classifier clf(0, stod(P->p["-ct"]),
 					stoi(P->p["-mi"]), 
@@ -196,7 +206,8 @@ classifier fit_noise(params *P){
 	return clf;
 }
 vector<simple_c> get_max(vector<classifier> clfs, 
-	double noise_ll, int seg, int complexity, int found_bidirs, int bidir_ID){
+	double noise_ll, int seg, int complexity, int found_bidirs,
+	 int bidir_ID, double NN){
 	double max = nINF;
 	classifier argmax;
 	vector<simple_c> scs;
@@ -218,8 +229,10 @@ vector<simple_c> get_max(vector<classifier> clfs,
 		sc.ps[6] 	= 0;
 		sc.ps[7] 	= 0; 
 		sc.ps[8] 	= 0;
-		sc.ll 	= max, sc.noise_ll 	= noise_ll;		
-		
+		sc.ps[9] 	= 0;
+		sc.ps[10] 	= 0;
+		sc.ps[11] 	= NN;
+		sc.ll 		= max, sc.noise_ll 	= noise_ll;		
 		scs.push_back(sc);
 	}else{
 		for (int c = 0; c < argmax.K; c++){
@@ -236,8 +249,10 @@ vector<simple_c> get_max(vector<classifier> clfs,
 			scc.ps[6] 	= argmax.components[c].reverse.w;
 			scc.ps[7] 	= argmax.components[c].forward.b; 
 			scc.ps[8] 	= argmax.components[c].reverse.a;
-
-
+			scc.ps[9] 	= argmax.components[c].forward.pi; 
+			scc.ps[10] 	= argmax.components[c].reverse.pi;
+			
+			scc.ps[11] 	= NN;
 			scc.ll 	= max, scc.noise_ll 	= noise_ll;		
 			scs.push_back(scc);
 			
@@ -247,6 +262,7 @@ vector<simple_c> get_max(vector<classifier> clfs,
 	return 	scs;
 	
 }
+
 
 
 
@@ -271,14 +287,12 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 		for (int k =1 ; k <= s->bidirectional_data[j]->counts; k++ ){
 			vector<classifier> 	clfs 			= get_vector_classifiers(P, 
 				k);
-			classifier 	noise_clf 	 			= fit_noise(P);
-			noise_clf.fit(s->bidirectional_data[j], mu_seeds);
 			#pragma omp parallel for num_threads(num_proc)
 			for (int t = 0; t <  stoi(P->p["-rounds"]); t++){
 				clfs[t].fit(s->bidirectional_data[j], mu_seeds);
 			}
 			vector<simple_c> bidir_components = get_max(clfs, noise_ll, seg, k, 
-				s->bidirectional_data[j]->counts, j );
+				s->bidirectional_data[j]->counts, j, s->bidirectional_data[j]->N );
 			for (int b=0; b < bidir_components.size(); b++){
 				fits.push_back(bidir_components[b]);
 			}
@@ -286,8 +300,37 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 		}
 	}
 	return fits;
-
 }
+
+vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
+	int num_proc 				= stoi(P->p["-np"]);
+	vector<simple_c> fits;
+	vector<double> mu_seeds 	= peak_bidirs(s);
+	classifier noise_clf(0, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
+		stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
+		stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) );
+	
+	noise_clf.fit(s, s->centers);
+	
+	double noise_ll 	= noise_clf.ll;
+	
+	for (int k = 1; k<= s->counts+1;k++){
+		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
+		#pragma omp parallel for num_threads(num_proc)
+		for (int t = 0; t <  stoi(P->p4["-rounds"]); t++){
+			clfs[t].fit(s, s->centers);
+		}
+		vector<simple_c> bidir_components = get_max(clfs, noise_ll, seg, k, s->counts, 1, s->N );
+		for (int b=0; b < bidir_components.size(); b++){
+			fits.push_back(bidir_components[b]);
+		}
+		
+			
+	}
+
+	return fits;
+}
+
 
 vector<simple_c> run_model_accross_segments_template(vector<segment*> segments, 
 	params *P){
@@ -301,7 +344,17 @@ vector<simple_c> run_model_accross_segments_template(vector<segment*> segments,
     }
     //we want to return a vector of very very simple structs
     return fits;
-	
+}
+
+vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segments, params * P){
+	vector<simple_c> fits;
+	for (int i = 0; i < segments.size(); i++){
+		vector<simple_c> curr_fits 	= wrapper_pp_just_segments(segments[i], P , i);
+		for (int j = 0; j < curr_fits.size(); j++){
+    		fits.push_back(curr_fits[j]);
+    	}	
+	}
+	return fits;
 }
 
 

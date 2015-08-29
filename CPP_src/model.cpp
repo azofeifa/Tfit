@@ -59,15 +59,12 @@ NOISE::NOISE(double A, double B, double W, double PI){
 //Uniform Class
 double UNI::pdf(double x, int strand){ //probability density function
 	double p;
-	if (strand != st){
-		return 0.;
-	}
+
 	if ( a<= x and x <=b){
-		p=w / abs(b- a);
-		if (checkNumber(p)){
-			return p;
-		}
-		return 0;
+
+		p= w / abs(b- a);
+		p= p*pow(pi, max(0, strand) )*pow(1.-pi, max(0, -strand) );
+		return p;
 	}
 	return 0;
 }
@@ -77,8 +74,7 @@ string UNI::print(){
 	+ "," + to_string(w) + "," + to_string(pi));
 	return text;
 }	
-UNI::UNI(double start, double stop, double w_i, int strand, int POS){
-
+UNI::UNI(double start, double stop, double w_i, int strand, int POS, double Pi){
 	a 		= start;
 	b 		= stop;
 	w 		= w_i;
@@ -89,6 +85,11 @@ UNI::UNI(double start, double stop, double w_i, int strand, int POS){
 	}else{
 		pi=0;
 	}
+	//===================
+	//this oversets the constraint that uniform must take either 
+	//forward or reverse data points
+	pi 		= Pi;
+	//===================
 	delta_a=0;
 	delta_b=0;
 	ri_forward=0, ri_reverse=0;
@@ -209,7 +210,7 @@ bool check_uniform_support(component c, int forward){
 
 void component::initialize(double mu, segment * data , int K, double scale, double noise_w, 
 	double noise_pi){//random seeds...
-	
+	EXIT=false;
 	if (noise_w>0){
 		noise 	= NOISE(data->minX, data->maxX, 
 			noise_w, noise_pi);
@@ -238,15 +239,23 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		int j 		= get_nearest_position(data, mu, dist);
 		
 		b_forward 	= data->X[0][j];
-		forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j);
-		
+		if (b_forward < (mu+(1.0/lambda)) ){
+			forward 	= UNI(data->minX, data->maxX, 0., 1, j, 0.5);
+		}
+		else{	
+			forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j, 0.5);
+		}	
 		dist 		= (-1.0/lambda) - sigma - dist_lengths(mt);
 		j 			= get_nearest_position(  data, mu, dist);
 		
 		a_reverse 	= data->X[0][j];
 
 		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
-		reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j);
+		if (a_reverse > mu-(1.0/lambda) ){
+			reverse 	= UNI(data->minX, data->maxX, 0., -1, j,0.5);
+		}else{
+			reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
+		}
 		type 		= 1;
 	}
 
@@ -257,7 +266,7 @@ void component::print(){
 		string text 	= bidir.print()+ "\n";
 		text+=forward.print()+ "\n";
 		text+=reverse.print() + "\n";
-		printf(text.c_str());
+		cout<<text;
 	}else{
 		cout<<"NOISE: " << noise.w<<"," <<noise.pi<<endl;
 	}
@@ -271,6 +280,7 @@ string component::write_out(){
 
 		return text;
 	}
+	return "";
 }
 
 
@@ -282,12 +292,13 @@ double component::evaluate(double x, int st){
 	if (st==1){
 		bidir.ri_forward 	= bidir.pdf(x, st);
 		forward.ri_forward 	= forward.pdf(x, st);
-		return bidir.ri_forward + forward.ri_forward;
+		reverse.ri_forward 	= reverse.pdf(x,st);
+		return bidir.ri_forward + forward.ri_forward + reverse.ri_forward;
 	}
 	bidir.ri_reverse 	= bidir.pdf(x, st);
 	reverse.ri_reverse 	= reverse.pdf(x, st);
-		
-	return bidir.ri_reverse + reverse.ri_reverse;
+	forward.ri_reverse 	= forward.pdf(x, st);
+	return bidir.ri_reverse + reverse.ri_reverse + forward.ri_reverse;
 }
 double component::pdf(double x, int st){
 	if (type==0){
@@ -311,20 +322,25 @@ void component::add_stats(double x, double y, int st, double normalize){
 		}
 
 	}else{
-		double vl, vl2;
+		double vl, vl2, vl3;
 		if (st==1){
 			vl 	= bidir.ri_forward / normalize;
 			vl2 = forward.ri_forward/normalize;
+			vl3 = reverse.ri_forward/normalize;
 			bidir.ri_forward=0, forward.ri_forward=0;
 			bidir.r_forward+=(vl*y);
 			forward.r_forward+=(vl2*y);
+			reverse.r_forward+=(vl3*y);
 		
 		}else{
 			vl 	= bidir.ri_reverse / normalize;
 			vl2 = reverse.ri_reverse / normalize;
+			vl3 = forward.ri_reverse / normalize;
 			bidir.ri_reverse=0, reverse.ri_reverse=0;
 			bidir.r_reverse+=(vl*y);
+
 			reverse.r_reverse+=(vl2*y);
+			forward.r_reverse+=(vl3*y);
 		}
 		//now adding all the conditional expections for the convolution
 		double current_EY 	= bidir.EY(x, st);
@@ -340,8 +356,8 @@ void component::add_stats(double x, double y, int st, double normalize){
 void component::reset(){
 	if (type){
 		bidir.ey=0, bidir.ex=0, bidir.ex2=0, bidir.r_reverse=0, bidir.r_forward=0;
-		bidir.ri_forward=0, forward.ri_forward=0;
-		bidir.ri_reverse=0, reverse.ri_reverse=0;
+		bidir.ri_forward=0, forward.ri_forward=0, forward.ri_reverse=0;
+		bidir.ri_reverse=0, reverse.ri_reverse=0, reverse.ri_forward=0;
 		forward.r_forward=0, forward.r_reverse=0, reverse.r_reverse=0, reverse.r_forward=0;
 		forward.delta_a=0, forward.delta_b=0, reverse.delta_a=0, reverse.delta_b=0;
 	}else{
@@ -368,15 +384,23 @@ void component::update_parameters(double N, int K){
 		bidir.mu 	= bidir.ex / (r+0.001);
 
 		
-		bidir.si 	= min(pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
-			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5), 10.) ;
-		
+		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
+			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
+		if (bidir.si >= 10.){//this component is blowing up
+			EXIT 	= true;
+		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
-		bidir.l 	= max(0.05, bidir.l);
+		if (bidir.l < 0.005){//this component is blowing up
+			EXIT 	= true;
+		}
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		forward.a 	= bidir.mu + (1.0 /bidir.l), reverse.b=bidir.mu - (1.0 / bidir.l);
+		//update PIS, this is obviously overwritten if we start the EM seeder with 0/1
+		forward.pi 	= (forward.r_forward + 1) / (forward.r_forward + forward.r_reverse+2);
+		reverse.pi 	= (reverse.r_forward + 1)/ (reverse.r_forward + reverse.r_reverse+2);
+
 
 	}
 }
@@ -388,6 +412,7 @@ bool component::check_elongation_support(){
 	else if(reverse.b <= reverse.a and bidir.mu==0){
 		return true;
 	}
+	return false;
 }
 
 
@@ -402,7 +427,7 @@ bool component::check_elongation_support(){
 double sum(double * X, int N){
 	double vl=0;
 	for (int i = 0; i < N; i++){
-		vl=(vl+X[i]);
+		vl+=X[i];
 	}
 	return vl;
 
@@ -546,6 +571,27 @@ classifier::classifier(int k, double ct, int mi, double nm,
 	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
 	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
 
+	move_l = true;
+
+}
+classifier::classifier(int k, double ct, int mi, double nm,
+	double R_MU, double alpha_0, double beta_0,
+	double alpha_1, double beta_1, double alpha_2,double alpha_3, bool MOVE){
+	K 						= k ;
+	seed 					= true;
+	convergence_threshold 	= ct;
+	max_iterations 			= mi;
+	noise_max 				= nm;
+	p 						= 0.8;
+	last_diff 				= 0;
+	r_mu 					= R_MU;
+
+	//=============================
+	//hyperparameters
+	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
+	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
+
+	move_l 	= MOVE;
 
 }
 
@@ -564,9 +610,14 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	if (K==0){
 		//calc_likeihood coming from uniform model, only
 		ll 	= 0;
+		double SS 	= 0;
 		for (int i = 0; i < data->XN; i ++){
 			ll+=(LOG(vl*(pi) )*data->X[1][i]);
 			ll+=(LOG(vl*(1-pi))*data->X[2][i]);
+			SS+=data->X[1][i];
+		}
+		if (not isfinite(ll) or ll==nINF){
+			printf("%f, %f, %f\n",SS ,data->minX, data->maxX );
 		}
 		converged=true;
 		last_diff=0;
@@ -620,11 +671,13 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
-		//	components[k].print();
+			if (components[k].EXIT){
+				converged=false, ll=nINF;
+				return 0;
+			}
 		       
 		}
-		//printf("%d,--------------------------------\n",t );
-	
+		
 		//******
 		//E-step
 		for (int i =0; i < data->XN;i++){
@@ -666,13 +719,18 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		ll 	= calc_log_likelihood(components, K+add, data);
 		//******
 		//Move Uniform support		
-		ll 	= move_uniforom_support(components, K, add, data,move, ll);
+		if (move_l){
+			ll 	= move_uniforom_support(components, K, add, data,move, ll);
+		}
 		if (abs(ll-prevll)<convergence_threshold){
 			converged=true;
 		}
-
+		if (not isfinite(ll)){
+			ll 	= nINF;
+			return 0;	
+		}
 		last_diff=abs(ll-prevll);
-		//printf("%f,%f,%d\n", ll, last_diff, t  );
+
 		prevll=ll;
 		// for (int c = 0; c<K;c++){
 		// 	components[c].print();

@@ -5,56 +5,65 @@
 #***************************************************************************/
 
 CXX             = mpic++
-CXXFLAGS        = -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11  -fopenmp -Wno-write-strings
-
+CXXFLAGS        = -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11 -fopenmp -Wno-write-strings 
 EXEC            = ${PWD}/EMGU
 ARCH  			= getconf LONG_BIT
 
 CPP_FLAGS_32  	= -D32_BIT
 CPP_FLAGS_64  	= -D64_BIT
 
-GCCVERSION 		= $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
-
+GCCVERSION 		= $(shell ${CXX} -dumpversion)
 NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o read_in_parameters.o model_selection.o MPI_comm.o
-	@${CXX} ${CXXFLAGS} ${PWD}/main.o ${PWD}/load.o ${PWD}/model_selection.o \
+	@printf "linking           : "
+	@${CXX} ${CXXFLAGS}  ${PWD}/main.o ${PWD}/load.o ${PWD}/model_selection.o \
 	${PWD}/split.o ${PWD}/model.o ${PWD}/across_segments.o  \
 	${PWD}/template_matching.o ${PWD}/read_in_parameters.o ${PWD}/MPI_comm.o -o ${EXEC}
-	@echo "========================="
-	@echo Sucessfully Compiled
+	@printf "done\n"
+	@echo "========================================="
+	@printf "finished :)\n"
 
 main.o: 
-	@echo "========================="
+	@echo "========================================="
+	@echo "GCC version: "${GCCVERSION}
+	@printf "main              : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/main.cpp 
-	@echo Compiled main
+	@printf "done\n"
 
 MPI_comm.o: 
-	@echo "========================="
+	@printf "MPI_comm          : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/MPI_comm.cpp 
-	@echo Compiled MPI_comm
+	@printf "done\n"
 
-load.o:
+load.o: 
+	@printf "load              : "	
 	@${CXX} -c ${CXXFLAGS} ${PWD}/load.cpp 
-	@echo Compiled load
+	@printf "done\n"
 model_selection.o:
+	@printf "model_selection   : "	
 	@${CXX} -c ${CXXFLAGS} ${PWD}/model_selection.cpp 
-	@echo Compiled model_selection
+	@printf "done\n"
 split.o:
+	@printf "split             : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/split.cpp 
-	@echo Compiled split
+	@printf "done\n"
 
-model.o:
+model.o:	
+	@printf "model             : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/model.cpp 
-	@echo Compiled model
+	@printf "done\n"
 across_segments.o:
+	@printf "across_segments   : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/across_segments.cpp 
-	@echo Compiled across_segments
+	@printf "done\n"
 
 template_matching.o:
+	@printf "template_matching : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/template_matching.cpp 
-	@echo Compiled template_matching
+	@printf "done\n"
 read_in_parameters.o:
+	@printf "read_in_parameters: "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/read_in_parameters.cpp 
-	@echo Compiled read_in_parameters
+	@printf "done\n"
 
 
 

@@ -7,7 +7,9 @@
 #include <map>
 #include "model.h"
 #include "across_segments.h"
+#include "load.h"
 #include "template_matching.h"
+#include "MPI_comm.h"
 using namespace std;
 model::model(int k, double LL){
 	K=k;
@@ -27,8 +29,13 @@ void S::add_model(int k, double ll ){
 }
 
 double BIC(double K, double ll, double N, double penality){
-	return -2*ll + penality*(K+1)*6*log(N);
+	return -2*ll + penality*K*log(N);
 }
+
+double BIC2(double K, double ll, double N, double penality){
+	return -2*ll + penality*K*log(N);
+}
+
 
 string S::print_best(){
 	string text = "";
@@ -120,10 +127,10 @@ void model::add_component(bool bidir , vector<string> line_array, int K){
 	}else{
 		if (K >0){
 			elongations.push_back(UNI(stod(line_array[0]), stod(line_array[1]),
-				stod(line_array[2]),stoi(line_array[3]), 0 ));
+				stod(line_array[2]),stoi(line_array[3]), 0, stod(line_array[4]) ));
 		}else{
 			elongations.push_back(UNI(stod(line_array[0]), stod(line_array[1]),
-				stod(line_array[2]),stoi(line_array[3]), 1));
+				stod(line_array[2]),stoi(line_array[3]), 1, stod(line_array[4]) ));
 		
 		}
 	}
@@ -296,11 +303,210 @@ void run_model_selection(string in_directory, string out_directory, double penal
 			} 
 		}
 	}
-
-
-
-
-
-
-	
 }
+
+
+map<int, map<int, bidir_preds> > run_model_selection_bidir_template( 
+	map<int, map<int, bidir_preds> > G, double penality ){;
+
+	typedef map<int, map<int, bidir_preds> >::iterator it_type_2;
+	typedef map<int, bidir_preds>::iterator it_type_3;
+	for (it_type_2 s = G.begin(); s!=G.end(); s++){
+		for (it_type_3 b = s->second.begin(); b!=s->second.end(); b++ ){
+			b->second.model_selection(penality);
+		}
+	}
+	return G;
+}
+
+final_model_output::final_model_output(string chr, string h, int k, 
+	vector<rsimple_c> rcs, double n_ll, double K_ll, double ns, int st ){
+	chrom 	= chr;
+	start 	= st;
+	scale 	= ns;
+	header 	= h;
+	noise_ll 	= n_ll, k_ll 	= K_ll;
+	K 	=k;
+	if (k >0){
+		components=rcs;
+	}
+}
+final_model_output::final_model_output(){}
+string final_model_output::write_out_config(){
+
+	//this is how it will be
+	//LL [tab] mu1,mu2,...,muk, [tab] si1,si2,...,sik ....
+
+	string line 	= header + "\t";
+	line+=to_string(noise_ll) +"," + to_string(k_ll)+"\t";
+	string addition="";
+	if (not components.empty()){
+		for (int i = 2; i < 14;i++){
+			addition 	= "";
+			for (int k = 0; k < components.size(); k++){
+				if (i==13 and k == 0){
+					addition=to_string(components[k].ps[i]);
+				}else if (i < 13) {
+					if (i == 2 or i == 9 or i==10){
+						addition+=to_string(components[k].ps[i]*scale + start)+",";
+					}else if(i==3 ){
+						addition+=to_string(components[k].ps[i]*scale  )+",";
+					}else if (i==4){
+						addition+=to_string((1. / components[k].ps[i])*scale  )+",";	
+					}
+					else{
+						addition+=to_string(components[k].ps[i])+",";
+					}
+					if (k+1==components.size()){
+						addition 	= addition.substr(0, addition.size()-1 );
+					}
+				}
+			}
+			if (i+1 < 14){
+				addition+="\t";
+			}
+			line+=addition;
+		}
+	}else{
+		for (int i = 2; i < 14;i++){
+			if (i+1 < 14){
+				line+=".\t";
+			}else{
+				line+=".";
+			}
+		}
+	}
+	line+="\n";
+	return line;
+
+}
+
+string final_model_output::write_out_bed(){
+	string line 	= "";
+	for (int k = 0; k < components.size(); k++){
+		int center 	= (components[k].ps[2]*scale + start);
+		int std 	= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
+		line+=chrom + "\t" + to_string(center-std) + "\t" + to_string(center+std) + "\n";
+	}
+	return line;
+}
+
+vector<int> get_scores(map<string, map<int, vector<rsimple_c> > > G, double penality){
+	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
+	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
+	typedef vector<rsimple_c> ::iterator it_type_3;
+	
+	vector<int> best_models;
+	double noise_ll, kll, score, N;
+	int argBIC;
+	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
+		noise_ll = nINF, score = INF, argBIC = 0,N 	= 0;
+		for (it_type_2 C = B->second.begin(); C!=B->second.end(); C++){ //complexity
+			kll 	= nINF;
+			for (it_type_3 m = C->second.begin(); m != C->second.end(); m++){ //components...
+				if ( (*m).ps[13] > N){
+					N 		= (*m).ps[13];
+				}
+				if ( (*m).ps[0] > noise_ll){
+					noise_ll 	= (*m).ps[0];
+				}
+				if ( (*m).ps[1] > kll){
+					kll 	= (*m).ps[1];
+				}
+			}
+			if ( BIC(double(C->first)*6 , kll, N, penality)  < score)   {
+				score=BIC(double(C->first) , kll, N, penality) , argBIC=C->first;
+			}
+			if ( BIC(1 , noise_ll, N, penality)  < score )   {
+				score=BIC(1 , noise_ll, N, penality) , argBIC=0;
+			}
+		}
+		best_models.push_back(argBIC);
+	}
+	return best_models;
+}
+vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > G, params * P){
+	double scale 	= stod(P->p4["-ns"]);
+	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
+	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
+	typedef vector<rsimple_c> ::iterator it_type_3;
+	int argBIC;
+	double res 	= 100;
+	double upper_bound, lower_bound;
+	int count;
+	lower_bound =1, upper_bound=1000;
+	double delta 		= (upper_bound-lower_bound)/res;
+	double penality 	= lower_bound;
+	int error;
+	double best_error 	= INF;
+	double best_penality 	= lower_bound;
+	if (delta==0){
+		delta 	= 1;
+	}
+	vector <int > counts,scores;
+	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
+		count 		= 1;
+		for (it_type_2 C = B->second.begin(); C!=B->second.end(); C++){ //complexity
+			for (it_type_3 m = C->second.begin(); m != C->second.end(); m++){ //components...
+				if ( (*m).st_sp[4] > count){
+					count 	= (*m).st_sp[4];
+				}
+			}
+		}
+		counts.push_back(count);
+	}	
+
+	while (penality <= upper_bound){
+		error 			= 0;
+		scores 			= get_scores(G, penality);
+		if (scores.size()!=counts.size()){
+			printf("WJAT?\n");
+		}else{
+			for (int i =0; i < scores.size(); i++){
+				error+=abs(scores[i]-counts[i]);
+			}
+		}
+		if (error < best_error){
+			best_error 	= error, best_penality 	= penality;
+		}
+		penality+=delta;
+	}
+	//now we have the "best" BIC penailty score
+	//we want to return a data structure for each segment of data, the corrent model
+	scores 	= get_scores(G, best_penality);
+	vector<final_model_output> A;
+	int 	i = 0;
+	double noise_ll;
+	double k_ll;
+	int start;
+	string chr;
+	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
+		vector<rsimple_c> components;
+		if (B->second.find(1)==B->second.end()){//everybody should have at least one model fit
+			printf("serious ! what!\n");
+		}else{
+			noise_ll 		= B->second[1][0].ps[0];
+			start 			= B->second[1][0].st_sp[0];
+			chr 			= B->second[1][0].chrom;
+			if (B->second.find(scores[i])!=B->second.end()){
+				components 	= B->second[scores[i]];
+				k_ll 		= components[0].ps[1];
+			}else{
+				k_ll 		= nINF;
+			}
+			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start ) );
+		}
+		i++;
+		
+	}
+	return A;
+}
+
+
+
+
+
+
+
+
+
