@@ -73,18 +73,6 @@ int main(int argc, char* argv[]){
 				MPI::Finalize();
 				return 1;
 			}
-			clock_t t;
-			chrono::time_point<chrono::system_clock> start, end;
-			start = chrono::system_clock::now();
-
-			t = clock();
-			optimize(I, segments, scale, opt_res, out_file_dir, spec_chrom, np);
-			end = chrono::system_clock::now();
-			int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
-		                             (end-start).count();
-			t = clock() - t;
-			printf("CPU: %f, %f\n",t,((float)t)/CLOCKS_PER_SEC);
-			printf("Wall Time: %f\n", (elapsed_seconds/1000.));
 			free_segments(segments);
 			MPI::Finalize();
 			return 0;			
@@ -106,11 +94,28 @@ int main(int argc, char* argv[]){
 			bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
 		}
 		vector<simple_c> fits;
+		clock_t t;
+		
+		chrono::time_point<chrono::system_clock> start, end;
+		start = chrono::system_clock::now();
+
+		t = clock();
+		
 		if (not bidir_segments.empty()){
 			BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
 			fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
 		}
 		map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
+		end = chrono::system_clock::now();
+		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
+	                             (end-start).count();
+		t = clock() - t;
+		if (rank ==0 ){
+			printf("CPU: %f, %f\n",t,((float)t)/CLOCKS_PER_SEC);
+			printf("Wall Time: %f\n", (elapsed_seconds/1000.));
+		}
+		
+
 		if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
 			vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
 			write_out_MLE_model_info(A, P);

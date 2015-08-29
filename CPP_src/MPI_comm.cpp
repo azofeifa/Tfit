@@ -280,10 +280,14 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 			final_collections.push_back(B2);
 		}
 	}
+	char processor_name[MPI_MAX_PROCESSOR_NAME];
+	int namelen;  
+	MPI_Get_processor_name(processor_name, &namelen); 
+	printf("Process %d from %s are running %d model fits\n", rank, processor_name, final_collections.size() );
+		
 	for (int i = 0 ; i < final_collections.size(); i++){
 		vector <double> BB(2);
 		BB[0] = final_collections[i].D[1], BB[1]= final_collections[i].D[2];
-
 		A[all[final_collections[i].D[0]]->chrom ].push_back(BB);
 	}
 	return A;
