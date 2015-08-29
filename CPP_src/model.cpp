@@ -229,12 +229,12 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		//for the bidirectional/EMG component
 		gamma_distribution<double> dist_sigma(alpha_0,beta_0);
 		gamma_distribution<double> dist_lambda(alpha_1,beta_1);
-		uniform_real_distribution<double> dist_lambda_2(0.1, 0.9);
-		uniform_real_distribution<double> dist_sigma_2(300, 800);
+		uniform_real_distribution<double> dist_lambda_2(1, 1000);
+		uniform_real_distribution<double> dist_sigma_2(1, 100);
 		gamma_distribution<double> dist_lengths(1,( (data->maxX-data->minX)/(K)));
 		
-		sigma 		= dist_sigma(mt)/scale;
-		lambda 		= dist_lambda(mt)/scale;
+		sigma 		= dist_sigma_2(mt)/scale;
+		lambda 		= scale/dist_lambda_2(mt) ;
 		double dist = (1.0/lambda) + sigma + dist_lengths(mt);
 		int j 		= get_nearest_position(data, mu, dist);
 		
@@ -390,7 +390,7 @@ void component::update_parameters(double N, int K){
 			EXIT 	= true;
 		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
-		if (bidir.l < 0.005){//this component is blowing up
+		if (bidir.l < 0.05){//this component is blowing up
 			EXIT 	= true;
 		}
 		//now for the forward and reverse strand elongation components
