@@ -1,7 +1,7 @@
 #Name the job
-#PBS -N EMG_formatting
+#PBS -N bi_detect
 
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=20:ppn=32
 
 ### Allocate the amount of memory needed
 #PBS -l pmem=1gb
@@ -14,7 +14,7 @@
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/  
 
 ### Set your email address
-#PBS -m a
+#PBS -m ae
 #PBS -M jgazofeifa@gmail.com
 
 
@@ -35,16 +35,12 @@ if [ "$vieques_pando" = true ] ; then ###load modules
 fi
 
 src=/Users/azofeifa/Lab/EMG/CPP_src/EMGU
-config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/format_config.txt
-EMG_out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/EMG_formmated_files/
-#interval_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/interval_files/
-interval_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/interval_files/
+config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/bidir_config.txt
 bedgraph_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/
-out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/EMG_formmated_files/
+out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 
-interval_file=selected_intervals_DMSO.bed
 forward_bedgraph=DMSO2_3.pos.BedGraph
 reverse_bedgraph=DMSO2_3.neg.BedGraph
-out_file=DMSO2_3_selected.tsv
-
-$src $config_file -i ${interval_directory}$interval_file -j ${bedgraph_directory}$forward_bedgraph -k ${bedgraph_directory}$reverse_bedgraph -o ${out_directory}$out_file
+mpi=/opt/openmpi/1.6.4/bin/mpirun
+nodes=20
+$mpi -np $nodes $src $config_file -i ${bedgraph_directory}$forward_bedgraph -j ${bedgraph_directory}$reverse_bedgraph -o $out_directory
