@@ -5,8 +5,8 @@
 #include <map>
 #include "read_in_parameters.h"
 using namespace std;
-class final_model_output;
 class simple_c;
+class final_model_output;
 class model_component{
 public:
 	double mu, si, l, w_e, pi;
@@ -69,8 +69,8 @@ public:
 	vector<segment *> bidirectional_data;
 	vector<int>  bidir_counts; //used for optimization of BIC?
 	vector<int> bidirectional_N;
+	vector<vector<double>> fitted_bidirs; //mu, si, l,pi
 	void insert_bidirectional_data(int);
-
 };
 
 
@@ -144,8 +144,13 @@ void write_out_bidirs(map<string , vector<vector<double> > >, string);
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
 	string , string, int );
+void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , vector<segment *> );
 
 void write_out_MLE_model_info(vector<final_model_output>, params *);
+
+vector<segment *> load_intervals_of_interest(string);
+
+vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string);
 
 
 #endif

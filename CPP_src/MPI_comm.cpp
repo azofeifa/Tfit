@@ -109,7 +109,6 @@ map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_
 			total_bidir_preds++;
 		}
 	}
-	printf("total number of bidirectional segments: %d\n", total_bidir_preds );
 	
 
 	return G;
@@ -283,7 +282,6 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	int namelen;  
 	MPI_Get_processor_name(processor_name, &namelen); 
-	printf("Process %d from %s are running %d model fits\n", rank, processor_name, final_collections.size() );
 		
 	for (int i = 0 ; i < final_collections.size(); i++){
 		vector <double> BB(2);
@@ -373,6 +371,146 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 
 	return G;
 }
+
+
+struct seg_and_bidir{
+	char chrom[5];
+	int st_sp[3];
+	double parameters[4];
+};
+
+seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
+	seg_and_bidir sb;
+	for (int i = 0; i < 5; i++){
+		if (i < s->chrom.size()){
+			sb.chrom[i] 	= s->chrom[i];
+		}else{
+			sb.chrom[i] 	= '\0';
+		}
+	}
+	sb.st_sp[0] 		= i, sb.st_sp[1] = s->start, sb.st_sp[2] = s->stop;
+	sb.parameters[0] 	= ps[2],sb.parameters[1] 	= ps[3];
+	sb.parameters[2] 	= ps[4],sb.parameters[3] 	= ps[5];
+
+	return sb;
+	
+}
+
+
+map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *> FSI, int rank, int nprocs){
+	seg_and_bidir sb;
+	MPI_Datatype mystruct;
+	
+	int blocklens[3]={5,2,4};
+	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
+	MPI_Aint displacements[3];
+	displacements[0] 	= offsetof(seg_and_bidir, chrom);
+	displacements[1] 	= offsetof(seg_and_bidir, st_sp);
+	displacements[2] 	= offsetof(seg_and_bidir, parameters);
+	
+	
+	MPI_Type_create_struct( 3, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+	map<int, vector<seg_and_bidir> > GG;
+	//make seg_and_bidir vector<>
+	if (not FSI.empty()){ //this must be root
+		vector<seg_and_bidir> sabs;
+		typedef vector<segment *>::iterator it_type;
+		int t 	= 0;
+		int tot = 0;
+		for (it_type s = FSI.begin(); s!=FSI.end(); s++){
+			if ((*s)->fitted_bidirs.size()){
+				tot++;
+			}
+			for (int i = 0; i < (*s)->fitted_bidirs.size(); i++ ){
+				seg_and_bidir sb 	= seg_to_seg_and_bidir((*s), (*s)->fitted_bidirs[i] , t );
+				sabs.push_back(sb);
+
+			}
+			t++;
+		}
+	
+		//want to make a map
+		map<int, vector<int> > size_assignment;
+		int N 		= sabs.size();
+		int counts  = tot / nprocs;
+		int i 		= 0;
+		int start, stop;
+		int prev 	= -1;
+		for (int j = 0; j < nprocs; j++){
+			int ct 	= 0;
+			start 	= i;
+
+			while (ct < counts and i < N){
+				if (prev!=sabs[i].st_sp[0]){
+					stop 	= i;
+					ct++;
+				}
+				prev 	= sabs[i].st_sp[0];
+				i++;
+			}
+			if (i>1){
+				i--;
+			}
+			
+			if (j+1==nprocs){
+				stop 	= sabs.size();
+			}
+			vector<int> b(2);
+			b[0] 	= start,b[1] 	= stop;
+			size_assignment[j] 	= b;
+		}
+		for (int j  = 1; j < nprocs; j++){
+			int S 	= size_assignment[j][1]-size_assignment[j][0];
+			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
+			int t 	= 0;
+			for (int i 	= size_assignment[j][0]; i < size_assignment[j][1]; i++ ){
+				MPI_Send(&sabs[i], 1, mystruct, j,t,MPI_COMM_WORLD);
+				t++;
+			}
+		}
+		for (int i = size_assignment[0][0]; i < size_assignment[0][1]; i++ ){
+			sb 	= sabs[i];
+			GG[sb.st_sp[0]].push_back(sb);
+		}
+
+	}else{
+		int S;
+		MPI_Recv(&S, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
+		for (int i = 0; i < S;i++){
+			MPI_Recv(&sb, 1, mystruct, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
+			GG[sb.st_sp[0]].push_back(sb);
+		}
+	}
+	typedef map<int, vector<seg_and_bidir> >::iterator it_type_G;
+	segment * S 	= NULL;
+	map<string, vector<segment *> > final_out;
+	for (it_type_G g = GG.begin(); g!=GG.end(); g++){
+		for (int i = 0; i < g->second.size(); i++){
+			vector<double> parameters(4);
+			for (int p =0; p < 4; p++){
+				parameters[p] 	= g->second[i].parameters[p];
+			}
+			if (i == 0){
+				S 	= new segment(g->second[i].chrom, g->second[i].st_sp[1], g->second[i].st_sp[2] );
+			}
+			if (S!= NULL){
+				S->fitted_bidirs.push_back(parameters);
+			}else{
+				printf("what???\n");
+			}
+		}
+		if (S!=NULL){
+			final_out[S->chrom].push_back(S);
+		}else{
+			printf("what??????\n");
+		}
+	}
+	return final_out;
+
+}
+
+
 
 
 

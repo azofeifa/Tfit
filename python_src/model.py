@@ -431,15 +431,11 @@ class EMGU:
 				converged=True
 				self.converged=True
 			#move LLs...unfortunately this is brute - force...
-			if self.move and self.cores>1:
-				ll 		= self.moveLs(X, ll, components)
-			elif self.move:
-				ll 		= self.moveLS_not_pp(X, ll, components)
+			
 			prevll 	= ll
 			# for c in components:
 			# 	print c
 			# print "------------"
-			print t, ll
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
@@ -447,8 +443,6 @@ class EMGU:
 		F 			= plt.figure(figsize=(15,10))
 
 		ax 			= F.add_subplot(111)
-		print self.compute_log_likelihood(X, self.rvs)
-		ax.set_title("LL: " + str(sum(map(lambda i: math.log(self.pdf(X[i,0], 1))*X[i,1] , range(len(X)))) + sum(map(lambda i: math.log(self.pdf(X[i,0], -1))*X[i,2] , range(len(X)) ) ) ) )
 		ax.bar(X[:,0],  X[:,1] / float(np.sum(X[:,1:]) ), color="blue", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		ax.bar(X[:,0], -X[:,2] / float(np.sum(X[:,1:])), color="red", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		xs 			= np.linspace(X[0,0], X[-1,0], 1000)

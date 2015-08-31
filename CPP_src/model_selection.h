@@ -25,13 +25,14 @@ public:
 	double noise_ll;
 	double k_ll;
 	double scale;
-	int start;
+	int start, stop;
 	string chrom;
 	vector<rsimple_c> components;
-	final_model_output(string, string, int,vector<rsimple_c>, double, double,double,int );
+	final_model_output(string, string, int,vector<rsimple_c>, double, double,double,int, int );
 	final_model_output();
 	string write_out_config();
 	string write_out_bed();
+	vector<vector<double> > get_bounds();
 
 };
 

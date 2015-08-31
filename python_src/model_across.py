@@ -1,6 +1,5 @@
-from model import EMGU
 import multiprocessing as mp
-
+import model
 import os
 def checkFileExists(FILE, i):
 	if os.path.exists(FILE + str(i)):
@@ -37,7 +36,7 @@ def run(D, bic, rounds, max_k,
 					max_iterations=max_iterations, convergence_thresh=convergence_thresh,
 					move_uniform=move_uniform):
 	
-					clf 	= EMGU(max_ct=convergence_thresh, max_it=max_iterations, K=k, bayes=False, noise=True, 
+					clf 	= model.EMGU(max_ct=convergence_thresh, max_it=max_iterations, K=k, bayes=False, noise=True, 
 							noise_max=0.1, moveUniformSupport=0, cores=4)
 					clf.fit(X)
 					output.put((clf.ll , clf.rvs, clf.converged, clf.resets, clf))

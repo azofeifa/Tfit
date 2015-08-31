@@ -48,8 +48,8 @@ int main(int argc, char* argv[]){
 		string out_file_dir 		= P->p4["-o"] ;
 		int BINS 					= stoi(P->p4["-br"]);
 		double scale 				= stod(P->p4["-ns"]);
-		double window 				= stod(P->p4["-window"])/ scale;
-		double ct 					= stod(P->p4["-ct"]);
+		double window 				= stod(P->p4["-window_res"]);
+		double ct 					= stod(P->p4["-bct"]);
 		double density 				= stod(P->p4["-density"]) / scale;
 		int opt_res 				= stod(P->p4["-opt_res"]);
 		int np 						= stoi(P->p4["-np"]);
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
 			return 0;			
 		}else if(optimize_directory.empty() and not segments.empty() ){
 			run_global_template_matching(segments, out_file_dir, window, 
-				density,scale,ct, np,-0.1 );	
+				density,scale,ct, np,0. );	
 		}
 		map<string , vector<vector<double> > > G;
 		if (P->p4["-show_seeds"] == "1"){
@@ -89,38 +89,48 @@ int main(int argc, char* argv[]){
 				segments , rank, nprocs, "");
 			
 		}
-		vector<segment *> bidir_segments;
-		if (not G.empty()  ){
-			bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
-		}
-		vector<simple_c> fits;
-		clock_t t;
-		
-		chrono::time_point<chrono::system_clock> start, end;
-		start = chrono::system_clock::now();
+		if (P->p4["-MLE"] == "1"){
+			vector<segment *> bidir_segments;
+			if (not G.empty()  ){
+				bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
+			}
+			vector<simple_c> fits;
+			clock_t t;
+			
+			chrono::time_point<chrono::system_clock> start, end;
+			start = chrono::system_clock::now();
 
-		t = clock();
-		
-		if (not bidir_segments.empty()){
-			BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
-			fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
-		}
-		map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
-		end = chrono::system_clock::now();
-		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
-	                             (end-start).count();
-		t = clock() - t;
-		if (rank ==0 ){
-			printf("CPU: %f, %f\n",t,((float)t)/CLOCKS_PER_SEC);
-			printf("Wall Time: %f\n", (elapsed_seconds/1000.));
-		}
-		
+			t = clock();
+			
+			if (not bidir_segments.empty()){
+				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
+				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
+			}
+			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
+			end = chrono::system_clock::now();
+			int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
+		                             (end-start).count();
+			t = clock() - t;
+			if (rank ==0 ){
+				printf("CPU: %f, %f\n",t,((float)t)/CLOCKS_PER_SEC);
+				printf("Wall Time: %f\n", (elapsed_seconds/1000.));
+			}
 
-		if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
-			vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
-			write_out_MLE_model_info(A, P);
-		}
+			vector<segment *> FSI;
+			if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
+				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
+				if (P->p4["-elon"] == "1" and rank==0){
+					//want load the intervals of "interest"
+					FSI 		=  load_intervals_of_interest(P->p4["-f"]);
+					//now we want to insert final_model_output data into FSI...	
+					combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
+				}
+			}
+			map<string, vector<segment *> > GG 	= send_out_elongation_assignments(FSI, rank, nprocs);
+			vector<segment*> integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph);
 
+		}
+		
 
 		if (not segments.empty()){
 			free_segments(segments);

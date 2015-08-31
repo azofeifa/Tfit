@@ -30,4 +30,6 @@ vector<simple_c> run_model_accross_segments_template(vector<segment*>,
 vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *>, params *);
 string get_header(params *);
 
+vector<simple_c> move_elongation_support(vector<segment *>, params *);
+
 #endif

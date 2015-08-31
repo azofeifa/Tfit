@@ -357,6 +357,32 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 	return fits;
 }
 
+vector<simple_c> move_elongation_support(vector<segment *> FSI, params * P){
+	int num_proc 	= stoi(P->p4["-np"]);
+	#pragma omp parallel for num_threads(num_proc)
+	for (int i = 0; i < FSI.size(); i++){
+
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

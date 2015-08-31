@@ -70,9 +70,25 @@ vector<vector<double>> bubble_sort(vector<vector<double>> X){ //sort vector of v
 			}
 		}
 	}
-
 	return X;
 }
+
+vector<vector<double>> bubble_sort2(vector<vector<double>> X){ //sort vector of vectors by second
+	bool changed=true;
+	while (changed){
+		changed=false;
+		for (int i = 0; i < X.size()-1; i++  )	{
+			if (X[i][0] < X[i+1][0]){
+				vector<double> copy 	= X[i];
+				X[i] 					= X[i+1];
+				X[i+1] 					= copy;
+				changed=true;
+			}
+		}
+	}
+	return X;
+}
+
 
 vector<double> window_search(segment * data, double si, double l, bool kind){
 	vector<double> values(data->XN);
@@ -308,7 +324,8 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 
 
 void run_global_template_matching(vector<segment*> segments, 
-	string out_dir,  double window, double density,
+	string out_dir,  double res, double density,
+
 	double scale, double ct, int np, double skew){
 	ofstream FHW;
 	ofstream FHW_intervals;
@@ -320,9 +337,11 @@ void run_global_template_matching(vector<segment*> segments,
 	vector<vector<double> > scores;
 	vector<double> current(5);
 	vector<string> INFOS;
-
+	double window;
+	double window_a 	= 500;
+	double window_b 	= 2000;
+	double window_delta = (window_b-window_a)/res;
 	for (int i = 0; i < segments.size(); i++){
-		scores.clear();
 		double * avgLL 			= new double[int(segments[i]->XN)];
 		double * BIC_values 	= new double[int(segments[i]->XN)];
 		double * densities 		= new double[int(segments[i]->XN)];
@@ -333,34 +352,87 @@ void run_global_template_matching(vector<segment*> segments,
 		for (int t =0; t < segments[i]->XN; t++ ){
 			skews[t] 	= new double[2];
 		}
-		BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np);
-		//write out contigous regions of up?
-		for (int j = 1; j<segments[i]->XN-1; j++){
+		for (int w = 0 ; w<res; w++){
+			window 	= (window_a + window_delta*w) / scale;
+			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np);
+			//write out contigous regions of up?
+			for (int j = 1; j<segments[i]->XN-1; j++){
 
-			if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
-				if (BIC_values[j] >=ct  and densities[j]>density and densities_r[j]>density and skews[j][0] > skew and skews[j][1] < -skew){
+				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
+					if (BIC_values[j] >=ct  and densities[j]>window*0.75  and densities_r[j]>window*0.75 and skews[j][0] > skew and skews[j][1] < -skew){
 
-					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-					current[0] 	= start, current[1]=stop, current[2]=BIC_values[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
-					if (scores.empty()){
-						current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
-						scores.push_back(current);
-						INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
-					}else{
-						N 			= scores.size();
-						if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
-							if (scores[N-1][2] < BIC_values[j]){
-								scores[N-1] = current;	
-							}
-						}else{
-							INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
+						start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+						stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+						current[0] 	= start, current[1]=stop, current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
+						if (scores.empty()){
+							current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
 							scores.push_back(current);
+							INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
+						}else{
+							N 			= scores.size();
+							if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
+								if (scores[N-1][2] < BIC_values[j]){
+									scores[N-1] = current;	
+								}
+							}else{
+								INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
+								scores.push_back(current);
+							}
 						}
 					}
 				}
 			}
+			
 		}
+		//now we want to merge all of these overlaps...
+		struct merged{
+		public:
+			double start, stop;
+			vector<vector<double>> intervals;
+			void add(vector<double> insertee){
+				start 		= min(start, insertee[0]), stop= max(stop, insertee[1]);
+				intervals.push_back(insertee);
+			}
+			merged(){};
+			merged(vector<double> insertee ){
+				start=insertee[0], stop=insertee[1];
+				intervals.push_back(insertee);
+			};
+			vector<double> get_best(){
+				double current_BIC_score 	= INF;
+				vector<double> arg_bic;
+				for (int i = 0; i < intervals.size(); i++){
+					if (intervals[i][2] < current_BIC_score){
+						arg_bic 	= intervals[i];
+					}
+				}
+				if (arg_bic.empty()){
+					printf("WHAT?\n");
+				}
+				return arg_bic;
+			}
+			
+		};
+		//sort_scores
+
+		scores 	= bubble_sort2(scores);
+		int j;
+		int N 	= scores.size();
+		vector<merged> mergees;
+		for (int s = 0; s < scores.size(); s++){
+			merged 	M(scores[s]);
+			s++;
+			while (s < N and scores[s][1] > M.start and scores[s][0] < M.stop ) {
+				M.add(scores[s]);
+				s++;
+			}
+			mergees.push_back(M);
+		}
+		scores.clear();
+		for (int m = 0; m < mergees.size(); m++){
+			scores.push_back(mergees[m].get_best());
+		}
+		
 		for (int j = 0; j < scores.size();j++){
 
 			center 		= int((scores[j][1]+scores[j][0]) / 2.);
@@ -371,7 +443,9 @@ void run_global_template_matching(vector<segment*> segments,
 			bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
 			segments[i]->bidirectional_bounds.push_back(bounds);	
 		}
-		
+		scores.clear();
+	
+
 	}
 }
 

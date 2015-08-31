@@ -29,4 +29,7 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 vector<segment *>, int, int,string );
 map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segment *>, vector<simple_c>, int , int);
 
+map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *> , int, int);
+
+
 #endif

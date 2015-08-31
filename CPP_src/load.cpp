@@ -942,6 +942,64 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 	return segments;
 }
 
+vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > A, string forward_file, string reverse_file){
+	vector<string> FILES = {forward_file, reverse_file};
+	int strands[2] 		= {1,-1};
+	int start, stop, N, j;
+	double coverage;
+	N 	= 0,j 	= 0;
+	int strand 	= 1;
+	int o_st, o_sp;
+	vector<string> lineArray;
+	string chrom, prevchrom, line;
+	vector<segment *> segments;
+	for (int i =0;i<2;i++){
+		strand 	= strands[i];
+		ifstream FH(FILES[i]);
+		if (FH){
+			prevchrom="";
+			while (getline(FH, line)){
+				lineArray 	= splitter(line, "\t");
+				chrom 		= lineArray[0];
+				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+				if (prevchrom!=chrom){
+					if (A.find(chrom)!=A.end()){
+						N 	= A[chrom].size(), j = 0;
+					}else{
+						N 	= 0,j=0;
+					}
+				}
+				while (j < N and A[chrom][j]->stop < start){
+					j++;
+				}
+				if (j < N and A[chrom][j]->start < stop){ //overlap!
+					o_st 	= max(A[chrom][j]->start, start);
+					o_sp 	= min(A[chrom][j]->stop, stop);
+					for (int u = o_st; u < o_sp; u++){
+						A[chrom][j]->add(strand, double(u), coverage );
+					}
+				}
+				prevchrom 	= chrom;
+			}
+			
+		}else{
+			cout<<"could not open: "<<FILES[i]<<endl;
+			segments.clear();
+			return segments;
+		}
+		FH.close();
+	}
+	typedef map<string, vector<segment *> >::iterator it_type;
+	for (it_type a = A.begin(); a!=A.end(); a++){
+		for (int i =0; i < a->second.size(); i++){
+			segments.push_back(a->second[i]);
+		}
+	}
+	return segments;
+}
+
+
+
 
 //================================================================================================
 //write out to file functions
@@ -1048,10 +1106,63 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 
 	FHW_bed.close();
 	FHW_config.close();
-
-
-
 }
+
+
+vector<segment*> load_intervals_of_interest(string FILE){
+	ifstream FH(FILE);
+	vector<segment *> G;
+	if (FH){
+		string line, chrom;
+		int start, stop;
+		vector<string>lineArray;
+		while(getline(FH, line)){
+			lineArray=splitter(line, "\t");
+			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]);
+			segment * S 	= new segment(chrom, start, stop);
+			G.push_back(S);
+		}
+	}else{
+		printf("couldn't open %s for reading\n", FILE.c_str() );
+	}
+	return G;
+}
+
+void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A, vector<segment *> FSI ){
+	map<string, vector< vector<double> >> a;
+	for (int i = 0; i < A.size(); i++){
+		vector<vector<double>> d 	= A[i].get_bounds();
+		for (int u = 0 ; u < d.size(); u++ ){
+			a[A[i].chrom].push_back(d[u]);
+		}
+		
+	}
+	map<string, vector<segment *> > fsi;
+	for (int i = 0; i < FSI.size(); i++){
+		fsi[FSI[i]->chrom].push_back(FSI[i]);
+	}
+	
+	typedef map<string, vector<segment *> >::iterator it_type;
+	typedef vector<segment *>::iterator it_type_2;
+	int N,j;
+	for (it_type i = fsi.begin(); i !=fsi.end(); i++){
+		if (a.find(i->first) != a.end()){
+			j=0,N=a[i->first].size();
+			vector<vector<double> > current 	= a[i->first];
+			for (it_type_2 s 	= i->second.begin(); s != i->second.end(); s++ ){
+				while (j < N and current[j][1] < (*s)->start){
+					j++;
+				}
+				while (j < N and current[j][0] < (*s)->stop ){
+					(*s)->fitted_bidirs.push_back(current[j]);
+					j++;
+				}
+			}
+		}
+	}
+}
+
+
 
 
 

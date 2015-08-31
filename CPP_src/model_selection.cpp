@@ -320,9 +320,10 @@ map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
 }
 
 final_model_output::final_model_output(string chr, string h, int k, 
-	vector<rsimple_c> rcs, double n_ll, double K_ll, double ns, int st ){
+	vector<rsimple_c> rcs, double n_ll, double K_ll, double ns, int st, int sp ){
 	chrom 	= chr;
 	start 	= st;
+	stop 	= sp;
 	scale 	= ns;
 	header 	= h;
 	noise_ll 	= n_ll, k_ll 	= K_ll;
@@ -390,6 +391,21 @@ string final_model_output::write_out_bed(){
 	}
 	return line;
 }
+
+vector<vector<double>> final_model_output::get_bounds(){
+	vector<vector<double>> d;
+	for (int k = 0; k < components.size(); k++){
+		double center 	= (components[k].ps[2]*scale + double(start));
+		double std 		= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
+		vector<double> D(6) ;
+		D[0] 	= center - std*2,D[1] 	= center + std*2, D[2] 	= components[k].ps[2] ;
+		D[3] 	= components[k].ps[3] , D[4] 	= components[k].ps[4], D[5] 	= components[k].ps[6];
+		d.push_back(D);
+	}
+	return d;
+}
+
+
 
 vector<int> get_scores(map<string, map<int, vector<rsimple_c> > > G, double penality){
 	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
@@ -478,7 +494,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	int 	i = 0;
 	double noise_ll;
 	double k_ll;
-	int start;
+	int start, stop;
 	string chr;
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
 		vector<rsimple_c> components;
@@ -487,6 +503,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 		}else{
 			noise_ll 		= B->second[1][0].ps[0];
 			start 			= B->second[1][0].st_sp[0];
+			stop 			= B->second[1][0].st_sp[1];
 			chr 			= B->second[1][0].chrom;
 			if (B->second.find(scores[i])!=B->second.end()){
 				components 	= B->second[scores[i]];
@@ -494,7 +511,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 			}else{
 				k_ll 		= nINF;
 			}
-			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start ) );
+			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop ) );
 		}
 		i++;
 		

@@ -56,13 +56,14 @@ params::params(){
 	p4["-i"] 				= "";
 	p4["-j"] 				= "";
 	p4["-k"] 				= "";
+	p4["-f"] 				= "";
 	p4["-optimize"] 		= "0";
 	p4["-o"] 				= "1";
 	p4["-ns"] 				= "100";
 	p4["-br"] 				= "50";
 	p4["-density"] 			= "1000";
-	p4["-window"] 			= "1000";
-	p4["-ct"] 				= "0.9";
+	p4["-window_res"] 		= "100";
+	p4["-bct"] 				= "0.9";
 	
 	p4["-chr"] 				= "all";
 	p4["-opt_res"] 			= "5";
@@ -81,6 +82,7 @@ params::params(){
 	p4["-BETA_1"] 			= "1";
 	p4["-ALPHA_2"] 			= "1";
 	p4["-ALPHA_3"] 			= "1";
+	p4["-elon"] 			= "0";
 	p4["-show_seeds"] 		= "0";
 	
 
@@ -178,12 +180,12 @@ void params::display(){
 			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
 			cout<<"-i           : "<<p4["-i"]<<endl;
 			cout<<"-j           : "<<p4["-j"]<<endl;
-			cout<<"-k           : "<<p4["-k"]<<endl;
+			cout<<"-f           : "<<p4["-f"]<<endl;			
 			cout<<"-o           : "<<p4["-o"]<<endl;
-			cout<<"-window      : "<<p4["-window"]<<endl;
-			cout<<"-ct          : "<<p4["-ct"]<<endl;
-			cout<<"-density     : "<<p4["-density"]<<endl;
+			cout<<"-window_res  : "<<p4["-window_res"]<<endl;
+			cout<<"-bct         : "<<p4["-bct"]<<endl;
 			cout<<"-MLE         : "<<p4["-MLE"]<<endl;
+			cout<<"-elon        : "<<p4["-elon"]<<endl;			
 			cout<<"-pad         : "<<p4["-pad"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
