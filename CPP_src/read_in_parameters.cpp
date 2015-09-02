@@ -128,8 +128,8 @@ void params::display(){
 			cout<<"-np       : "<<p["-np"]<<endl;
 			cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
 			
-			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
 		}
 		else{
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -148,8 +148,8 @@ void params::display(){
 			cout<<"-density   : "<<p["-density"]<<endl;
 			cout<<"-ct        : "<<p["-ct"]<<endl;
 			cout<<"-pad       : "<<p["-pad"]<<endl;
-			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
 		}
 	}else if (module=="FORMAT"){
 		cout<<"----------------------------------------------------------------"<<endl;
@@ -160,8 +160,9 @@ void params::display(){
 		cout<<"-k        : "<<p2["-k"]<<endl;
 		cout<<"-o        : "<<p2["-o"]<<endl;
 		cout<<"-pad      : "<<p2["-pad"]<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		cout<<"----------------------------------------------------------------"<<endl;
+		
 	}else if (module=="SELECTION"){
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"              User Provided EMGU Parameters                     "<<endl;
@@ -171,8 +172,8 @@ void params::display(){
 		cout<<"-penality    : "<<p3["-penality"]<<endl;
 		cout<<"-to_igv      : "<<p3["-to_igv"]<<endl;
 		cout<<"-to_EMG      : "<<p3["-to_EMG"]<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		cout<<"----------------------------------------------------------------"<<endl;
 	}else if (module=="BIDIR")	{
 		if (p4["-optimize"]=="0"){
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -191,8 +192,9 @@ void params::display(){
 			cout<<"-br          : "<<p4["-br"]<<endl;
 			cout<<"-np          : "<<p4["-np"]<<endl;
 
-			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
+		
 		}else{
 			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"              User Provided EMGU Parameters                     "<<endl;
@@ -207,8 +209,8 @@ void params::display(){
 			cout<<"-np          : "<<p4["-np"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
-			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+			cout<<"----------------------------------------------------------------"<<endl;
 			
 		}
 	}

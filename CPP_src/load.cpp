@@ -138,6 +138,13 @@ void segment::add2(int strand, double x, double y){
 	}
 }
 
+void segment::add_fitted_bidir(vector<double> D){
+	fitted_bidirs.push_back(D);
+	start 	= min(start, int(D[0]));
+	stop 	= max(stop, int(D[1]));
+}
+
+
 void segment::bin(double delta, double scale, bool erase){
 	X 				= new double*[3];
 	SCALE 			= scale;
@@ -232,9 +239,32 @@ void segment::bin(double delta, double scale, bool erase){
 				centers[i]=(centers[i]-minX)/scale;			
 			}
 		}
+		if (not fitted_bidirs.empty() ){
+			for (int fb = 0; fb < fitted_bidirs.size(); fb++){
+				int center 	= fitted_bidirs[fb][0];
+				int std 	= fitted_bidirs[fb][1]*0.5 + (1. /  fitted_bidirs[fb][2]);
+				int a 		= center - std*3;
+				int b 		= center + std*3;
+				if (a < start or b > stop){
+					printf("-------------------\n");
+					printf("%s:%d-%d\n", chrom.c_str(), start, stop );
+					printf("%s:%d-%d\n", chrom.c_str(), a, b );
+
+
+				}
+
+
+
+				fitted_bidirs[fb][0] = (fitted_bidirs[fb][0] - minX)/scale;
+				fitted_bidirs[fb][1] /= scale;
+				fitted_bidirs[fb][2] *= scale; 
+			}
+		}
 		maxX 			= (maxX-minX)/scale;
 		minX 			=0;
 	}
+
+
 	double S=0;
 	for (int i = 0; i < XN; i++){
 		S+=X[1][i];
@@ -942,7 +972,7 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 	return segments;
 }
 
-vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > A, string forward_file, string reverse_file){
+vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > A, string forward_file, string reverse_file, int rank){
 	vector<string> FILES = {forward_file, reverse_file};
 	int strands[2] 		= {1,-1};
 	int start, stop, N, j;
@@ -962,6 +992,7 @@ vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > A, 
 				lineArray 	= splitter(line, "\t");
 				chrom 		= lineArray[0];
 				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+
 				if (prevchrom!=chrom){
 					if (A.find(chrom)!=A.end()){
 						N 	= A[chrom].size(), j = 0;
@@ -978,16 +1009,17 @@ vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > A, 
 					for (int u = o_st; u < o_sp; u++){
 						A[chrom][j]->add(strand, double(u), coverage );
 					}
+				
 				}
 				prevchrom 	= chrom;
 			}
+			FH.close();
 			
 		}else{
 			cout<<"could not open: "<<FILES[i]<<endl;
 			segments.clear();
 			return segments;
 		}
-		FH.close();
 	}
 	typedef map<string, vector<segment *> >::iterator it_type;
 	for (it_type a = A.begin(); a!=A.end(); a++){
@@ -1133,6 +1165,7 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 	for (int i = 0; i < A.size(); i++){
 		vector<vector<double>> d 	= A[i].get_bounds();
 		for (int u = 0 ; u < d.size(); u++ ){
+			d[u].push_back(0);
 			a[A[i].chrom].push_back(d[u]);
 		}
 		
@@ -1144,22 +1177,46 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 	
 	typedef map<string, vector<segment *> >::iterator it_type;
 	typedef vector<segment *>::iterator it_type_2;
+	typedef map<string, vector< vector<double> >> ::iterator it_type_3;
+	
+	//want to check if they are sorted?
+	for (it_type i = fsi.begin(); i !=fsi.end(); i++){
+		for (int j = 1; j < i->second.size(); j++){
+			if (i->second[j-1]->start > i->second[j]->start){
+				printf("ERROR:, elongation support bed file is not sorted...\n");
+			}
+		}
+	}
+	for (it_type_3 i = a.begin(); i !=a.end(); i++){
+		a[i->first] = interval_sort(i->second);
+	}
 	int N,j;
 	for (it_type i = fsi.begin(); i !=fsi.end(); i++){
 		if (a.find(i->first) != a.end()){
 			j=0,N=a[i->first].size();
 			vector<vector<double> > current 	= a[i->first];
 			for (it_type_2 s 	= i->second.begin(); s != i->second.end(); s++ ){
+				bool skipped 	= false;
 				while (j < N and current[j][1] < (*s)->start){
+					skipped 	= true;
 					j++;
 				}
 				while (j < N and current[j][0] < (*s)->stop ){
-					(*s)->fitted_bidirs.push_back(current[j]);
+					(*s)->add_fitted_bidir(current[j]);
+					current[j][current[j].size()-1] 	= 1;
 					j++;
+				}
+			}
+			for (int u = 0; u < current.size(); u++){
+				if (current[u][current[u].size()-1] == 0){
+				
 				}
 			}
 		}
 	}
+
+
+
 }
 
 

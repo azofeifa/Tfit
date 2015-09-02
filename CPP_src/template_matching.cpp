@@ -414,36 +414,38 @@ void run_global_template_matching(vector<segment*> segments,
 			
 		};
 		//sort_scores
-
-		scores 	= bubble_sort2(scores);
-		int j;
 		int N 	= scores.size();
-		vector<merged> mergees;
-		for (int s = 0; s < scores.size(); s++){
-			merged 	M(scores[s]);
-			s++;
-			while (s < N and scores[s][1] > M.start and scores[s][0] < M.stop ) {
-				M.add(scores[s]);
+		if (N){
+			scores 	= bubble_sort2(scores);
+			int j;
+			vector<merged> mergees;
+			for (int s = 0; s < scores.size(); s++){
+				merged 	M(scores[s]);
 				s++;
+				while (s < N and scores[s][1] > M.start and scores[s][0] < M.stop ) {
+					M.add(scores[s]);
+					s++;
+				}
+				mergees.push_back(M);
 			}
-			mergees.push_back(M);
-		}
-		scores.clear();
-		for (int m = 0; m < mergees.size(); m++){
-			scores.push_back(mergees[m].get_best());
-		}
-		
-		for (int j = 0; j < scores.size();j++){
+			scores.clear();
+			for (int m = 0; m < mergees.size(); m++){
+				scores.push_back(mergees[m].get_best());
+			}
+			
+			for (int j = 0; j < scores.size();j++){
 
-			center 		= int((scores[j][1]+scores[j][0]) / 2.);
-			//want to insert into
-			vector<double> bounds(2);
-			// bounds[0]=(center-scores[j][3]-scores[j][4] - segments[i]->start)/scale; 
-			// bounds[1]=(center+scores[j][3]+scores[j][4] - segments[i]->start)/scale ;
-			bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
-			segments[i]->bidirectional_bounds.push_back(bounds);	
+				center 		= int((scores[j][1]+scores[j][0]) / 2.);
+				//want to insert into
+				vector<double> bounds(2);
+				// bounds[0]=(center-scores[j][3]-scores[j][4] - segments[i]->start)/scale; 
+				// bounds[1]=(center+scores[j][3]+scores[j][4] - segments[i]->start)/scale ;
+				bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
+				segments[i]->bidirectional_bounds.push_back(bounds);	
+			}
 		}
 		scores.clear();
+
 	
 
 	}

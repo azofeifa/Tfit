@@ -398,8 +398,8 @@ vector<vector<double>> final_model_output::get_bounds(){
 		double center 	= (components[k].ps[2]*scale + double(start));
 		double std 		= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
 		vector<double> D(6) ;
-		D[0] 	= center - std*2,D[1] 	= center + std*2, D[2] 	= components[k].ps[2] ;
-		D[3] 	= components[k].ps[3] , D[4] 	= components[k].ps[4], D[5] 	= components[k].ps[6];
+		D[0] 	= center - std*3,D[1] 	= center + std*3, D[2] 	= components[k].ps[2]*scale + double(start) ;
+		D[3] 	= components[k].ps[3]*scale , D[4] 	= (components[k].ps[4]/scale), D[5] 	= components[k].ps[6];
 		d.push_back(D);
 	}
 	return d;

@@ -240,7 +240,7 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		
 		b_forward 	= data->X[0][j];
 		if (b_forward < (mu+(1.0/lambda)) ){
-			forward 	= UNI(data->minX, data->maxX, 0., 1, j, 0.5);
+			forward 	= UNI(mu+(1.0/lambda), data->maxX, 0., 1, j, 0.5);
 		}
 		else{	
 			forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j, 0.5);
@@ -252,7 +252,7 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 
 		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
 		if (a_reverse > mu-(1.0/lambda) ){
-			reverse 	= UNI(data->minX, data->maxX, 0., -1, j,0.5);
+			reverse 	= UNI(data->minX, mu-(1.0/lambda), 0., -1, j,0.5);
 		}else{
 			reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
 		}
@@ -416,7 +416,44 @@ bool component::check_elongation_support(){
 }
 
 
+void component::initialize_with_parameters(vector<double> init_parameters, segment * data, int K){
+	if (init_parameters.empty()){
+		noise 	= NOISE(data->minX, data->maxX, 0.01, 0.5);
+		type 	= 0; 
+	}else{
+		double mu 	= init_parameters[0];
+		double si 	= init_parameters[1];
+		double l 	= init_parameters[2];
+		double pi 	= init_parameters[3];
+		bidir 		= EMG(mu, si, l, 1.0 / (3*K), pi);//bidir component
+		//now choose supports of forward and reverse
+		random_device rd;
+		mt19937 mt(rd());
+		gamma_distribution<double> dist_lengths(1,( (data->maxX-data->minX)/(K)));
+			
+		double dist 		= (1.0/l) + si + dist_lengths(mt);
+		int j 				= get_nearest_position(data, mu, dist);	
+		double b_forward 	= data->X[0][j];
+		if (b_forward < (mu+(1.0/l)) ){
+			forward 	= UNI(mu+(1.0/l), data->maxX, 0., 1, j, 1);
+		}
+		else{	
+			forward 	= UNI(mu+(1.0/l), b_forward, 1.0 / (3*K), 1, j, 1);
+		}	
+				
+		dist 				= (-1.0/l) - si - dist_lengths(mt);
+		j 					= get_nearest_position(  data, mu, dist);
+		double a_reverse 	= data->X[0][j];
 
+		
+		if (a_reverse > mu-(1.0/l) ){
+			reverse 	= UNI(data->minX, mu-(1.0/l ), 0., -1, j,0.);
+		}else{
+			reverse 	= UNI(a_reverse, mu-(1.0/l ), 1.0 / (3*K), -1, j,0.);
+		}
+		type 		= 1;
+	}	
+}
 
 
 //=========================================================
@@ -490,7 +527,7 @@ double move_uniforom_support(component * components, int K, int add,
 	//uniform supports
 	random_device rd;
 	mt19937 mt(rd());
-	geometric_distribution<int> dist_uni(0.3);
+	geometric_distribution<int> dist_uni(0.9);
 	uniform_int_distribution<int> direction(0,1);
 	int 	steps[K][2];
 	double  new_bounds[K][2];
@@ -551,6 +588,154 @@ double move_uniforom_support(component * components, int K, int add,
 	return ll;
 }
 
+void update_weights_only(component * components, segment * data, int K, int add){
+	double weights[K][3];
+	double current[K][3][2];
+	double norms[2];
+	double weights_noise=0;
+	for (int k = 0; k < K; k++){
+		weights[k][0] 	= 0,weights[k][1] 	= 0,weights[k][2] 	= 0;
+	}
+	for (int i = 0; i < data->XN; i++){
+		norms[0] = 0, norms[1] = 0;
+		for (int k =0; k < K; k++ ){
+			current[k][0][0] 	= components[k].bidir.pdf(data->X[0][i],1 );
+			current[k][0][1] 	= components[k].bidir.pdf(data->X[0][i],-1 );
+
+			current[k][1][0] 	= components[k].forward.pdf(data->X[0][i],1 );
+			current[k][1][1] 	= components[k].forward.pdf(data->X[0][i],-1 );
+
+			current[k][2][0] 	= components[k].reverse.pdf(data->X[0][i],1 );
+			current[k][2][1] 	= components[k].reverse.pdf(data->X[0][i],-1 );
+
+
+
+			norms[0]+=(current[k][0][0]+current[k][1][0]+current[k][2][0]);
+			norms[1]+=(current[k][0][1]+current[k][1][1]+current[k][2][1]);
+		}
+		//add the noise component
+		if (add){
+			norms[0]+= components[K].noise.pdf(data->X[0][i], 1);
+			norms[1]+= components[K].noise.pdf(data->X[0][i], -1);
+		}
+		for (int s = 0; s < 2; s++){
+			if (norms[s]>0){
+				for (int k = 0; k < K;k++){
+					weights[k][0] += (current[k][0][s]/norms[s])*data->X[s+1][i];
+					weights[k][1] += (current[k][1][s]/norms[s])*data->X[s+1][i];
+					weights[k][2] += (current[k][2][s]/norms[s])*data->X[s+1][i];			
+				}
+				if (s == 0){
+					weights_noise 	+= (components[K].noise.pdf(data->X[0][i], 1)/norms[s])*data->X[s+1][i];
+				}else{
+					weights_noise 	+= (components[K].noise.pdf(data->X[0][i], -1)/norms[s])*data->X[s+1][i];	
+				}
+			}
+		}
+	}
+	double N=0;
+	for (int k =0; k < K;k++){
+		N+=(weights[k][0]+weights[k][1]+weights[k][2]);
+	}
+	N+=weights_noise;
+	for (int k =0; k < K;k++){
+		components[k].bidir.w 		= weights[k][0]/N;
+		components[k].forward.w 	= weights[k][1]/N;
+		components[k].reverse.w 	= weights[k][2]/N;		
+	}
+
+}
+
+
+
+double move_uniforom_support2(component * components, int K, int add, 
+	segment * data, double move, double base_ll){
+	//===========================================================================
+	//normal distribution centered around 0 and some variance, how much to move 
+	//uniform supports
+	random_device rd;
+	mt19937 mt(rd());
+	geometric_distribution<int> dist_uni(0.05);
+	uniform_int_distribution<int> direction(0,1);
+	int 	steps[K][2];
+	double  new_bounds[K][2];
+	double  weights[K][3];
+	double ll;
+	double prev_a, prev_b, prev_w_forward, prev_w_reverse, prev_w_bidir;
+	for (int k = 0; k < K; k++){
+		prev_b=components[k].forward.b, prev_a=components[k].reverse.a;
+		steps[k][0] 	= get_new_position(dist_uni, mt, 
+			components[k].forward.pos, data->XN, get_direction(direction, mt), 1, data);
+		steps[k][1] 	= get_new_position(dist_uni, mt, 
+			components[k].reverse.pos, data->XN, get_direction(direction, mt), 2, data);
+		//firs the forward
+		components[k].forward.b=data->X[0][steps[k][0]];
+		prev_w_bidir 			= components[k].bidir.w;
+		prev_w_forward 			= components[k].forward.w;
+		prev_w_reverse 			= components[k].reverse.w;
+		if (check_uniform_support(components[k], 1)){
+			//now we need to reupdate weight parameters...
+
+			update_weights_only(components, data, K, add);
+			ll 	= calc_log_likelihood(components, K+add, data);
+			//printf("ll: %f, base_ll: %f\n", ll, base_ll);
+
+			//printf("%f,%f,%f,%f\n", prev_b, components[k].forward.b, base_ll,ll );
+			if (ll > base_ll){
+				new_bounds[k][0] 	= components[k].forward.b;
+				base_ll 			= ll;
+
+			}else{
+				new_bounds[k][0] 	= prev_b;
+				steps[k][0] 		= components[k].forward.pos;
+			}
+		}else{
+			new_bounds[k][0] 	= prev_b;
+			steps[k][0] 		= components[k].forward.pos;
+
+		}
+		components[k].bidir.w 	= prev_w_bidir;
+		components[k].forward.w = prev_w_forward;
+		components[k].reverse.w = prev_w_reverse;
+		
+		components[k].forward.b 	= prev_b;
+		//now reverse
+		components[k].reverse.a=data->X[0][steps[k][1]];
+		if (check_uniform_support(components[k], 0)){
+			update_weights_only(components, data, K, add);
+			ll 	= calc_log_likelihood(components, K+add, data);
+			//printf("ll: %f, base_ll: %f\n", ll, base_ll);
+			if (ll > base_ll){
+				new_bounds[k][1] 	= components[k].reverse.a;
+				base_ll 			= ll;
+			}else{
+				new_bounds[k][1] 	= prev_a;
+				steps[k][1] 		= components[k].reverse.pos;
+			}
+			//printf("%f,%f,%f,%f\n", prev_a, components[k].reverse.a, base_ll,ll );
+		}else{
+				new_bounds[k][1] 	= prev_a;
+				steps[k][1] 		= components[k].reverse.pos;			
+		}
+		components[k].reverse.a 	= prev_a;
+		components[k].bidir.w 	= prev_w_bidir;
+		components[k].forward.w = prev_w_forward;
+		components[k].reverse.w = prev_w_reverse;
+		
+	}
+	
+	for (int k =0; k < K;k++){
+		components[k].forward.pos 	= steps[k][0];
+		components[k].forward.b 	= new_bounds[k][0];
+		components[k].reverse.pos 	= steps[k][1];
+		components[k].reverse.a 	= new_bounds[k][1];	
+	}
+	update_weights_only(components, data, K, add);
+	return base_ll;
+			
+}
+
+
 //=========================================================
 //For Classifier class / wrapper around EM
 
@@ -590,10 +775,29 @@ classifier::classifier(int k, double ct, int mi, double nm,
 	//hyperparameters
 	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
 	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
-
 	move_l 	= MOVE;
-
 }
+classifier::classifier(double ct, int mi, double nm,
+	double R_MU, double alpha_0, double beta_0,
+	double alpha_1, double beta_1, double alpha_2,double alpha_3, vector<vector<double>> IP){
+	seed 					= true;
+	convergence_threshold 	= ct;
+	max_iterations 			= mi;
+	noise_max 				= nm;
+	p 						= 0.8;
+	last_diff 				= 0;
+	r_mu 					= R_MU;
+
+	//=============================
+	//hyperparameters
+	ALPHA_0=alpha_0, BETA_0=beta_0, ALPHA_1=alpha_1, BETA_1=beta_1;
+	ALPHA_2=alpha_2, ALPHA_3=alpha_3;
+	init_parameters 		= IP;
+	
+}
+
+
+
 
 classifier::classifier(){};//empty constructor
 
@@ -740,6 +944,61 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 	}
 	
 	return 1;
+}
+int classifier::fit_uniform_only(segment * data){
+	//so in this case, there are a set of bidirectionals that are set and we are going to just try and maximize their 
+	//elongation support first (and then maybe restimate parameters?)
+	int K 		= init_parameters.size();
+	components 	= new component[K+1];
+	//printf("--BEFORE--\n");
+	for (int k =0; k < K;k++){
+		components[k].initialize_with_parameters(init_parameters[k], data, K);
+	//	components[k].print();
+	}
+	update_weights_only(components, data, K, 1);
+			
+	vector<double> empty;
+	components[K].initialize_with_parameters(empty, data, K);
+
+	bool converged=false;
+	int t=0;
+	ll 	= calc_log_likelihood(components, K+1, data  );
+	double prevll 	= nINF;
+	int times 		= 0;
+	int changes 	= 0;
+
+	while (not converged and t < max_iterations){
+		ll 	= move_uniforom_support2( components, K, 1, data, move,  ll);
+		if (prevll == ll){
+			times++;
+		}else{
+			times =0;
+			changes++;
+		}
+		if (times> 200){
+			// printf("--AFTER--\n");
+			// printf("%d\n", changes);
+			// for (int k =0; k < K;k++){
+			// 	components[k].print();			
+			// }
+			converged=true;
+		}
+		prevll=ll;
+		t++;
+	}
+	//now we can probably remaximize...but maybe save that for a later date...
+
+
+	return 1;
+
+
+
+
+
+
+
+
+
 }
 string classifier::print_out_components(){
 	string text 	= "";

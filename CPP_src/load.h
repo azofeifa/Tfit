@@ -71,6 +71,7 @@ public:
 	vector<int> bidirectional_N;
 	vector<vector<double>> fitted_bidirs; //mu, si, l,pi
 	void insert_bidirectional_data(int);
+	void add_fitted_bidir(vector<double>);
 };
 
 
@@ -150,7 +151,7 @@ void write_out_MLE_model_info(vector<final_model_output>, params *);
 
 vector<segment *> load_intervals_of_interest(string);
 
-vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string);
+vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string, int);
 
 
 #endif

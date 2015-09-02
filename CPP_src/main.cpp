@@ -17,6 +17,43 @@
 #include "MPI_comm.h"
 using namespace std;
 
+class timer{
+public:
+	clock_t t;		
+	chrono::time_point<chrono::system_clock> start, end;
+	int WT;
+	void start_time(int rank, string header){
+		if (rank==0){
+			string white_space 	= "";
+			if (header.size() > WT){
+				WT 				= header.size();
+			}
+			for (int i = 0; i < (WT-header.size() ); i++ ){
+				white_space+= " ";
+			}
+			header=header+white_space;
+			printf("%s",header.c_str() );
+			start = chrono::system_clock::now();
+			t = clock();
+		}
+	}
+	void get_time(int rank){
+		if (rank==0){
+			end = chrono::system_clock::now();
+			int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
+			                             (end-start).count();
+			t = clock() - t;
+			if (rank ==0 ){
+				printf("CPU: %.5g,",t / double(CLOCKS_PER_SEC)  );
+				printf("WT: %.5g\n", (elapsed_seconds/1000.));
+			}
+		}
+	}
+	timer(int wt){
+		WT = wt;
+	}
+};
+
 
 int main(int argc, char* argv[]){
 	MPI::Init(argc, argv);
@@ -54,9 +91,11 @@ int main(int argc, char* argv[]){
 		int opt_res 				= stod(P->p4["-opt_res"]);
 		int np 						= stoi(P->p4["-np"]);
 		string spec_chrom 			= P->p4["-chr"];
-		
+		timer T(50);
+		T.start_time(rank, "loading BG files:");
 		vector<segment*> segments 	= load_bedgraphs_total(forward_bedgraph, 
 			reverse_bedgraph, BINS, scale, spec_chrom);
+		T.get_time(rank);
 		if (segments.empty()){
 			printf("segments not populated, exiting...\n");
 			MPI::Finalize();
@@ -77,58 +116,77 @@ int main(int argc, char* argv[]){
 			MPI::Finalize();
 			return 0;			
 		}else if(optimize_directory.empty() and not segments.empty() ){
+			T.start_time(rank, "running template matching:");	
 			run_global_template_matching(segments, out_file_dir, window, 
 				density,scale,ct, np,0. );	
+			T.get_time(rank);
+			
 		}
 		map<string , vector<vector<double> > > G;
+		T.start_time(rank, "(MPI) gathering bidir predictions:");	
 		if (P->p4["-show_seeds"] == "1"){
 			G = gather_all_bidir_predicitions(all_segments, 
 				segments , rank, nprocs, out_file_dir);
 		}else{
 			G = gather_all_bidir_predicitions(all_segments, 
 				segments , rank, nprocs, "");
-			
 		}
+		T.get_time(rank);
+
 		if (P->p4["-MLE"] == "1"){
 			vector<segment *> bidir_segments;
 			if (not G.empty()  ){
+				T.start_time(rank, "loading BG files:");
 				bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
+				T.get_time(rank);
+
 			}
 			vector<simple_c> fits;
-			clock_t t;
-			
-			chrono::time_point<chrono::system_clock> start, end;
-			start = chrono::system_clock::now();
-
-			t = clock();
 			
 			if (not bidir_segments.empty()){
+				T.start_time(rank, "running model (1st) MLE on bidir segments:" );
 				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
 				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
-			}
-			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
-			end = chrono::system_clock::now();
-			int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
-		                             (end-start).count();
-			t = clock() - t;
-			if (rank ==0 ){
-				printf("CPU: %f, %f\n",t,((float)t)/CLOCKS_PER_SEC);
-				printf("Wall Time: %f\n", (elapsed_seconds/1000.));
-			}
+				T.get_time(rank);
 
+
+			}
+			T.start_time(rank, "(MPI) gathering MLE results:");
+			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
+			T.get_time(rank);
+			
 			vector<segment *> FSI;
 			if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
+				T.start_time(rank, "opt model selection:");
 				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
+				T.get_time(rank);
 				if (P->p4["-elon"] == "1" and rank==0){
 					//want load the intervals of "interest"
+					T.start_time(rank, "combinding FSI and bidir intervals:");
 					FSI 		=  load_intervals_of_interest(P->p4["-f"]);
 					//now we want to insert final_model_output data into FSI...	
 					combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
+					T.get_time(rank);
+			
 				}
 			}
-			map<string, vector<segment *> > GG 	= send_out_elongation_assignments(FSI, rank, nprocs);
-			vector<segment*> integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph);
 
+
+			fits.clear();
+			if (P->p4["-elon"] == "1"){
+				T.start_time(rank, "(MPI) sending out elongation assignments:");
+				map<string, vector<segment *> > GG 	= send_out_elongation_assignments(FSI, rank, nprocs);
+				T.get_time(rank);
+				if (not GG.empty()){
+					T.start_time(rank, "loading BG and integrating segments:");
+					vector<segment*> integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph,rank);
+					BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
+					T.get_time(rank);
+					T.start_time(0, "moving elongation support:");
+					fits 	= move_elongation_support(integrated_segments, P);
+					T.get_time(0);
+				}
+			}
 		}
 		
 
@@ -233,10 +291,7 @@ int main(int argc, char* argv[]){
 		t = clock() - t;
 		if (root){
 			printf("Wall Time %f\n", float(elapsed_seconds)/1000.);
-		}
-	
-		
-	
+		}				
 	}else if (P->module=="FORMAT"){
 		//==================================================================
 		//Necessary FILES
@@ -273,9 +328,7 @@ int main(int argc, char* argv[]){
 			P->display();
 		}
 		run_model_selection(P->p3["-i"], P->p3["-o"], stod(P->p3["-penality"]));
-		
 	}
-		
 	else {
 		printf("Could not understand module or not provided...\n");
 		printf("exiting\n");

@@ -331,6 +331,39 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
 	return fits;
 }
 
+vector<simple_c> bidir_components_to_simplec(vector<classifier> clfs, vector<segment *> FSI){
+	vector<simple_c> fits;
+	typedef vector<classifier>::iterator it_type;
+	int i 	= 0;
+	for (it_type c=clfs.begin(); c!=clfs.end(); c++){
+		double ll 	= (*c).ll;
+		double NN 	= FSI[i]->N;
+		for (int k = 0 ; k < (*c).init_parameters.size(); k++ ){
+			simple_c scc;
+			scc.IDS[0] 	= i, scc.IDS[1] 	= (*c).init_parameters.size();
+			scc.IDS[2] 	= (*c).init_parameters.size(), scc.IDS[3] 	= k;
+				
+			scc.ps[0] 	= (*c).components[k].bidir.mu;
+			scc.ps[1] 	= (*c).components[k].bidir.si;
+			scc.ps[2] 	= (*c).components[k].bidir.l;
+			scc.ps[3] 	= (*c).components[k].bidir.w;
+			scc.ps[4] 	= (*c).components[k].bidir.pi;
+			scc.ps[5] 	= (*c).components[k].forward.w; 
+			scc.ps[6] 	= (*c).components[k].reverse.w;
+			scc.ps[7] 	= (*c).components[k].forward.b; 
+			scc.ps[8] 	= (*c).components[k].reverse.a;
+			scc.ps[9] 	= (*c).components[k].forward.pi; 
+			scc.ps[10] 	= (*c).components[k].reverse.pi;
+			scc.ps[11] 	= NN;
+			scc.ll 		= ll, scc.noise_ll 	= nINF;		
+			fits.push_back(scc);
+		}
+		i++;
+	}
+
+	return fits;
+}
+
 
 vector<simple_c> run_model_accross_segments_template(vector<segment*> segments, 
 	params *P){
@@ -359,10 +392,24 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 
 vector<simple_c> move_elongation_support(vector<segment *> FSI, params * P){
 	int num_proc 	= stoi(P->p4["-np"]);
+	vector<classifier> clfs(int(FSI.size() ));
+	vector<simple_c> fits;
+
 	#pragma omp parallel for num_threads(num_proc)
 	for (int i = 0; i < FSI.size(); i++){
-
+		//printf("%d\n", FSI[i]->fitted_bidirs.size() );
+		clfs[i] 	= classifier( stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
+			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
+			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) ,FSI[i]->fitted_bidirs );
+		clfs[i].fit_uniform_only(FSI[i]);
 	}
+	//convert to simple_c
+	fits 	= bidir_components_to_simplec(clfs, FSI);
+	return fits;
+
+
+
+
 
 
 }

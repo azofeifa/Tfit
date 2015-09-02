@@ -78,7 +78,7 @@ public:
 
 	component();
 	void initialize(double, segment *, int , double , double, double);
-
+	void initialize_with_parameters(vector<double>, segment *, int);
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
 	double pdf(double , int);
@@ -108,11 +108,14 @@ public:
 		, double, double, double, double);
 	classifier(int, double, int, double, double, double, double
 		, double, double, double, double, bool);
-	
-	
+	classifier(double , int  , double ,
+		double , double , double ,
+		double , double , double ,double , vector<vector<double>> );
+
 	classifier();
 	void free_classifier();
 	string print_out_components();
+	int fit_uniform_only(segment * );
 	//===================================================================================
 	//final important parameters
 	double ll,pi;
@@ -122,6 +125,7 @@ public:
 	double r_mu;
 	bool move_l;
 	double ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3;
+	vector<vector<double>> init_parameters;
 };
 
 

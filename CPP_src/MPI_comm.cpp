@@ -401,7 +401,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 	seg_and_bidir sb;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={5,2,4};
+	int blocklens[3]={5,3,4};
 	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(seg_and_bidir, chrom);
@@ -465,7 +465,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
 			int t 	= 0;
 			for (int i 	= size_assignment[j][0]; i < size_assignment[j][1]; i++ ){
-				MPI_Send(&sabs[i], 1, mystruct, j,t,MPI_COMM_WORLD);
+				MPI_Send(&sabs[i], 3, mystruct, j,t,MPI_COMM_WORLD);
 				t++;
 			}
 		}
@@ -474,17 +474,18 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			GG[sb.st_sp[0]].push_back(sb);
 		}
 
-	}else{
+	}else if (rank!=0){
 		int S;
 		MPI_Recv(&S, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
 		for (int i = 0; i < S;i++){
-			MPI_Recv(&sb, 1, mystruct, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
+			MPI_Recv(&sb, 3, mystruct, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
 			GG[sb.st_sp[0]].push_back(sb);
 		}
 	}
 	typedef map<int, vector<seg_and_bidir> >::iterator it_type_G;
 	segment * S 	= NULL;
 	map<string, vector<segment *> > final_out;
+	int SS 	= 0;
 	for (it_type_G g = GG.begin(); g!=GG.end(); g++){
 		for (int i = 0; i < g->second.size(); i++){
 			vector<double> parameters(4);
@@ -493,6 +494,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			}
 			if (i == 0){
 				S 	= new segment(g->second[i].chrom, g->second[i].st_sp[1], g->second[i].st_sp[2] );
+				SS++;
 			}
 			if (S!= NULL){
 				S->fitted_bidirs.push_back(parameters);
@@ -506,6 +508,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			printf("what??????\n");
 		}
 	}
+	printf("Rank: %d, Segments: %d\n", rank, SS );
 	return final_out;
 
 }
