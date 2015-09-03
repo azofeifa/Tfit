@@ -655,7 +655,7 @@ double move_uniforom_support2(component * components, int K, int add,
 	//uniform supports
 	random_device rd;
 	mt19937 mt(rd());
-	geometric_distribution<int> dist_uni(0.05);
+	geometric_distribution<int> dist_uni(0.3);
 	uniform_int_distribution<int> direction(0,1);
 	int 	steps[K][2];
 	double  new_bounds[K][2];

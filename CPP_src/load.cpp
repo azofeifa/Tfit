@@ -1140,6 +1140,12 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 	FHW_config.close();
 }
 
+void write_gtf_file_model_fits(vector<final_model_output> A, params * p){
+
+}
+
+
+
 
 vector<segment*> load_intervals_of_interest(string FILE){
 	ifstream FH(FILE);

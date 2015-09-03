@@ -70,8 +70,7 @@ int main(int argc, char* argv[]){
 	    
 		int verbose 			= stoi(P->p4["-v"]);
 		if (verbose and rank==0){//show current user parameters...
-			P->display();
-			printf("Running on %d node(s)\n", nprocs );
+			P->display(nprocs);
 		}
 
 		//load bed graph files into map<string, double **>;
@@ -160,6 +159,11 @@ int main(int argc, char* argv[]){
 				T.start_time(rank, "opt model selection:");
 				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
 				T.get_time(rank);
+				T.start_time(rank, "writing out bidir model selection:");
+				write_out_MLE_model_info(A, P);
+				T.get_time(rank);
+				
+
 				if (P->p4["-elon"] == "1" and rank==0){
 					//want load the intervals of "interest"
 					T.start_time(rank, "combinding FSI and bidir intervals:");
@@ -177,15 +181,26 @@ int main(int argc, char* argv[]){
 				T.start_time(rank, "(MPI) sending out elongation assignments:");
 				map<string, vector<segment *> > GG 	= send_out_elongation_assignments(FSI, rank, nprocs);
 				T.get_time(rank);
+				vector<segment*> integrated_segments;
 				if (not GG.empty()){
 					T.start_time(rank, "loading BG and integrating segments:");
-					vector<segment*> integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph,rank);
+					integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph,rank);
 					BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
 					T.get_time(rank);
-					T.start_time(0, "moving elongation support:");
+					T.start_time(rank, "moving elongation support:");
 					fits 	= move_elongation_support(integrated_segments, P);
-					T.get_time(0);
+					T.get_time(rank);
 				}
+				T.start_time(rank, "(MPI) gathering elongation results:");
+				map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(integrated_segments, fits, rank, nprocs);
+				vector<final_model_output> A 					= convert_to_final_model_output(rcG, P);
+				//convert to final_model_output
+				T.get_time(rank);
+				T.start_time(rank, "Writing Out Model Fits:");
+				write_gtf_file_model_fits(A, P);
+				T.get_time(rank);
+				
+				
 			}
 		}
 		
@@ -216,8 +231,7 @@ int main(int argc, char* argv[]){
 		bool root 	= (rank==0)	;
 		
 		if (verbose and rank==0){//show current user parameters...
-			P->display();
-			printf("Running on %d node(s)\n", nprocs );
+			P->display(nprocs);
 		}
 
 		//==========================================
@@ -306,7 +320,7 @@ int main(int argc, char* argv[]){
 		bool verbose 							= bool(stoi(P->p2["-v"]));
 		//==================================================================
 		if (verbose){//show current user parameters...
-			P->display();
+			P->display(1);
 		}
 		map<string, vector<merged_interval*> > G 	= load_intervals(interval_file, pad); //load the forward and reverse strand intervals, merge accordingly...
 		//====================================================
@@ -325,7 +339,7 @@ int main(int argc, char* argv[]){
 		int verbose 			= stoi(P->p3["-v"]);
 		
 		if (verbose){//show current user parameters...
-			P->display();
+			P->display(1);
 		}
 		run_model_selection(P->p3["-i"], P->p3["-o"], stod(P->p3["-penality"]));
 	}

@@ -513,9 +513,39 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 			}
 			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop ) );
 		}
-		i++;
-		
+		i++;		
 	}
+	return A;
+}
+
+
+
+vector<final_model_output> convert_to_final_model_output(map<string, map<int, vector<rsimple_c> > > G, params * P){
+	vector<final_model_output> A;
+	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
+	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
+	typedef vector<rsimple_c> ::iterator it_type_3;
+	string chr, h;
+	int start,stop;
+	double scale 	= stod(P->p4["-ns"]);
+	double k_ll, noise_ll;
+	for (it_type B=G.begin(); B!=G.end(); B++){//segments of data
+		if ( int(B->second.size())  > 1 ){
+			printf("WHAT? convert_to_final_model_output\n");
+		}else{
+			int k 							= B->second.begin()->first;
+			vector<rsimple_c> components 	= B->second.begin()->second;
+			k_ll 							= components[0].ps[1];
+			noise_ll 						= components[0].ps[0];
+			start 	= components[0].st_sp[0], stop 	= components[0].st_sp[1];
+			chr  	= components[0].chrom;
+			A.push_back( final_model_output(chr,B->first, k, components, noise_ll, k_ll, scale,start, stop ) );
+
+		}
+
+	}
+
+
 	return A;
 }
 

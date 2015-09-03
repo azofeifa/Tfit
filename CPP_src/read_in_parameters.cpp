@@ -108,7 +108,7 @@ void params::help(){
 	cout<<"These parameters can also be set in seperate config file"<<endl;
 	cout<<"----------------------------------------------------------------"<<endl;	
 }
-void params::display(){
+void params::display(int nodes){
 	if (module=="MODEL"){
 		if (p["-template"]!="1"){
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -127,7 +127,7 @@ void params::display(){
 			cout<<"-max_noise: "<<p["-max_noise"]<<endl;
 			cout<<"-np       : "<<p["-np"]<<endl;
 			cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
-			
+			cout<<"-MPI_nodes: "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
 		}
@@ -148,6 +148,7 @@ void params::display(){
 			cout<<"-density   : "<<p["-density"]<<endl;
 			cout<<"-ct        : "<<p["-ct"]<<endl;
 			cout<<"-pad       : "<<p["-pad"]<<endl;
+			cout<<"-MPI_nodes : "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
 		}
@@ -191,6 +192,7 @@ void params::display(){
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
 			cout<<"-np          : "<<p4["-np"]<<endl;
+			cout<<"-MPI_nodes   : "<<nodes<<endl;
 
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -209,6 +211,7 @@ void params::display(){
 			cout<<"-np          : "<<p4["-np"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
+			cout<<"-MPI_nodes   : "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
 			

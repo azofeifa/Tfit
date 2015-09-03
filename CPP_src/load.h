@@ -153,5 +153,6 @@ vector<segment *> load_intervals_of_interest(string);
 
 vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string, int);
 
+void write_gtf_file_model_fits(vector<final_model_output>, params *);
 
 #endif

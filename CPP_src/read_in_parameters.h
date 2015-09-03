@@ -14,7 +14,7 @@ class params{
 public:
 	map<string, string> p;
 	params();
-	void display();
+	void display(int);
 	void help();
 	int N;
 	string module;

@@ -508,7 +508,6 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			printf("what??????\n");
 		}
 	}
-	printf("Rank: %d, Segments: %d\n", rank, SS );
 	return final_out;
 
 }
