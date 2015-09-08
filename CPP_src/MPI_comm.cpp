@@ -638,6 +638,12 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 			MPI_Send(&fits[u], 1, mystruct, 0, u, MPI_COMM_WORLD);
 		}
 	}
+	printf("------------------\n");
+	for (int i = 0; i < fits.size(); i++){
+		printf("%s:%d-%d\n", fits[i].chrom, fits[i].st_sp[0], fits[i].st_sp[1] );
+		printf("%f,%f, %f, %f, %f\n", fits[i].ps[0],fits[i].ps[1],fits[i].ps[2], fits[i].ps[5],fits[i].ps[6] );
+
+	}
 	return recieved;
 
 }

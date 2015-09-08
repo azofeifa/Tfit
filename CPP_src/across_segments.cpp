@@ -472,8 +472,6 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 		double ll, best_ll;
 		classifier_single BIC_best;
 		classifier_single  arg_clf;
-		printf("----------------------------\n");
-		printf("%s:%d-%d\n", FSI[i]->chrom.c_str(), FSI[i]->start, FSI[i]->stop  );
 		for (int j = 0; j < 4; j++){
 			double maxll 	= nINF;
 			if (j > 0){
