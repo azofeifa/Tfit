@@ -143,6 +143,7 @@ double classifier_single::fit(segment * data){
 	ll 				= calc_loglikelihood(data, components, K);
 	bool converged 	= false;
 	double norm, N;
+	printf("-------------------------\n");
 	while (t < max_iterations and not converged){
 		if (not isfinite(ll)){
 			ll 		= nINF;
@@ -150,6 +151,7 @@ double classifier_single::fit(segment * data){
 		}
 		for (int k = 0; k < K; k++ ){
 			components[k].resetSS();
+			components[k].print();
 		}	
 		for (int i = 0 ; i < data->XN; i++){
 			norm 	= 0;
