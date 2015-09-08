@@ -5,7 +5,7 @@
 #***************************************************************************/
 
 CXX             = /opt/openmpi/1.6.4/bin/mpic++
-CXXFLAGS        = -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11 -openmp -Wno-write-strings -Wno-literal-suffix
+CXXFLAGS        = -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11 -fopenmp -Wno-write-strings '-Wliteral-suffix
 EXEC            = ${PWD}/EMGU
 ARCH  			= getconf LONG_BIT
 
@@ -69,7 +69,12 @@ model_single.o:
 	@${CXX} -c ${CXXFLAGS} ${PWD}/model_single.cpp 
 	@printf "done\n"
 
+
+
+
 clean:
 	@rm -f *.o
 
+
+		
 
