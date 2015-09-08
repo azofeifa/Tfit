@@ -1,10 +1,10 @@
 #Name the job
-#PBS -N bi_detect
+#PBS -N NU_FIT
 
 #PBS -l nodes=1:ppn=32
 
 ### Allocate the amount of memory needed
-#PBS -l pmem=2gb
+#PBS -l pmem=9gb
 
 ### Set your expected walltime
 #PBS -l walltime=12:00:00
@@ -36,12 +36,13 @@ if [ "$vieques_pando" = true ] ; then ###load modules
 fi
 
 src=/Users/azofeifa/Lab/EMG/CPP_src/EMGU
-config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/bidir_config.txt
-bedgraph_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/
-out_directory=/Users/azofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/single_config.txt
+bedgraph_directory=/Users/azofeifa/Lab/ChIP/HCT116/bedgraph_files/
+genome_directory=/Users/azofeifa/Lab/ChIP/HCT116/genome_files/
+out_directory=/Users/azofeifa/Lab/ChIP/HCT116/EMG_out_files/
 
-forward_bedgraph=DMSO2_3.pos.BedGraph
-reverse_bedgraph=DMSO2_3.neg.BedGraph
+single_bedgraph=tPol_II_DMSO_150bp_genomeCovGraphPDMMR.BedGraph
+hg18=hg18_refseq.bed
 mpi=/opt/openmpi/1.6.4/bin/mpirun
 nodes=5
-$mpi $src $config_file -i ${bedgraph_directory}$forward_bedgraph -j ${bedgraph_directory}$reverse_bedgraph -o $out_directory
+$mpi $src $config_file -i ${bedgraph_directory}$single_bedgraph -j  ${genome_directory}$hg18  -o $out_directory
