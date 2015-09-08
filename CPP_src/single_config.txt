@@ -18,7 +18,7 @@
 -r_mu 	      	= 1 #seed EM randomally from the peak finder
 -ALPHA_0 	= 1 #prior for sigma
 -BETA_0 	= 1 #prior for sigma
--np 		= 4 #number of cores
+-np 		= 1 #number of cores
 -opt_res 	= 2 
 -show_seeds = 1 
 -bct 	    = 1

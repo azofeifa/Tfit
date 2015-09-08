@@ -167,10 +167,13 @@ double classifier_single::fit(segment * data){
 		for (int k = 0;k < K;k++){
 			N+=components[k].get_all();
 		}
+		printf("%f", ll);
 		for (int k = 0;k < K;k++){
 			components[k].set_new_parameters(N);
+			components[k].print();
 		}
 		ll 				= calc_loglikelihood(data, components, K);
+
 		if (abs(ll-prevll) < covergence_threshold){
 			for (int c = 0; c < K; c++){
 				if (components[c].si > (2000/scale)){
