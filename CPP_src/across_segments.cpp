@@ -477,6 +477,9 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 			if (j > 0){
 				for (int r = 0; r < rounds; r++){
 					classifier_single clf(ct, mi, 1,j, scale);
+					for (int c = 0; c < 1; c++){
+						clf.components[c].print();
+					}
 					ll 				= clf.fit(FSI[i]);
 					if (ll > nINF){
 						maxll 		= ll;
@@ -498,9 +501,7 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 		}
 		//transform to simple_c;
 		clf_fits[i] = BIC_best;
-		for (int c = 0; c < 1; c++){
-			BIC_best.components[c].print();
-		}
+		
 		
 	}
 
