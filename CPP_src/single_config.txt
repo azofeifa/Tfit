@@ -2,8 +2,8 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~SINGLE #do not change this line
 -v     	= 1
--i	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/test_tPol_II_DMSO_150bp_genomeCovGraphPDMMR.BedGraph #bedgraph file
--j 	= /Users/joazofeifa/Lab/ChIP/HCT116/hg18_interval_files/test_interval_file.bed #interval bed file
+-i	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/tPol_II_DMSO_150bp_genomeCovGraphPDMMR.BedGraph #bedgraph file
+-j 	= /Users/joazofeifa/Lab/ChIP/HCT116/hg18_interval_files/test_hg18_refseq.bed #interval bed file
 -o	= /Users/joazofeifa/Lab/ChIP/HCT116/
 -br 	  = 10 #binning resolution
 -ns 	     	 = 100 #normalizing scale
@@ -13,7 +13,7 @@
 -ct 	    	 = 0.0001 #EM convergence threshold difference
 -mi    = 2000 #Number of EM iterations before it is aborted
 -max_noise    = 0.05 #weight of the random/uniform noise component
--template   = 1 #run window, template pattern matching
+-template   = 0 #run window, template pattern matching
 -chr 	      = all #specific chromosome to process on?
 -r_mu 	      	= 1 #seed EM randomally from the peak finder
 -ALPHA_0 	= 1 #prior for sigma
