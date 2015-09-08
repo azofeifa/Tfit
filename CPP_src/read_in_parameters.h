@@ -22,6 +22,8 @@ public:
 
 	map<string, string> p3;
 	map<string, string> p4;
+	map<string, string> p5;
+	
 	
 	bool EXIT;
 	

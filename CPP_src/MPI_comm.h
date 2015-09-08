@@ -31,5 +31,8 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 
 map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *> , int, int);
 
+map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *> , int, int);
+
+vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> , int, int   );
 
 #endif

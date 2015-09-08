@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "template_matching.h"
 #include <fstream>
-
+#include "model_single.h"
 #include <random>
 using namespace std;
 
@@ -172,6 +172,15 @@ void sample_variance(double ** X, double mu, double * array, int j,int k){
 	array[0] 	= array[0] / N_forward;
 	array[1] 	= array[1] / N_reverse;
 }
+double sample_variance_single(double ** X, double mu, int j, int k){
+	double N 	= 0;
+	double S 	= 0;
+	for (int i =k; i < j; i++){
+		S+=pow(mu - X[0][i], 2)*X[1][i];
+		N+=X[1][i];
+	}
+	return S/N;
+}
 
 void sample_variance2(double ** X, double mu, double * array, int j,int k){
 	double N_forward, N_reverse;
@@ -237,45 +246,68 @@ double get_mean(double ** X, int j,int k,int s){
 }
 
 double BIC(double ** X,  double * avgLL, double * variances,double * lambdas, 
-	double ** skews, double mu, int i, int j, int k , double pi){
+	double ** skews, double mu, int i, int j, int k , double pi, int single){
+	double score 	= 0;
 	double a 	= X[0][k];
 	double b 	= X[0][j];	
-	double emg_ll, uni_ll;
-	emg_ll=0, uni_ll=0;
-	variances[i] 	= 0;
-	lambdas[i] 		= 0;
+	if (not single){
+		double emg_ll, uni_ll;
+		emg_ll=0, uni_ll=0;
+		variances[i] 	= 0;
+		lambdas[i] 		= 0;
 
-	
-	double * sample_variances 	= new double[2];
-	double * sample_skews 		= new double[2];
-	double MU 					= (get_mean(X, j,k,1) + get_mean(X, j,k,2))*0.5  ;
-	MU 							= mu;
-	sample_variance(X, MU, sample_variances, j,k);
-	sample_skew(X, mu, sample_variances, sample_skews, j,k);
-	skews[i][0] 	= sample_skews[0],skews[i][1] 	= sample_skews[1];
-	double ll 	= moment_estimate_lambda(X,MU,j,k);
-	if (ll < 0){
-		return 0.;
+		
+		double * sample_variances 	= new double[2];
+		double * sample_skews 		= new double[2];
+		double MU 					= (get_mean(X, j,k,1) + get_mean(X, j,k,2))*0.5  ;
+		MU 							= mu;
+		sample_variance(X, MU, sample_variances, j,k);
+		sample_skew(X, mu, sample_variances, sample_skews, j,k);
+		skews[i][0] 	= sample_skews[0],skews[i][1] 	= sample_skews[1];
+		double ll 	= moment_estimate_lambda(X,MU,j,k);
+		if (ll < 0){
+			return 0.;
+		}
+		double sii 	= moment_estimate_sigma(sample_variances, ll);
+		if (sii < 0){
+			return 0.;
+		}
+		variances[i] 	= sii;
+		lambdas[i] 		= ll;
+		EMG EMG_clf(MU, sii, ll, 1.0, 0.5 );
+		double N 	= 0;
+		for (int i = k; i < j; i++ ){
+			emg_ll+=(LOG(EMG_clf.pdf(X[0][i],1))*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1))*X[2][i]);
+			uni_ll+=(LOG(	pi / (b-a) )*X[1][i]   + LOG((1-pi )/(b-a) )*X[2][i] ); 
+			N+=(X[1][i]+X[2][i]);
+		}
+		avgLL[i] 				= emg_ll / N;
+		double BIC_score_emg 	= -2*emg_ll + 3*LOG(N) ;
+		double BIC_score_uni 	= -2*uni_ll + 1*LOG(N) ;
+		score 			= BIC_score_uni / BIC_score_emg;
+		delete sample_variances;
+		delete sample_skews;	
+	}else{
+		lambdas[i] 		= 0;
+		variances[i] 	= 0;
+		skews[i][0] = 0,skews[i][1] = 0;
+		double MU 		= mu;
+		double SI 		= sample_variance_single(X,MU, j,k);
+		variances[i] 	= SI;
+		
+		NORM clf(MU, sqrt(SI), 1);
+		double n_ll, uni_ll, N;
+		n_ll=0, uni_ll=0, N=0;
+		for (int i = k; i < j; i++ ){
+			n_ll+=(LOG(clf.pdf(X[0][i] ))*X[1][i] );
+			uni_ll+=(LOG(	1.0 / (b-a) )*X[1][i]  ); 
+			N+=(X[1][i] );
+		}
+		double BIC_score_emg 	= -2*n_ll + 5*LOG(N) ;
+		double BIC_score_uni 	= -2*uni_ll + 1*LOG(N) ;
+		avgLL[i] 				= n_ll / N;
+		score 	=  BIC_score_uni / BIC_score_emg;
 	}
-	double sii 	= moment_estimate_sigma(sample_variances, ll);
-	if (sii < 0){
-		return 0.;
-	}
-	variances[i] 	= sii;
-	lambdas[i] 		= ll;
-	EMG EMG_clf(MU, sii, ll, 1.0, 0.5 );
-	double N 	= 0;
-	for (int i = k; i < j; i++ ){
-		emg_ll+=(LOG(EMG_clf.pdf(X[0][i],1))*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1))*X[2][i]);
-		uni_ll+=(LOG(	pi / (b-a) )*X[1][i]   + LOG((1-pi )/(b-a) )*X[2][i] ); 
-		N+=(X[1][i]+X[2][i]);
-	}
-	avgLL[i] 				= emg_ll / N;
-	double BIC_score_emg 	= -2*emg_ll + 3*LOG(N) ;
-	double BIC_score_uni 	= -2*uni_ll + 1*LOG(N) ;
-	double score 			= BIC_score_uni / BIC_score_emg;
-	delete sample_variances;
-	delete sample_skews;	
 	return score;
 
 
@@ -284,7 +316,7 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 }
 
 void BIC_template(segment * data, double * avgLL, double * BIC_values, double * densities, double * densities_r,
-	double * variances,double * lambdas, double ** skews ,double window, int np){
+	double * variances,double * lambdas, double ** skews ,double window, int np, int single){
 	double vl;
 	int NN 	= int(data->XN);
 	#pragma omp parallel for num_threads(np)
@@ -309,11 +341,20 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 						N_neg+=data->X[2][u];
 					}
 				}
-				if (N_pos >0 and N_neg > 0){
-					densities[i] 	= N_pos/(data->X[0][j]-data->X[0][i]);
-					densities_r[i] 	= N_neg/(data->X[0][i]-data->X[0][k]);
-					
-					BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN );
+				if (N_pos >0 and N_neg > 0 or (single and N_pos>0) ){
+					if (not single){
+						densities[i] 	= N_pos/(data->X[0][j]-data->X[0][i]);
+						densities_r[i] 	= N_neg/(data->X[0][i]-data->X[0][k]);
+					}else{
+						densities[i] 	= NN/(data->X[0][j]-data->X[0][k]);
+						densities_r[i] 	= NN/(data->X[0][j]-data->X[0][k]);
+						
+					}
+					if (not single){
+						BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN, single );
+					}else{
+						BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN, single );	
+					}
 				}
 		}else{
 			BIC_values[i] 	= 0;
@@ -323,10 +364,11 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 
 
 
+
 void run_global_template_matching(vector<segment*> segments, 
 	string out_dir,  double res, double density,
-
-	double scale, double ct, int np, double skew){
+	double scale, double ct, int np, double skew, int single){
+	
 	ofstream FHW;
 	ofstream FHW_intervals;
 	
@@ -338,8 +380,16 @@ void run_global_template_matching(vector<segment*> segments,
 	vector<double> current(5);
 	vector<string> INFOS;
 	double window;
-	double window_a 	= 500;
-	double window_b 	= 2000;
+	double window_a;
+	double window_b;
+	if (not single){
+		window_a 	= 500;
+		window_b 	= 2000;
+	}else{
+		window_a 	= 2000;
+		window_b 	= 4000;
+	
+	}
 	double window_delta = (window_b-window_a)/res;
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
@@ -354,15 +404,20 @@ void run_global_template_matching(vector<segment*> segments,
 		}
 		for (int w = 0 ; w<res; w++){
 			window 	= (window_a + window_delta*w) / scale;
-			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np);
+
+			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single);
+			
 			//write out contigous regions of up?
 			for (int j = 1; j<segments[i]->XN-1; j++){
-
 				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
-					if (BIC_values[j] >=ct  and densities[j]>window*0.75  and densities_r[j]>window*0.75 and skews[j][0] > skew and skews[j][1] < -skew){
-
-						start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-						stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+					if (BIC_values[j] >=ct  and densities[j]>window*0.75  and densities_r[j]>window*0.75 and skews[j][0] >= skew and skews[j][1] <= -skew){
+						if (lambdas[j]>0){
+							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+						}else{
+							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - (variances[j]/2.)*scale);
+							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + (variances[j]/2.)*scale);	
+						}
 						current[0] 	= start, current[1]=stop, current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
 						if (scores.empty()){
 							current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
@@ -506,7 +561,7 @@ void optimize(map<string, interval_tree *> I,
 				for (int t =0; t < segments[i]->XN; t++ ){
 					skews[t] 	= new double[2];
 				}
-				BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas, skews, window,np);
+				BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas, skews, window,np,0);
 				
 				for (int k =0; k <= res; k++){
 					density 	= density_a+density_delta*(k);
@@ -560,7 +615,7 @@ void optimize(map<string, interval_tree *> I,
 		printf("\nFinished Optimization");
 		printf("\n---------------------\n");
 		run_global_template_matching( segments, out_dir,
-			window_a + window_delta*arg_v, density_a+density_delta*(arg_k), scale, ct_a 	+ ct_delta*(arg_l),np,0);
+			window_a + window_delta*arg_v, density_a+density_delta*(arg_k), scale, ct_a 	+ ct_delta*(arg_l),np,0,0);
 		ofstream FHW;
 		FHW.open(out_dir+"bidirectional_hits_intervals.bed");
 		for (int i = 0; i < segments.size();i++){

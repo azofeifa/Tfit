@@ -24,14 +24,29 @@ def run(FILE):
 	for i in range(X.shape[0]):
 		FHW.write(str(X[i,0]) + "," + str(X[i,2]) + "\n")
 	FHW.close()
-	
-	
-	
-	
+def run2():
+	D 			= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/"
+	forward 	= "DMSO2_3.pos.BedGraph"
+	reverse 	= "DMSO2_3.neg.BedGraph"
+	spec_chrom 	= "chr1"
+	start, stop = 6229860,6303055
+	ID 			= spec_chrom+"_"+str(start) + "_" + str(stop) + "_"
+	for FILE in (forward, reverse):		
+		FHW 	= open(D+ID+FILE, "w")
+		FH 		= open(D+FILE)
+		FOUND 	= False
+		for line in FH:
+			chrom, st, sp, cov 	= line.strip("\n").split("\t")
+			st, sp  			=	int(st), int(sp)
+			if (chrom == spec_chrom):
+				FOUND 	= True
+			if FOUND and st > stop:
+				break
+			elif FOUND and sp > start:
+				FHW.write(line) 
 	
 
 
 
 if __name__=="__main__":
-	FILE 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/test_file_2.tsv"
-	run(FILE)
+	run2()

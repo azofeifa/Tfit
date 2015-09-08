@@ -77,12 +77,24 @@ segment::segment(string chr, int st, int sp){
 	minX=st, maxX=sp;
 	counts 	= 1;
 	XN 		= 0;
+	ID 		= 0;
+}
+segment::segment(string chr, int st, int sp, int i){
+	chrom	= chr;
+	start	= st;
+	stop	= sp;
+	N 		= 0;
+	minX=st, maxX=sp;
+	counts 	= 1;
+	XN 		= 0;
+	ID 		= i;
 }
 
 segment::segment(){
 	N 		= 0;
 	counts 	= 1;
 	XN 		= 0;
+	ID 		= 0;
 }
 
 string segment::write_out(){
@@ -245,14 +257,7 @@ void segment::bin(double delta, double scale, bool erase){
 				int std 	= fitted_bidirs[fb][1]*0.5 + (1. /  fitted_bidirs[fb][2]);
 				int a 		= center - std*3;
 				int b 		= center + std*3;
-				if (a < start or b > stop){
-					printf("-------------------\n");
-					printf("%s:%d-%d\n", chrom.c_str(), start, stop );
-					printf("%s:%d-%d\n", chrom.c_str(), a, b );
-
-
-				}
-
+				
 
 
 				fitted_bidirs[fb][0] = (fitted_bidirs[fb][0] - minX)/scale;
@@ -260,11 +265,10 @@ void segment::bin(double delta, double scale, bool erase){
 				fitted_bidirs[fb][2] *= scale; 
 			}
 		}
+
 		maxX 			= (maxX-minX)/scale;
 		minX 			=0;
 	}
-
-
 	double S=0;
 	for (int i = 0; i < XN; i++){
 		S+=X[1][i];
@@ -418,6 +422,7 @@ void BIN(vector<segment*> segments, int BINS, double scale, bool erase){
 
 interval::interval(){
 	hits 	= 0;
+	EMPTY 	= true;
 };
 
 interval::interval(string chr, int st, int sp){
@@ -425,7 +430,12 @@ interval::interval(string chr, int st, int sp){
 	start 	= st;
 	stop 	= sp;
 	hits 	= 0;
+	EMPTY 	= false;
 };
+interval::interval(string chr, int st, int sp, int IDD){
+	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false;
+}
+
 
 void interval::insert(double x, double y, int strand){
 }
@@ -490,6 +500,16 @@ bool merged_interval::find(int ST, int SP){
 	}
 	return FOUND;
 }
+interval merged_interval::get_interval(int ST, int SP){
+	bool FOUND=false;
+	interval empty;
+	for (int i = 0; i < intervals.size(); i++){
+		if (  ST == intervals[i].start and   SP == intervals[i].stop){
+			return intervals[i];
+		}
+	}
+	return empty;
+}
 
 int merged_interval::get_hits(bool y, int ST, int SP){
 	int HITS = 0;
@@ -517,6 +537,8 @@ int merged_interval::get_total(int ST, int SP){
 	}
 	return 0.;
 }
+
+
 
 //================================================================================================
 //interval tree code
@@ -557,7 +579,7 @@ void interval_tree::construct(vector<merged_interval *> D){
 		current 	= D[center];
 		ID 			= D[center]->id;
 		//printf("%d,%d, %d,%d\n", ID, current->start, N, center);
-		if ((center - 1) > 0){
+		if ((center ) > 0){
 			left 	= new interval_tree();
 			vector<merged_interval *> LFT(D.begin(), D.begin() + center);
 			left->construct(LFT);
@@ -632,6 +654,22 @@ bool interval_tree::find(int start, int stop){
 	}
 }
 
+
+interval interval_tree::get_interval(int start, int stop){
+	interval empty;
+	if (( stop > current->start) and ( start < current->stop) ){
+		return current->get_interval(start, stop);
+	}
+	else if (stop < current->start and left!=NULL){
+		return left->get_interval(start, stop);
+	}
+	else if (start > current->stop and right!=NULL){
+		return right->get_interval(start, stop);
+	}
+	return empty;
+
+}
+
 //================================================================================================
 //loading from file functions...need to clean this up...
 
@@ -692,6 +730,99 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 		printf("couldn't find chromosome %s in bedgraph files\n", spec_chrom.c_str());
 	}
 	return segments;
+}
+
+vector<segment*> load_bedgraphs_single(string forward_strand,
+ int BINS, double scale, string spec_chrom){
+	bool FOUND 	= false;
+	if (spec_chrom=="all"){
+		FOUND 	= true;
+	}
+	map<string, segment*> 	G;
+	vector<segment*> segments;
+	
+	ifstream FH(forward_strand);
+	if (not FH){
+		cout<<"couldn't open "<<forward_strand<<endl;
+		return segments;
+	}
+	
+	string line, chrom;
+	int start, stop;
+	double coverage;
+	vector<string> lineArray;
+	string prevChrom="";
+	segment * S =NULL;
+	
+	while (getline(FH, line)){
+		lineArray=splitter(line, "\t");
+		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
+		if (chrom != prevChrom){
+			if (chrom == spec_chrom){
+				FOUND 	= true;
+			}
+			G[chrom] 	= new segment(chrom, start, stop );
+		}
+		G[chrom]->add2(1, double((stop + start) / 2.), coverage);
+		prevChrom=chrom;
+
+	}
+
+	typedef map<string, segment*>::iterator it_type;
+	for (it_type i = G.begin(); i != G.end(); i++){
+		i->second->bin(BINS, scale,false);
+		segments.push_back(i->second);
+	}
+	if (not FOUND){
+		segments.clear();
+		printf("couldn't find chromosome %s in bedgraph files\n", spec_chrom.c_str());
+	}
+	return segments;
+}
+
+map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, vector<segment *> > FSI){
+	map<string, vector<interval>> G;	
+	typedef map<string, vector<segment *> >::iterator it_type_2;
+	for (it_type_2 i = FSI.begin(); i != FSI.end(); i++){
+		for (int j = 0; j < i->second.size(); j++){
+			G[i->first].push_back(interval(i->second[j]->chrom, i->second[j]->start, i->second[j]->stop, i->second[j]->ID)  );
+		}
+	}
+	//want to sort intervals by there ending point
+	map<string, vector<merged_interval*> > A;
+	typedef map<std::string, vector<interval>>::iterator it_type;
+	int N, i, j;
+
+	for(it_type c = G.begin(); c != G.end(); c++) {
+		if (G[c->first].size()>0){
+		    G[c->first] 	= bubble_sort(G[c->first]);
+
+		    j 				= 0;
+		    merged_interval * I = new  merged_interval(G[c->first][0].start, G[c->first][0].stop, G[c->first][0], j);
+		    N 				= G[c->first].size();
+		    i 				= 1;
+		    bool inserted 	= false;
+		    while (i < N){
+		    	while (i<N and G[c->first][i].start < I->stop and G[c->first][i].stop > I->start ){
+		    		I->update(G[c->first][i]);
+		    		i++;
+		    	}
+		    	A[c->first].push_back(I);
+		    	inserted=true;
+		    	if (i < N){
+		    		I 	= new merged_interval(G[c->first][i].start, G[c->first][i].stop, G[c->first][i], j);
+		    		inserted=false;
+		    		j++;
+		    	}
+		    //	i++;
+		    }
+			if (not inserted){
+				A[c->first].push_back(I);		    	
+			}
+		}
+	}
+	return A;
+	
 }
 
 map<string, vector<merged_interval*> >  load_intervals(string FILE, int pad){
@@ -1140,31 +1271,36 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 	FHW_config.close();
 }
 
-void write_gtf_file_model_fits(vector<final_model_output> A, params * p){
-
-}
 
 
 
 
-vector<segment*> load_intervals_of_interest(string FILE){
+vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS){
 	ifstream FH(FILE);
 	vector<segment *> G;
 	if (FH){
 		string line, chrom;
 		int start, stop;
+		int 	i = 0;
 		vector<string>lineArray;
 		while(getline(FH, line)){
 			lineArray=splitter(line, "\t");
+			if (lineArray.size() > 3){
+				IDS[i] 		= lineArray[3];
+			}
 			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]);
-			segment * S 	= new segment(chrom, start, stop);
+			segment * S 	= new segment(chrom, start, stop,i);
 			G.push_back(S);
+			i++;
 		}
 	}else{
 		printf("couldn't open %s for reading\n", FILE.c_str() );
 	}
 	return G;
 }
+
+
+
 
 void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A, vector<segment *> FSI ){
 	map<string, vector< vector<double> >> a;
@@ -1215,25 +1351,233 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 			}
 			for (int u = 0; u < current.size(); u++){
 				if (current[u][current[u].size()-1] == 0){
-				
+					segment * NS 	= new segment(i->first, current[u][0]-3000, current[u][1]+3000 );
+					NS->add_fitted_bidir(current[u]);
+					i->second.push_back(NS);
 				}
 			}
 		}
-	}
-
-
-
+	}	
 }
 
 
+void write_gtf_file_model_fits(vector<final_model_output> A, params * P){
+	string out_dir 	= P->p4["-o"];
+
+	ofstream FHW_gff;
+	FHW_gff.open(out_dir+"model_fits.gff3");
+	typedef vector<final_model_output>::iterator it_type;
+	typedef vector<rsimple_c>::iterator it_type_2;
+	string chrom;
+	int center,std;
+	vector<rsimple_c> components;
+	double scale 	= stod(P->p4["-ns"]);
+	int start, stop, left, right;
+	string line;
+	string parent,bidir,L,R,MR; 
+	int 	i 		= 0;
+	for (it_type a = A.begin(); a!= A.end(); a++){
+		chrom 		= (*a).chrom;
+		components 	= (*a).components;
+		start 		= (*a).start;
+		for (it_type_2 r =(*a).components.begin(); r!= (*a).components.end(); r++ ){
+			//human15.1 . gene            214301  215772 . +   . ID=HsG8283
+			left 	= (*r).ps[10]*scale + start;
+			right 	= (*r).ps[9]*scale + start;
+			
+			center 	= start + (*r).ps[2]*scale;
+			std 	= (*r).ps[3]*scale*0.5 + (scale/(*r).ps[4] ) ;
+			parent 	= chrom +"\t.\tgene\t";
+			parent+= to_string(center) + "\t" + to_string(right) +"\t.\t.\t.\tID=Bidir_"+to_string(i);
+			
+			
+			bidir 	= chrom +"\tEMGU\tCDS\t";
+			bidir 	+= to_string(center) + "\t" + to_string(center+std) + "\t.\t+\t.\tParent=Bidir_"+to_string(i);
+			bidir 	+=";Name=Center "+ to_string(center) +  ", std " + to_string(int((*r).ps[3]*scale  )) + ", init " + to_string(int((scale/(*r).ps[4] ) ));
+			FHW_gff<<parent<<endl;
+			FHW_gff<<bidir<<endl;
+			if (((*r).ps[7] > 0.001)){
+				R 		= chrom +"\tEMGU\tCDS\t";
+				R 		+= to_string(right) + "\t" + to_string(std+right) + "\t.\t+\t.\tParent=Bidir_"+to_string(i);
+				R 		+=";Name=Forward Strand Elongation Component";
+				FHW_gff<<R<<endl;
+			}
+			
+			if ((*r).ps[8] > 0.001){
+				L 		= chrom +"\tEMGU\tCDS\t";
+				L 		+= to_string(left-std) + "\t" + to_string(left) + "\t.\t-\t.\tParent=Bidir_"+to_string(i);
+				L+=";Name=Reverse Strand Elongation Component";
+				FHW_gff<<L<<endl;
+			}
+			
+			//FHW_gff<<L<<endl;
+			
+			line="";
+			i++;
+		}
+
+	}
+	FHW_gff.close();
+}
+
+
+vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *> > A , string FILE, int rank){
+	
+	//want instead to make this interval tree
+	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
+	map<string, interval_tree *> AT;
+	typedef map<string, vector<merged_interval*>>::iterator it_type_4;
+	for(it_type_4 c = merged_FSI.begin(); c != merged_FSI.end(); c++) {
+		AT[c->first] 	= new interval_tree();
+		AT[c->first]->construct(c->second);
+	}
+	
+
+	int start, stop, N, j;
+	double coverage;
+	N 	= 0,j 	= 0;
+	int strand 	= 1;
+	int o_st, o_sp;
+	vector<string> lineArray;
+	string chrom, prevchrom, line;
+	vector<segment *> segments;
+	double center;
+	ifstream FH(FILE );
+	if (FH){
+		prevchrom="";
+		while (getline(FH, line)){
+			lineArray 	= splitter(line, "\t");
+			chrom 		= lineArray[0];
+			start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+			center 	= (stop + start) /2.;
+			if (AT.find(chrom)!=AT.end()){
+				AT[chrom]->insert(center, coverage, strand);
+			}			
+		}
+		FH.close();
+		
+	}else{
+		cout<<"could not open: "<<FILE<<endl;
+		segments.clear();
+		return segments;
+	}
+
+	//now we want to get all the intervals and make a vector<segment *> again...
+	typedef 	map<string, vector<segment *> >::iterator it_type_5;
+	for(it_type_5 c = A.begin(); c != A.end(); c++) {
+		for (int i = 0; i < c->second.size(); i++){
+			center 	= (c->second[i]->stop + c->second[i]->start) /2.;
+			interval FOUND 	= AT[c->first]->get_interval(c->second[i]->start, c->second[i]->stop );
+			if (not FOUND.EMPTY and FOUND.forward_x.size()){
+				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID);
+				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
+					vector<double> curr(2);
+					curr[0] 	= FOUND.forward_x[u], curr[1] 	= FOUND.forward_y[u];
+					S->forward.push_back(curr);
+				}
+				segments.push_back(S);
+
+			}
+
+		}
+	}
+	return segments;
+}
+
+
+void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> IDS , params * P ){
+	string out_dir 	= P->p5["-o"];
+	double scale 	= stod(P->p5["-ns"]);
+	ofstream FHW_gff;
+	ofstream FHW_config;
+	FHW_gff.open(out_dir+"single_model_fits.gff3");
+	FHW_config.open(out_dir+"single_model_fits.txt");
+	string chrom, ID, strand, parent, loading, L, R;
+	int start, stop, left, right;
+	int center, std;
+	string config_line;
+	for (int i = 0; i < fits.size(); i++){
+		chrom 	= fits[i].chrom;
+		start 	= fits[i].st_sp[0];
+		center 	= fits[i].ps[0]*scale  + start;
+		std 		= fits[i].ps[1]*scale;
+		ID 		= IDS[fits[i].st_sp[2]];
+		if (ID.empty()){
+			ID 	= to_string(i);
+		}
+		left 			= fits[i].ps[3]*scale + fits[i].st_sp[0], right 	= fits[i].ps[4]*scale + fits[i].st_sp[0];
+		if (fits[i].ps[6] > pow(10,-2) and fits[i].ps[5] > pow(10,-2)){
+
+			strand 	= ".";
+		}else if (fits[i].ps[6] > pow(10,-2)){
+			strand 	= "+";
+		}else{
+			strand 	= "-";
+		}
+		
+
+		parent 	= chrom +"\tEMGU\tgene\t";
+		parent+= to_string(fits[i].st_sp[0]) + "\t" + to_string(fits[i].st_sp[1]) +"\t.\t"+ strand+"\t.\tID="+ID + "\n";
+		loading 	= "";
+		L = "", R 	= "";		
+			
+		if (fits[i].ps[2] > pow(10,-1)){
+
+			loading 	= chrom +"\tEMGU\tCDS\t";
+			loading 	+= to_string(center-std) + "\t" + to_string(center+std) + "\t.\t" + strand+"\t.\tParent="+ID;
+			loading 	+=";Name=Center "+ to_string(center) +  ", std " + to_string( std) + "\n";
+			if (strand == "."){
+				L 		= chrom +"\tEMGU\tCDS\t";
+				L 		+= to_string(left-std) + "\t" + to_string(left) + "\t.\t.\t.\tParent="+ID;
+				L+=";Name=Reverse Strand Elongation Component\n";
+
+				R 		= chrom +"\tEMGU\tCDS\t";
+				R 		+= to_string(right) + "\t" + to_string(std+right) + "\t.\t.\t.\tParent="+ID;
+				R 		+=";Name=Forward Strand Elongation Component\n";	
+			}else if (strand == "+"){
+				R 		= chrom +"\tEMGU\tCDS\t";
+				R 		+= to_string(right) + "\t" + to_string(std+right) + "\t.\t+\t.\tParent="+ID;
+				R 		+=";Name=Forward Strand Elongation Component\n";	
+			}else{
+				L 		= chrom +"\tEMGU\tCDS\t";
+				L 		+= to_string(left-std) + "\t" + to_string(left) + "\t.\t-\t.\tParent="+ID;
+				L 		+=";Name=Forward Strand Elongation Component\n";	
+			}
+		}else{
+			strand 	= ".";
+			parent 	= chrom +"\tEMGU\tgene\t";
+			parent+= to_string(fits[i].st_sp[0]) + "\t" + to_string(fits[i].st_sp[1]) +"\t.\t"+ strand+"\t.\tID="+ID + "\n";
+			L 		= chrom +"\tEMGU\tCDS\t";
+			L 		+= to_string(left-std) + "\t" + to_string(left) + "\t.\t.\t.\tParent="+ID;
+			L 		+=";Name=Elongation Only\n";	
+			R 		= chrom +"\tEMGU\tCDS\t";
+			R 		+= to_string(right) + "\t" + to_string(std+right) + "\t.\t.\t.\tParent="+ID;
+			R 		+=";Name=Elongation Only\n";	
+			loading 	= "";
+		
+		}
+			
+		
+		FHW_gff<<parent;
+		FHW_gff<<loading;
+		FHW_gff<<R;
+		FHW_gff<<L;
+
+		//write_out_config_file
+		config_line 	= chrom +":" + to_string(fits[i].st_sp[0]) + "-" + to_string(fits[i].st_sp[1]) + "\t";
+		config_line    += ID + "\t";
+		config_line    += to_string(int(fits[i].ps[0]*scale  + start)) + "\t" + to_string(std*2) + "\t" + to_string(fits[i].ps[2]) + "," + to_string(fits[i].ps[5]) + "," + to_string(fits[i].ps[6]) + "\n";
+		FHW_config<<config_line;
+		
 
 
 
+	}
 
 
+	
 
-
-
+}
 
 
 

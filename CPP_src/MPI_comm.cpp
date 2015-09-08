@@ -397,6 +397,11 @@ seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
 }
 
 
+struct simple_seg_struct{
+	char chrom[5];
+	int st_sp[3]; //first->start, second->stop
+};
+
 map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *> FSI, int rank, int nprocs){
 	seg_and_bidir sb;
 	MPI_Datatype mystruct;
@@ -425,7 +430,6 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			for (int i = 0; i < (*s)->fitted_bidirs.size(); i++ ){
 				seg_and_bidir sb 	= seg_to_seg_and_bidir((*s), (*s)->fitted_bidirs[i] , t );
 				sabs.push_back(sb);
-
 			}
 			t++;
 		}
@@ -511,6 +515,133 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 	return final_out;
 
 }
+
+map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *> FSI, int rank, int nprocs ){
+	map<string, vector<segment *> > GG;
+	int N 		= FSI.size();
+	int count 	= N / nprocs;
+	if (count == 0){
+		count 	= 1;
+	}
+	simple_seg_struct sss;
+	MPI_Datatype mystruct;
+	
+	int blocklens[2]={5,3};
+	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT}; 
+	MPI_Aint displacements[3];
+	displacements[0] 	= offsetof(simple_seg_struct, chrom);
+	displacements[1] 	= offsetof(simple_seg_struct, st_sp);
+	
+	
+	MPI_Type_create_struct( 2, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+
+	vector<simple_seg_struct> runs;
+	int start, stop;
+	int S;
+	if (rank == 0){
+		//first send out the number you are going to send
+		for (int j =0; j < nprocs; j++){
+			start 	= j*count;
+			stop 	= (j+1)*count;
+			if (j == nprocs-1){
+				stop 	= N;
+			}
+			if (start > stop){
+				stop 	= start; //in this case there are more nodes than segments...so
+			}
+			S 	= stop-start;
+			if (j > 0){
+				MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
+			}
+			//now send out structs
+			int u 	= 0;
+			for (int i =start; i<stop; i++){
+				simple_seg_struct SSS;
+				for (int c = 0; c < 5; c++){
+					if (c <FSI[i]->chrom.size() ){
+						SSS.chrom[c] 	= FSI[i]->chrom[c];
+					}else{
+						SSS.chrom[c] 	= '\0';
+					}
+				}
+				SSS.st_sp[0] 	= FSI[i]->start;
+				SSS.st_sp[1] 	= FSI[i]->stop;
+				SSS.st_sp[2] 	= FSI[i]->ID;
+				if (j >0){
+					MPI_Send(&SSS, 2, mystruct, j, u, MPI_COMM_WORLD  );
+				}else{
+					runs.push_back(SSS);
+				}
+				u++;
+			}
+		}
+
+	}else{
+		MPI_Recv(&S, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		for (int u = 0; u < S; u++){
+			MPI_Recv(&sss, 2, mystruct, 0,u,MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
+			runs.push_back(sss);
+		}	
+	}
+	//now convert to GG type
+	for (int i = 0; i < runs.size(); i++){
+		segment * ns 	= new segment(runs[i].chrom, runs[i].st_sp[0], runs[i].st_sp[1], runs[i].st_sp[2]);
+		GG[ns->chrom].push_back(ns) ;
+	}
+	typedef map<string, vector<segment *> >::iterator it_type;
+	
+
+
+	return GG;
+}
+
+
+vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int rank, int nprocs ){
+	single_simple_c sc;
+	MPI_Datatype mystruct;
+	
+	int blocklens[3]={5,3, 8};
+	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
+	MPI_Aint displacements[3];
+	displacements[0] 	= offsetof(single_simple_c, chrom);
+	displacements[1] 	= offsetof(single_simple_c, st_sp);
+	displacements[2] 	= offsetof(single_simple_c, ps);
+	
+	
+	MPI_Type_create_struct( 3, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+
+	int S;
+	vector<single_simple_c> recieved;
+	if (rank==0){
+		for (int j = 0; j < nprocs; j++){
+			if (j > 0){
+				MPI_Recv(&S, 1, MPI_INT, j, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+				for (int b = 0; b < S; b++){
+					MPI_Recv(&sc, 1, mystruct, j, b, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
+					recieved.push_back(sc);
+				}
+			}else{
+				for (int u = 0; u < fits.size(); u++){
+					recieved.push_back(fits[u]);
+				}
+			}
+			
+		}
+
+	}else{
+		//first send the number fitted components
+		S 	= fits.size();
+		MPI_Send(&S, 1, MPI_INT, 0,1, MPI_COMM_WORLD);
+		for (int u = 0; u < S; u++)	{
+			MPI_Send(&fits[u], 1, mystruct, 0, u, MPI_COMM_WORLD);
+		}
+	}
+	return recieved;
+
+}
+
 
 
 

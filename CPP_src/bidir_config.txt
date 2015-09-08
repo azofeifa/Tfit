@@ -2,8 +2,8 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~BIDIR #do not change this line
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph #FStitch forward strand bedgraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph #FStitch reverse strand bedgraph
+-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/chr1_6229860_6303055_DMSO2_3.pos.BedGraph #FStitch forward strand bedgraph
+-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/chr1_6229860_6303055_DMSO2_3.neg.BedGraph #FStitch reverse strand bedgraph
 -k 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/optimize_bidir_directory/ #directory of bed files to optimize to
 -f 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_merged_FStitch.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/ #output file directory

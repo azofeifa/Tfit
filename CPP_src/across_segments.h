@@ -25,11 +25,18 @@ struct simple_c{
 //	string write_out();
 
 };
+struct single_simple_c{
+	char chrom[5];
+	int st_sp[3];
+	double ps[8];
+};
+
 vector<simple_c> run_model_accross_segments_template(vector<segment*>, 
 	params *);
 vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *>, params *);
 string get_header(params *);
 
 vector<simple_c> move_elongation_support(vector<segment *>, params *);
+vector<single_simple_c> run_single_model_across_segments(vector<segment *> , params * );
 
 #endif

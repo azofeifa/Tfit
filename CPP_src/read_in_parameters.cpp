@@ -85,8 +85,28 @@ params::params(){
 	p4["-elon"] 			= "0";
 	p4["-show_seeds"] 		= "0";
 	
-
-
+	p5["-v"] 			= "1";
+	p5["-i"]  			= "";
+	p5["-j"]  			= "";
+	p5["-o"] 			= "";
+	p5["-br"] 			= "300";
+	p5["-ns"] 			= "100";
+	p5["-minK"] 		= "1";
+	p5["-maxK"] 		= "2";
+	p5["-rounds"] 		= "10";
+	p5["-r_mu"] 		= "1";
+	p5["-mi"] 			= "1000";
+	p5["-ct"] 			= "0.0001";
+	p5["-max_noise"] 	= "0.05";
+	p5["-np"] 			= "4";
+	p5["-chr"] 			= "all";
+	p5["-BETA_0"] 		= "1";
+	p5["-ALPHA_0"] 		= "1";
+	p5["-template"] 	= "1";
+	p5["-opt_res"] 		= "10";
+	p5["-show_seeds"] 	= "0";
+	p5["-bct"] 			= "1";
+	p5["-template"] 	= "0";
 
 
 
@@ -216,6 +236,23 @@ void params::display(int nodes){
 			cout<<"----------------------------------------------------------------"<<endl;
 			
 		}
+	}else if (module == "SINGLE") {
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"              User Provided EMGU Parameters                     "<<endl;
+		cout<<"                 (Fitting single model)                       "<<endl;
+		cout<<"-i           : "<<p5["-i"]<<endl;
+		cout<<"-j           : "<<p5["-j"]<<endl;
+		cout<<"-o           : "<<p5["-o"]<<endl;
+		cout<<"-ns          : "<<p5["-ns"]<<endl;
+		cout<<"-br          : "<<p5["-br"]<<endl;
+		cout<<"-bct         : "<<p5["-bct"]<<endl;
+		cout<<"-opt_res     : "<<p5["-opt_res"]<<endl;
+		cout<<"-np          : "<<p5["-np"]<<endl;
+		cout<<"-chr         : "<<p5["-chr"]<<endl;
+		cout<<"-template    : "<<p5["-template"]<<endl;
+		cout<<"-MPI_nodes   : "<<nodes<<endl;
+		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		cout<<"----------------------------------------------------------------"<<endl;
 	}
 }
 
@@ -324,6 +361,12 @@ void read_in_config_file(string FILE, params * P){
 					}else if (not ID.empty() ){
 						not_valid.push_back(ID);
 					}
+				}else if(P->module =="SINGLE"){
+					if (P->p5.find(ID) !=P->p5.end()){
+							P->p5[ID] 	= val;
+					}else if (not ID.empty() ){
+						not_valid.push_back(ID);
+					}
 				}
 			}	
 		}
@@ -355,6 +398,7 @@ void fillInOptions(char* argv[],params * P){
 				//read this in
 				string module 	= checkModule(F);
 				P->module 		= module;
+
 				if (not P->module.empty() ){
 					read_in_config_file(F, P);
 				}
@@ -394,7 +438,17 @@ void fillInOptions(char* argv[],params * P){
 				}else{
 					F 			= "";
 				}
+			}else if (P->module == "SINGLE"){
+				if (P->p5.find(F) !=P->p5.end()){
+					P->p5[F] 	= "1";
+					P->N+=1;
+				}else{
+					F 			= "";
+				}
 			}
+
+
+
 		}
 		else if (not F.empty()) {
 			if (P->module=="MODEL"){
@@ -412,8 +466,11 @@ void fillInOptions(char* argv[],params * P){
 				}
 			}else if(P->module=="BIDIR"){
 				if (P->p4.find(F) !=P->p4.end()){
-					
 					P->p4[F]=string(*argv);
+				}
+			}else if(P->module=="SINGLE"){
+				if (P->p5.find(F) !=P->p5.end()){
+					P->p5[F]=string(*argv);
 				}
 			}
 		}

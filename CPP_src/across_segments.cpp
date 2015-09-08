@@ -3,6 +3,7 @@
 #include "across_segments.h"
 #include "model.h"
 #include "template_matching.h"
+#include "model_single.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -314,7 +315,7 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
 	
 	double noise_ll 	= noise_clf.ll;
 	
-	for (int k = 1; k<= s->counts+1;k++){
+	for (int k = 1; k<= s->counts;k++){
 		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
 		#pragma omp parallel for num_threads(num_proc)
 		for (int t = 0; t <  stoi(P->p4["-rounds"]); t++){
@@ -325,9 +326,8 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
 			fits.push_back(bidir_components[b]);
 		}
 		
-			
 	}
-
+	
 	return fits;
 }
 
@@ -406,11 +406,110 @@ vector<simple_c> move_elongation_support(vector<segment *> FSI, params * P){
 	//convert to simple_c
 	fits 	= bidir_components_to_simplec(clfs, FSI);
 	return fits;
+}
 
 
+double BIC_score(double ll, double N, int type){
+	if (type == 0){
+		return -2*ll + 1*log(N);
+	}else if (type==3){
+		return -2*ll + 6*log(N);		
+	}else{
+		return -2*ll + 3*log(N);			
+	}
+}
+single_simple_c classifier_single_to_simple_c(NLR arg_clf, double maxll, segment *data, int K){
+	single_simple_c sc; 
+	for (int i = 0; i< 5; i++){
+		if (i < data->chrom.size()){
+			sc.chrom[i] 	= data->chrom[i];
+		}else{
+			sc.chrom[i] 	= '\0';
+		}
+	}
+	sc.st_sp[0] 	= data->start, sc.st_sp[1]=data->stop, sc.st_sp[2]=data->ID;
+	sc.ps[0] 	= arg_clf.mu, sc.ps[1] 	= arg_clf.si, sc.ps[2] = arg_clf.wn; 
+	sc.ps[3] 	= arg_clf.l, sc.ps[4] = arg_clf.r, sc.ps[5] = arg_clf.wl, sc.ps[6] = arg_clf.wr;
+	sc.ps[7] 	= maxll;
+	return sc;
+
+}
+
+single_simple_c classifier_single_to_simple_c_noise(segment* data, int i){
+
+	single_simple_c sc; 
+	for (int i = 0; i< 5; i++){
+		if (i < data->chrom.size()){
+			sc.chrom[i] 	= data->chrom[i];
+		}else{
+			sc.chrom[i] 	= '\0';
+		}
+	}
+	sc.st_sp[0] 	= data->start, sc.st_sp[1]=data->stop, sc.st_sp[2]=data->ID;
+	sc.ps[0] 	= 0, sc.ps[1] 	= 0, sc.ps[2] = 0; 
+	sc.ps[3] 	= data->minX, sc.ps[4] = data->maxX, sc.ps[5] = 1.0, sc.ps[6] = 1.0;
+	sc.ps[7] 	= nINF;
+	return sc;
+			
+}
 
 
+vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, params * P){
+	int N 			= FSI.size();
+	int num_proc 	= stoi(P->p5["-np"]);
+	int rounds 		= stoi(P->p5["-rounds"]);
+	double scale 	= stod(P->p5["-ns"]);
+	int mi 	= stod(P->p5["-mi"]);
+	double ct 	= stod(P->p5["-ct"]);
+	vector<single_simple_c> fits;
+	vector<classifier_single> clf_fits(N);
+	#pragma omp parallel for num_threads(num_proc)	
+	for (int i 	= 0; i < N;i++){
+		//want to fit four models, noise, left, right, both
+		double BIC_min 	= INF;
 
+		int arg_type;
+		double ll, best_ll;
+		classifier_single BIC_best;
+		classifier_single  arg_clf;
+		for (int j = 0; j < 4; j++){
+			double maxll 	= nINF;
+			if (j > 0){
+				for (int r = 0; r < rounds; r++){
+					classifier_single clf(ct, mi, 1,j, scale);
+					ll 				= clf.fit(FSI[i]);
+					if (ll > nINF){
+						maxll 		= ll;
+						arg_clf 	= clf;
+					}				
+				}
+			}else{
+				classifier_single clf(ct, mi, 0,j, scale);	
+				maxll 		= clf.fit(FSI[i]);
+				arg_clf 	= clf;
+			}
+			//calc BIC score
+			if (BIC_score(maxll, FSI[i]->N, j) <  BIC_min  ){
+				BIC_min 	= BIC_score(maxll, FSI[i]->N, j), arg_type = j;
+				BIC_best 	= arg_clf;		
+				best_ll 	= maxll;
+			}
+		}
+
+		//transform to simple_c;
+		clf_fits[i] = BIC_best;
+	}
+	for (int i = 0 ; i < N; i++){
+		if (clf_fits[i].K==0){
+			fits.push_back(classifier_single_to_simple_c_noise(FSI[i], i));
+		}else{
+			for (int c = 0; c < clf_fits[i].K; c++){
+				fits.push_back(classifier_single_to_simple_c(clf_fits[i].components[c],clf_fits[i].ll, FSI[i],clf_fits[i].K  ));
+			}
+		}
+
+	}
+	return fits;
 
 }
 

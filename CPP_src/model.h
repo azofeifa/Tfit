@@ -78,7 +78,7 @@ public:
 
 	component();
 	void initialize(double, segment *, int , double , double, double);
-	void initialize_with_parameters(vector<double>, segment *, int);
+	void initialize_with_parameters(vector<double>, segment *, int, double, double);
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
 	double pdf(double , int);

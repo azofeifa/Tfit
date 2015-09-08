@@ -7,6 +7,7 @@
 using namespace std;
 class simple_c;
 class final_model_output;
+struct single_simple_c;
 class model_component{
 public:
 	double mu, si, l, w_e, pi;
@@ -49,13 +50,14 @@ class classifier; //forward declare
 class segment{
 public:
 	string chrom; 
-	int start, stop;
+	int start, stop, ID;
 	double minX, maxX;
 	vector< vector<double> > forward;
 	vector< vector<double> > reverse;
 	int counts;
 	vector<double> centers;
 	segment(string, int , int);
+	segment(string, int , int, int);
 	segment();
 	string write_out();
 	void bin(double, double, bool);
@@ -80,9 +82,13 @@ public:
 class interval{
 public:
 	string chrom;
+	int ID;
 	int start, stop, strand; //strand, 1 == forward, -1 == reverse
+	bool EMPTY;
 	interval();
 	interval(string, int, int );
+	interval(string, int, int , int );
+	
 	vector<double> forward_x, forward_y, reverse_x, reverse_y;
 	void insert(double, double, int);
 	int hits;
@@ -104,6 +110,7 @@ public:
 	int get_hits(bool, int,int );
 	void reset_hits();
 	int get_total(int , int);
+	interval get_interval(int, int);
 
 
 };
@@ -123,7 +130,7 @@ public:
 	int get_hits(bool, int, int);
 	void reset_hits();
 	int get_total(int, int);
-
+	interval get_interval(int, int);
 };
 
 vector<segment*> load_EMGU_format_file(string, string);
@@ -135,6 +142,7 @@ void write_out(string,map<string, interval_tree *> );
 
 vector<segment*> load_bedgraphs_total(string, 
 	string, int , double, string);
+vector<segment*> load_bedgraphs_single(string, int , double, string);
 map<string, interval_tree *> load_bidir_bed_files(string,
 	string);
 
@@ -149,10 +157,14 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , 
 
 void write_out_MLE_model_info(vector<final_model_output>, params *);
 
-vector<segment *> load_intervals_of_interest(string);
+vector<segment *> load_intervals_of_interest(string,map<int, string>&);
 
 vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string, int);
 
 void write_gtf_file_model_fits(vector<final_model_output>, params *);
+
+vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *> > , string, int);
+
+void write_out_single_simple_c(vector<single_simple_c>, map<int, string> , params * );
 
 #endif
