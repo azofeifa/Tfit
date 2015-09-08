@@ -138,8 +138,8 @@ double classifier_single::fit(segment * data){
 	//random initialization of parameters
 	for (int k = 0; k < K; k++ ){
 		components[k].init(type, K, data, scale);
+	//	components[k].print();
 	}
-
 	ll 				= calc_loglikelihood(data, components, K);
 	bool converged 	= false;
 	double norm, N;
@@ -167,10 +167,8 @@ double classifier_single::fit(segment * data){
 		for (int k = 0;k < K;k++){
 			N+=components[k].get_all();
 		}
-		printf("%f", ll);
 		for (int k = 0;k < K;k++){
 			components[k].set_new_parameters(N);
-			components[k].print();
 		}
 		ll 				= calc_loglikelihood(data, components, K);
 
