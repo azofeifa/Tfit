@@ -2,7 +2,7 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~SINGLE #do not change this line
 -v     	= 1
--i	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/tPol_II_DMSO_150bp_genomeCovGraphPDMMR.BedGraph #bedgraph file
+-i	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/test_tPol_II_DMSO_150bp_genomeCovGraphPDMMR.BedGraph #bedgraph file
 -j 	= /Users/joazofeifa/Lab/ChIP/HCT116/hg18_interval_files/test_hg18_refseq.bed #interval bed file
 -o	= /Users/joazofeifa/Lab/ChIP/HCT116/
 -br 	  = 10 #binning resolution

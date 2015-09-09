@@ -80,6 +80,7 @@ double NLR::pdf(double x){
 
 void NLR::addSS(double x , double y, double norm){
 	double lp 	= loading.pdf(x)/norm;
+	printf("x: %f, pdf: %f, EX: %f, norm: %f\n", x, loading.pdf(x), lp, norm);
 	double fp 	= forward.pdf(x)/norm;
 	double rp 	= reverse.pdf(x)/norm;
 	EX+=x*y*lp;
@@ -143,7 +144,7 @@ double classifier_single::fit(segment * data){
 	ll 				= calc_loglikelihood(data, components, K);
 	bool converged 	= false;
 	double norm, N;
-	printf("-------------------------\n");
+	//printf("-------------------------\n");
 	while (t < max_iterations and not converged){
 		if (not isfinite(ll)){
 			ll 		= nINF;
@@ -151,7 +152,7 @@ double classifier_single::fit(segment * data){
 		}
 		for (int k = 0; k < K; k++ ){
 			components[k].resetSS();
-			components[k].print();
+	//		components[k].print();
 		}	
 		for (int i = 0 ; i < data->XN; i++){
 			norm 	= 0;
