@@ -155,7 +155,7 @@ double classifier_single::fit(segment * data){
 		}
 		for (int k = 0; k < K; k++ ){
 			components[k].resetSS();
-//			components[k].print();
+			components[k].print();
 		}	
 		for (int i = 0 ; i < data->XN; i++){
 			norm 	= 0;
