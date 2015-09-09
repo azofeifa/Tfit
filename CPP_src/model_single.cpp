@@ -85,6 +85,7 @@ void NLR::addSS(double x , double y, double norm){
 	EX+=x*y*lp;
 	EX2+=pow(x-mu,2)*y*lp;
 	WN+=y*lp;
+
 	WR+=y*fp;
 	WL+=y*rp;
 }
@@ -95,6 +96,7 @@ double NLR::get_all(){
 	return WN+WR+WL;
 }
 void NLR::set_new_parameters(double N){
+	printf("%f,%f,%f,%f,\n", WN, WL, WR, N );
 	wn 			= WN / N, wl 	= WL / N, wr 	= WR / N;
 	mu  		= EX / WN;
 	si 			= sqrt((EX2+0.01) /(WN+0.01));
