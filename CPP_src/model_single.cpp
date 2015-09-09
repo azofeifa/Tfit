@@ -29,9 +29,9 @@ double ELON::pdf(double x){
 		return 0;
 	}
 	if (x >= a and x<= b){
-		printf("HERE, %f, a: %f, b: %f\n", x, a, b );
 		return (w / (b-a));
 	}
+	return 0;
 }
 string ELON::print(){
 	return "U, a:" + to_string(a) + ",si:" + to_string(b) +",w:"+to_string(w);
@@ -76,12 +76,12 @@ void NLR::init(int type, int K, segment * data, double scale){
 
 }
 double NLR::pdf(double x){
+//	printf("loading: %f, forward: %f,reverse: %f\n", );
 	return loading.pdf(x) + forward.pdf(x) + reverse.pdf(x);
 }
 
 void NLR::addSS(double x , double y, double norm){
 	double lp 	= loading.pdf(x)/norm;
-	printf("x: %f, EX: %f, p: %f\n", x, lp, loading.pdf(x) );
 	double fp 	= forward.pdf(x)/norm;
 	double rp 	= reverse.pdf(x)/norm;
 	EX+=x*y*lp;
@@ -158,7 +158,7 @@ double classifier_single::fit(segment * data){
 		}
 		for (int k = 0; k < K; k++ ){
 			components[k].resetSS();
-			components[k].print();
+		//	components[k].print();
 		}	
 		for (int i = 0 ; i < data->XN; i++){
 			norm 	= 0;
