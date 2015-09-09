@@ -80,7 +80,6 @@ double NLR::pdf(double x){
 
 void NLR::addSS(double x , double y, double norm){
 	double lp 	= loading.pdf(x)/norm;
-	printf("x: %f, pdf: %f, EX: %f, norm: %f, mu: %f, si: %f,fa: %f, fb: %f, ra: %f, rb: %f, fp: %f, rp: %f\n", x, loading.pdf(x), lp, norm, loading.mu,loading.si, forward.a, forward.b, reverse.a, reverse.b,forward.pdf(x), reverse.pdf(x) );
 	double fp 	= forward.pdf(x)/norm;
 	double rp 	= reverse.pdf(x)/norm;
 	EX+=x*y*lp;
@@ -116,10 +115,13 @@ classifier_single::classifier_single(){}
 
 double calc_loglikelihood(segment * data, NLR * components, int K){
 	double ll 	= 0;
+	double S;
 	for (int i =0; i < data->XN; i++){
+		S 	= 0;
 		for (int k = 0; k < K; k++){
-			ll+=log(components[k].pdf(data->X[0][i]))*data->X[1][i];
+			S+=(components[k].pdf(data->X[0][i]));
 		}
+		ll+=log(S)*data->X[1][i];
 	}
 	return ll;
 }
@@ -144,7 +146,8 @@ double classifier_single::fit(segment * data){
 	ll 				= calc_loglikelihood(data, components, K);
 	bool converged 	= false;
 	double norm, N;
-	//printf("-------------------------\n");
+
+	printf("\n---------------\n");
 	while (t < max_iterations and not converged){
 		if (not isfinite(ll)){
 			ll 		= nINF;
@@ -152,7 +155,7 @@ double classifier_single::fit(segment * data){
 		}
 		for (int k = 0; k < K; k++ ){
 			components[k].resetSS();
-	//		components[k].print();
+//			components[k].print();
 		}	
 		for (int i = 0 ; i < data->XN; i++){
 			norm 	= 0;
@@ -174,9 +177,9 @@ double classifier_single::fit(segment * data){
 			components[k].set_new_parameters(N);
 		}
 		ll 				= calc_loglikelihood(data, components, K);
-
 		if (abs(ll-prevll) < covergence_threshold){
 			for (int c = 0; c < K; c++){
+				components[c].print();
 				if (components[c].si > (2000/scale)){
 					ll 	=nINF;
 				}

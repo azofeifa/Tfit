@@ -2,11 +2,11 @@
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~SINGLE #do not change this line
 -v     	= 1
--i	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/test_tPol_II_DMSO_150bp_genomeCovGraphPDMMR.BedGraph #bedgraph file
--j 	= /Users/joazofeifa/Lab/ChIP/HCT116/hg18_interval_files/test_hg18_refseq.bed #interval bed file
+-i	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/test_set.bedgraph #bedgraph file
+-j 	= /Users/joazofeifa/Lab/ChIP/HCT116/pol_II_bedgraph/test_intervals.bed #interval bed file
 -o	= /Users/joazofeifa/Lab/ChIP/HCT116/
 -br 	  = 10 #binning resolution
--ns 	     	 = 100 #normalizing scale
+-ns 	     	 = 1 #normalizing scale
 -minK  	      	 = 1  #min number of models to consider
 -maxK	     	 = 4 #max number of models to consider
 -rounds     	 = 4 #number of random EM initializations
