@@ -64,8 +64,8 @@ void NLR::init(int type, int K, segment * data, double scale){
 	uniform_real_distribution<double> dist_mu(data->minX, data->maxX);
 	uniform_real_distribution<double> dist_si(500, 5000);
 	
-	mu 	= dist_mu(mt);
-	si 	= dist_si(mt)/scale;
+	mu 	= (data->maxX + data->minX) / 2.;
+	si 	= 10;
 	l 	= data->minX;
 	r 	= data->maxX;
 	loading 	= NORM(mu, si, wn);
@@ -80,6 +80,7 @@ double NLR::pdf(double x){
 
 void NLR::addSS(double x , double y, double norm){
 	double lp 	= loading.pdf(x)/norm;
+	printf("%f\n", lp, x );
 	double fp 	= forward.pdf(x)/norm;
 	double rp 	= reverse.pdf(x)/norm;
 	EX+=x*y*lp;
@@ -96,7 +97,6 @@ double NLR::get_all(){
 	return WN+WR+WL;
 }
 void NLR::set_new_parameters(double N){
-	printf("%f,%f,%f,%f,\n", WN, WL, WR, N );
 	wn 			= WN / N, wl 	= WL / N, wr 	= WR / N;
 	mu  		= EX / WN;
 	si 			= sqrt((EX2+0.01) /(WN+0.01));
