@@ -29,6 +29,7 @@ double ELON::pdf(double x){
 		return 0;
 	}
 	if (x >= a and x<= b){
+		printf("HERE, %f, a: %f, b: %f\n", x, a, b );
 		return (w / (b-a));
 	}
 }
