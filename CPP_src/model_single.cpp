@@ -76,7 +76,6 @@ void NLR::init(int type, int K, segment * data, double scale){
 
 }
 double NLR::pdf(double x){
-//	printf("loading: %f, forward: %f,reverse: %f\n", );
 	return loading.pdf(x) + forward.pdf(x) + reverse.pdf(x);
 }
 
@@ -144,13 +143,11 @@ double classifier_single::fit(segment * data){
 	//random initialization of parameters
 	for (int k = 0; k < K; k++ ){
 		components[k].init(type, K, data, scale);
-	//	components[k].print();
 	}
 	ll 				= calc_loglikelihood(data, components, K);
 	bool converged 	= false;
 	double norm, N;
 
-	printf("\n---------------\n");
 	while (t < max_iterations and not converged){
 		if (not isfinite(ll)){
 			ll 		= nINF;
@@ -182,7 +179,6 @@ double classifier_single::fit(segment * data){
 		ll 				= calc_loglikelihood(data, components, K);
 		if (abs(ll-prevll) < covergence_threshold){
 			for (int c = 0; c < K; c++){
-				components[c].print();
 				if (components[c].si > (2000/scale)){
 					ll 	=nINF;
 				}

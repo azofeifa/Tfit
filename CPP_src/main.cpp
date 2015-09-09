@@ -168,7 +168,7 @@ int main(int argc, char* argv[]){
 					//want load the intervals of "interest"
 					map<int, string> IDS;	
 					T.start_time(rank, "combinding FSI and bidir intervals:");
-					FSI 		=  load_intervals_of_interest(P->p4["-f"], IDS);
+					FSI 		=  load_intervals_of_interest(P->p4["-f"], IDS ,0 );
 					//now we want to insert final_model_output data into FSI...	
 					combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
 					T.get_time(rank);
@@ -347,7 +347,7 @@ int main(int argc, char* argv[]){
 		int verbose 			= stoi(P->p3["-v"]);
 		
 		if (verbose and rank==0){//show current user parameters...
-			P->display(1);
+			P->display(nprocs);
 		}	
 		string bed_graph_file 	= P->p5["-i"];
 		string interval_file 	= P->p5["-j"];
@@ -399,7 +399,7 @@ int main(int argc, char* argv[]){
 		map<int, string> IDS;
 		if (rank==0){
 			T.start_time(rank, "Loading/Converting intervals of interest:");
-			FSI 							= load_intervals_of_interest(interval_file, IDS);
+			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]) );
 			if (not G.empty()){
 				vector<final_model_output> 	A 	= convert_bidir_segs_to_final_model(G);
 				combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
@@ -414,7 +414,7 @@ int main(int argc, char* argv[]){
 		if (not GG.empty()){
 			T.start_time(rank, "loading BG and integrating segments:");
 			integrated_segments= insert_bedgraph_to_segment_single(GG, bed_graph_file,rank);
-			BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
+			BIN(integrated_segments, stod(P->p5["-br"]), stod(P->p5["-ns"]),true);
 			T.get_time(rank);
 
 			//now running model

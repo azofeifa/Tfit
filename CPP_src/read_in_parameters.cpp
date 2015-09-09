@@ -7,7 +7,11 @@
 #include "read_in_parameters.h"
 #include <stdio.h>
 #include <ctype.h>
+
+#include <stdio.h>
+#include <time.h>
 using namespace std;
+
 params::params(){
 	p["-v"] 		= "1";
 	p["-i"] 		= "";
@@ -107,7 +111,7 @@ params::params(){
 	p5["-show_seeds"] 	= "0";
 	p5["-bct"] 			= "1";
 	p5["-template"] 	= "0";
-
+	p5["-pad"] 			= "0";
 
 
 	
@@ -115,6 +119,17 @@ params::params(){
 	module 			= "";
 	EXIT 			= 0;
 
+}
+const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%m/%d/%Y %X", &tstruct);
+
+    return buf;
 }
 void params::help(){
 	cout<<"----------------------------------------------------------------"<<endl;
@@ -240,6 +255,7 @@ void params::display(int nodes){
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"              User Provided EMGU Parameters                     "<<endl;
 		cout<<"                 (Fitting single model)                       "<<endl;
+		cout<<"Date Time    : "<<currentDateTime()<<endl;
 		cout<<"-i           : "<<p5["-i"]<<endl;
 		cout<<"-j           : "<<p5["-j"]<<endl;
 		cout<<"-o           : "<<p5["-o"]<<endl;
@@ -255,6 +271,30 @@ void params::display(int nodes){
 		cout<<"----------------------------------------------------------------"<<endl;
 	}
 }
+
+
+string params::get_header(int ID){
+	string header = "";
+	if (ID == 5){
+		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-i           : "+p5["-i"]+"\n";
+		header+="#-j           : "+p5["-j"]+"\n";
+		header+="#-o           : "+p5["-o"]+"\n";
+		header+="#-ns          : "+p5["-ns"]+"\n";
+		header+="#-br          : "+p5["-br"]+"\n";
+		header+="#-np          : "+p5["-np"]+"\n";
+		header+="#-chr         : "+p5["-chr"]+"\n";
+		header+="#-mi          : "+p5["-mi"]+"\n";
+		header+="#-ct          : "+p5["-ct"]+"\n";
+		header+="#-rounds      : "+p5["-rounds"]+"\n";
+		header+="#-pad         : "+p5["-pad"]+"\n";
+		
+	
+	}
+
+	return header;
+}
+
 
 bool checkIfFileAndConfigFile(string FILE){
 	ifstream FH(FILE);

@@ -23,7 +23,7 @@ public:
 	map<string, string> p3;
 	map<string, string> p4;
 	map<string, string> p5;
-	
+	string get_header(int);
 	
 	bool EXIT;
 	
@@ -33,4 +33,5 @@ void fillInOptions(char*,params);
 
 params * readInParameters(char**);
 
+const std::string currentDateTime();
 #endif

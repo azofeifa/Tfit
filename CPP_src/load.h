@@ -157,7 +157,7 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , 
 
 void write_out_MLE_model_info(vector<final_model_output>, params *);
 
-vector<segment *> load_intervals_of_interest(string,map<int, string>&);
+vector<segment *> load_intervals_of_interest(string,map<int, string>&, int);
 
 vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string, int);
 

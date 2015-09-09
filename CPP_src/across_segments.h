@@ -28,7 +28,7 @@ struct simple_c{
 struct single_simple_c{
 	char chrom[5];
 	int st_sp[3];
-	double ps[8];
+	double ps[9];
 };
 
 vector<simple_c> run_model_accross_segments_template(vector<segment*>, 

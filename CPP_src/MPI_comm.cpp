@@ -601,7 +601,7 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 	single_simple_c sc;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={5,3, 8};
+	int blocklens[3]={5,3, 9};
 	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(single_simple_c, chrom);
@@ -637,12 +637,6 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 		for (int u = 0; u < S; u++)	{
 			MPI_Send(&fits[u], 1, mystruct, 0, u, MPI_COMM_WORLD);
 		}
-	}
-	printf("------------------\n");
-	for (int i = 0; i < fits.size(); i++){
-		printf("%s:%d-%d\n", fits[i].chrom, fits[i].st_sp[0], fits[i].st_sp[1] );
-		printf("%f,%f, %f, %f, %f\n", fits[i].ps[0],fits[i].ps[1],fits[i].ps[2], fits[i].ps[5],fits[i].ps[6] );
-
 	}
 	return recieved;
 

@@ -207,6 +207,7 @@ void segment::bin(double delta, double scale, bool erase){
 	//scale data down for numerical stability
 	if (scale){
 		for (int i = 0; i < BINS; i ++ ){
+
 			X[0][i] 	= (X[0][i]-minX)/scale;
 		}
 	}
@@ -1275,7 +1276,7 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 
 
 
-vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS){
+vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS, int pad){
 	ifstream FH(FILE);
 	vector<segment *> G;
 	if (FH){
@@ -1288,7 +1289,7 @@ vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS)
 			if (lineArray.size() > 3){
 				IDS[i] 		= lineArray[3];
 			}
-			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]);
+			chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]);
 			segment * S 	= new segment(chrom, start, stop,i);
 			G.push_back(S);
 			i++;
@@ -1491,7 +1492,11 @@ void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> ID
 	ofstream FHW_gff;
 	ofstream FHW_config;
 	FHW_gff.open(out_dir+"single_model_fits.gff3");
+
 	FHW_config.open(out_dir+"single_model_fits.txt");
+	FHW_config<<P->get_header(5);
+	FHW_config<<"#chrom:start-stop\tID/Name\tmu(loading position)\tsigma(variance in loading)\tmixture weights\tlog-likelihood\tData Point Number\n";
+	
 	string chrom, ID, strand, parent, loading, L, R;
 	int start, stop, left, right;
 	int center, std;
@@ -1566,7 +1571,8 @@ void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> ID
 		//write_out_config_file
 		config_line 	= chrom +":" + to_string(fits[i].st_sp[0]) + "-" + to_string(fits[i].st_sp[1]) + "\t";
 		config_line    += ID + "\t";
-		config_line    += to_string(int(fits[i].ps[0]*scale  + start)) + "\t" + to_string(std*2) + "\t" + to_string(fits[i].ps[2]) + "," + to_string(fits[i].ps[5]) + "," + to_string(fits[i].ps[6]) + "\n";
+		config_line    += to_string((fits[i].ps[0]*scale  + start)) + "\t" + to_string(fits[i].ps[1]*scale) + "\t" + to_string(fits[i].ps[2]) + "," + to_string(fits[i].ps[5]) + "," + to_string(fits[i].ps[6]);
+		config_line    += "\t" + to_string(fits[i].ps[7]) +  "\t" +to_string(fits[i].ps[8]) + "\n";
 		FHW_config<<config_line;
 		
 

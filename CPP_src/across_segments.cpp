@@ -9,17 +9,9 @@
 #include <map>
 #include <time.h>
 #include "omp.h"
+#include "read_in_parameters.h"
 using namespace std;
 
-const string currentDateTime() {
-	time_t     now = time(0);
-	struct tm  tstruct;
-	char       buf[80];
-	tstruct = *localtime(&now);
-	strftime(buf, sizeof(buf), "%Y-%m-%d,%X", &tstruct);
-
-	return buf;
-}
 
 string check_file(string FILE, int i){ //don't want to write over an existing file
 	string template_file 	= FILE + to_string(i);
@@ -418,7 +410,7 @@ double BIC_score(double ll, double N, int type){
 		return -2*ll + 3*log(N);			
 	}
 }
-single_simple_c classifier_single_to_simple_c(NLR arg_clf, double maxll, segment *data, int K){
+single_simple_c classifier_single_to_simple_c(NLR arg_clf, double maxll, segment *data, int K, double NN){
 	single_simple_c sc; 
 	for (int i = 0; i< 5; i++){
 		if (i < data->chrom.size()){
@@ -430,12 +422,12 @@ single_simple_c classifier_single_to_simple_c(NLR arg_clf, double maxll, segment
 	sc.st_sp[0] 	= data->start, sc.st_sp[1]=data->stop, sc.st_sp[2]=data->ID;
 	sc.ps[0] 	= arg_clf.mu, sc.ps[1] 	= arg_clf.si, sc.ps[2] = arg_clf.wn; 
 	sc.ps[3] 	= arg_clf.l, sc.ps[4] = arg_clf.r, sc.ps[5] = arg_clf.wl, sc.ps[6] = arg_clf.wr;
-	sc.ps[7] 	= maxll;
+	sc.ps[7] 	= maxll, sc.ps[8] 	= NN;
 	return sc;
 
 }
 
-single_simple_c classifier_single_to_simple_c_noise(segment* data, int i){
+single_simple_c classifier_single_to_simple_c_noise(segment* data, int i, double ll, double NN){
 
 	single_simple_c sc; 
 	for (int i = 0; i< 5; i++){
@@ -448,7 +440,7 @@ single_simple_c classifier_single_to_simple_c_noise(segment* data, int i){
 	sc.st_sp[0] 	= data->start, sc.st_sp[1]=data->stop, sc.st_sp[2]=data->ID;
 	sc.ps[0] 	= 0, sc.ps[1] 	= 0, sc.ps[2] = 0; 
 	sc.ps[3] 	= data->minX, sc.ps[4] = data->maxX, sc.ps[5] = 1.0, sc.ps[6] = 1.0;
-	sc.ps[7] 	= nINF;
+	sc.ps[7] 	= ll, sc.ps[8] = NN;
 	return sc;
 			
 }
@@ -462,7 +454,7 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 	int mi 	= stod(P->p5["-mi"]);
 	double ct 	= stod(P->p5["-ct"]);
 	vector<single_simple_c> fits;
-	vector<classifier_single> clf_fits(N);
+	vector<vector<classifier_single>> clf_fits(N);
 	#pragma omp parallel for num_threads(num_proc)	
 	for (int i 	= 0; i < N;i++){
 		//want to fit four models, noise, left, right, both
@@ -471,17 +463,23 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 		int arg_type;
 		double ll, best_ll;
 		classifier_single BIC_best;
-		classifier_single  arg_clf;
+		vector<classifier_single> current;
 		for (int j = 0; j < 4; j++){
 			double maxll 	= nINF;
+			classifier_single  arg_clf;
 			if (j > 0){
+				bool SET 	= false;
 				for (int r = 0; r < rounds; r++){
 					classifier_single clf(ct, mi, 1,j, scale);
 					ll 				= clf.fit(FSI[i]);
 					if (ll > nINF){
 						maxll 		= ll;
 						arg_clf 	= clf;
-					}				
+						SET 		= true;
+					}else if(r == rounds-1 and not SET){
+						maxll 		= ll;
+						arg_clf 	= clf;	
+					}
 				}
 			}else{
 				classifier_single clf(ct, mi, 0,j, scale);	
@@ -489,27 +487,30 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 				arg_clf 	= clf;
 			}
 			//calc BIC score
+			current.push_back(arg_clf);
 			if (BIC_score(maxll, FSI[i]->N, j) <  BIC_min  ){
 
 				BIC_min 	= BIC_score(maxll, FSI[i]->N, j), arg_type = j;
 				BIC_best 	= arg_clf;		
 				best_ll 	= maxll;
 			}
+
 		}
 		//transform to simple_c;
-		clf_fits[i] = BIC_best;
+		clf_fits[i] = current;
 		
 		
 	}
 
 	for (int i = 0 ; i < N; i++){
-		if (clf_fits[i].K==0){
-			fits.push_back(classifier_single_to_simple_c_noise(FSI[i], i));
-		}else{
-			for (int c = 0; c < clf_fits[i].K; c++){
-				fits.push_back(classifier_single_to_simple_c(clf_fits[i].components[c],clf_fits[i].ll, FSI[i],clf_fits[i].K  ));
+		for (int j = 0 ; j < clf_fits[i].size(); j++)
+			if (clf_fits[i][j].K==0){
+				fits.push_back(classifier_single_to_simple_c_noise(FSI[i], i, clf_fits[i][j].ll,FSI[i]->N ));
+			}else{
+				for (int c = 0; c < clf_fits[i][j].K; c++){
+					fits.push_back(classifier_single_to_simple_c(clf_fits[i][j].components[c],clf_fits[i][j].ll, FSI[i],clf_fits[i][j].K ,FSI[i]->N ));
+				}
 			}
-		}
 
 	}
 	return fits;
