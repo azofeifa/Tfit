@@ -80,7 +80,7 @@ double NLR::pdf(double x){
 
 void NLR::addSS(double x , double y, double norm){
 	double lp 	= loading.pdf(x)/norm;
-	printf("x: %f, pdf: %f, EX: %f, norm: %f\n", x, loading.pdf(x), lp, norm);
+	printf("x: %f, pdf: %f, EX: %f, norm: %f, mu: %f, si: %f,fa: %f, fb: %f, ra: %f, rb: %f, fp: %f, rp: %f\n", x, loading.pdf(x), lp, norm, loading.mu,loading.si, forward.a, forward.b, reverse.a, reverse.b,forward.pdf(x), reverse.pdf(x) );
 	double fp 	= forward.pdf(x)/norm;
 	double rp 	= reverse.pdf(x)/norm;
 	EX+=x*y*lp;
