@@ -296,7 +296,7 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 }
 
 vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
-	int num_proc 				= omp_get_num_threads();
+	int num_proc 				= omp_get_max_threads();
 	vector<simple_c> fits;
 	vector<double> mu_seeds 	= peak_bidirs(s);
 	classifier noise_clf(0, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
@@ -383,7 +383,7 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 }
 
 vector<simple_c> move_elongation_support(vector<segment *> FSI, params * P){
-	int num_proc 	= stoi(P->p4["-np"]);
+	int num_proc 				= omp_get_max_threads();
 	vector<classifier> clfs(int(FSI.size() ));
 	vector<simple_c> fits;
 

@@ -226,6 +226,7 @@ void params::display(int nodes, int cores){
 			cout<<"-pad         : "<<p4["-pad"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
+			cout<<"-rounds      : "<<p4["-rounds"]<<endl;
 			cout<<"-threads     : "<<cores<<endl;
 			cout<<"-MPI_nodes   : "<<nodes<<endl;
 
