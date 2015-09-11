@@ -375,7 +375,7 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 
 struct seg_and_bidir{
 	char chrom[5];
-	int st_sp[3];
+	int st_sp[4];
 	double parameters[4];
 };
 
@@ -388,7 +388,7 @@ seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
 			sb.chrom[i] 	= '\0';
 		}
 	}
-	sb.st_sp[0] 		= i, sb.st_sp[1] = s->start, sb.st_sp[2] = s->stop;
+	sb.st_sp[0] 		= i, sb.st_sp[1] = s->start, sb.st_sp[2] = s->stop, sb.st_sp[3]=s->ID;
 	sb.parameters[0] 	= ps[2],sb.parameters[1] 	= ps[3];
 	sb.parameters[2] 	= ps[4],sb.parameters[3] 	= ps[5];
 
@@ -406,7 +406,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 	seg_and_bidir sb;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={5,3,4};
+	int blocklens[3]={5,4,4};
 	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(seg_and_bidir, chrom);
@@ -497,7 +497,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 				parameters[p] 	= g->second[i].parameters[p];
 			}
 			if (i == 0){
-				S 	= new segment(g->second[i].chrom, g->second[i].st_sp[1], g->second[i].st_sp[2] );
+				S 	= new segment(g->second[i].chrom, g->second[i].st_sp[1], g->second[i].st_sp[2], g->second[i].st_sp[3] );
 				SS++;
 			}
 			if (S!= NULL){

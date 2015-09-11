@@ -140,7 +140,30 @@ def delta_ll_vs_RI(G):
 	pass
 
 
+def hybrid(G):
+	F 		= plt.figure(figsize=(15,10))
+	ax 		= F.add_subplot(121)
+	means  	= [np.mean([ y.total[1]/60.  for x,y in G[node] ]) for node in G]
+	std 	= [np.std([ y.total[1]/60.  for x,y in G[node] ]) for node in G]
+	ax.set_title("Linear Plot")
+	ax.scatter(G.keys(), means)
+	ax.plot(G.keys(), means)
+	ax.fill_between(G.keys(), [ m-std[i] for i,m in enumerate(means) ], [ m+std[i] for i,m in enumerate(means) ], alpha=0.5, color="grey")
+	ax.set_ylabel("Minutes [CPU/WT]")
+	ax.set_xlabel("MPI Processes (nodes)")
 
+	ax.grid()
+	ax2 		= F.add_subplot(122)
+	ax2.set_title("Log-Linear Plot")
+	ax2.scatter(G.keys(), means)
+	ax2.plot(G.keys(), means)
+	ax2.fill_between(G.keys(), [ m-std[i] for i,m in enumerate(means) ], [ m+std[i] for i,m in enumerate(means) ], alpha=0.5, color="grey")
+	ax2.grid()
+	ax2.set_ylabel("Minutes [CPU/WT] (log space)")
+	ax2.set_xlabel("MPI Processes (nodes)")
+	ax2.set_yscale("log")
+	plt.show()
+	pass
 
 
 

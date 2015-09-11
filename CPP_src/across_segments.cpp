@@ -333,8 +333,7 @@ vector<simple_c> bidir_components_to_simplec(vector<classifier> clfs, vector<seg
 		for (int k = 0 ; k < (*c).init_parameters.size(); k++ ){
 			simple_c scc;
 			scc.IDS[0] 	= i, scc.IDS[1] 	= (*c).init_parameters.size();
-			scc.IDS[2] 	= (*c).init_parameters.size(), scc.IDS[3] 	= k;
-				
+			scc.IDS[2] 	= FSI[i]->ID, scc.IDS[3] 	= k;
 			scc.ps[0] 	= (*c).components[k].bidir.mu;
 			scc.ps[1] 	= (*c).components[k].bidir.si;
 			scc.ps[2] 	= (*c).components[k].bidir.l;

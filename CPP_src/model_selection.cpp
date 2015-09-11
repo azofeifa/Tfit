@@ -320,12 +320,13 @@ map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
 }
 
 final_model_output::final_model_output(string chr, string h, int k, 
-	vector<rsimple_c> rcs, double n_ll, double K_ll, double ns, int st, int sp ){
+	vector<rsimple_c> rcs, double n_ll, double K_ll, double ns, int st, int sp, int id ){
 	chrom 	= chr;
 	start 	= st;
 	stop 	= sp;
 	scale 	= ns;
 	header 	= h;
+	ID 		= id;
 	noise_ll 	= n_ll, k_ll 	= K_ll;
 	K 	=k;
 	if (k >0){
@@ -519,7 +520,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 			}else{
 				k_ll 		= nINF;
 			}
-			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop ) );
+			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop,i ) );
 		}
 		i++;		
 	}
@@ -547,7 +548,7 @@ vector<final_model_output> convert_to_final_model_output(map<string, map<int, ve
 			noise_ll 						= components[0].ps[0];
 			start 	= components[0].st_sp[0], stop 	= components[0].st_sp[1];
 			chr  	= components[0].chrom;
-			A.push_back( final_model_output(chr,B->first, k, components, noise_ll, k_ll, scale,start, stop ) );
+			A.push_back( final_model_output(chr,B->first, k, components, noise_ll, k_ll, scale,start, stop, components[0].st_sp[4] ) );
 		}
 	}
 
@@ -565,6 +566,7 @@ vector<final_model_output> convert_bidir_segs_to_final_model(map<string, vector<
 	string chrom;
 	vector<rsimple_c> components;
 	double ns 	= 100;
+	int i 		= 0;
 	for (it_type g = G.begin(); g!=G.end(); g++ ){
 		for (it_type_2 b = g->second.begin(); b!=g->second.end(); b++ ){
 			start 	= (*b)[0], stop 	= (*b)[1], chrom = g->first;
@@ -572,8 +574,9 @@ vector<final_model_output> convert_bidir_segs_to_final_model(map<string, vector<
 			vector<rsimple_c> components = {rc};
 			string header 	= "";
 			A.push_back(final_model_output( chrom, header, 1, 
-				components, nINF, nINF, ns, start, stop )  );
+				components, nINF, nINF, ns, start, stop, i )  );
 		}
+		i++;
 	}
 
 	return A;

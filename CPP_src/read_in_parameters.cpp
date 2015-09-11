@@ -283,14 +283,28 @@ string params::get_header(int ID){
 		header+="#-o           : "+p5["-o"]+"\n";
 		header+="#-ns          : "+p5["-ns"]+"\n";
 		header+="#-br          : "+p5["-br"]+"\n";
-		header+="#-np          : "+p5["-np"]+"\n";
 		header+="#-chr         : "+p5["-chr"]+"\n";
 		header+="#-mi          : "+p5["-mi"]+"\n";
 		header+="#-ct          : "+p5["-ct"]+"\n";
 		header+="#-rounds      : "+p5["-rounds"]+"\n";
-		header+="#-pad         : "+p5["-pad"]+"\n";
+		header+="#-pad         : "+p5["-pad"]+"\n";	
+	}else if (ID == 4){
+		header+="#----------------------------------------------------\n";
+		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-i           : "+p4["-i"]+"\n";
+		header+="#-j           : "+p4["-j"]+"\n";
+		header+="#-f           : "+p4["-f"]+"\n";
+		header+="#-o           : "+p4["-o"]+"\n";
+		header+="#-ns          : "+p4["-ns"]+"\n";
+		header+="#-br          : "+p4["-br"]+"\n";
+		header+="#-bct         : "+p4["-bct"]+"\n";
+		header+="#-window_res  : "+p4["-window_res"]+"\n";
 		
-	
+		header+="#-mi          : "+p4["-mi"]+"\n";
+		header+="#-ct          : "+p4["-ct"]+"\n";
+		header+="#-rounds      : "+p4["-rounds"]+"\n";
+		header+="#-pad         : "+p4["-pad"]+"\n";	
+		header+="#----------------------------------------------------\n";
 	}
 
 	return header;

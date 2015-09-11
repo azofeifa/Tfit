@@ -1,8 +1,15 @@
 import load, draw
 def main():
+	ONLY_openMP = False
 	BM 			= False
-	RI 			= True
-	if BM:
+	RI 			= False
+	HYBRID 		= True
+	if HYBRID:
+		directory= "/Users/joazofeifa/Lab/ChIP/HCT116/benchmarking/"
+		G  		 = load.iterate_through_and_organize(directory)
+		draw.hybrid(G)		
+
+	if BM:	
 
 
 		pando 		= "/Users/joeyazo/Desktop/Lab/benchmarking_files/pando/"

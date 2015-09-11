@@ -151,14 +151,14 @@ int main(int argc, char* argv[]){
 				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
 				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
 				T.get_time(rank);
-
-
 			}
 			T.start_time(rank, "(MPI) gathering MLE results:");
 			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
 			T.get_time(rank);
 			
 			vector<segment *> FSI;
+			map<int, string> IDS;	
+					
 			if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
 				T.start_time(rank, "opt model selection:");
 				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
@@ -170,7 +170,6 @@ int main(int argc, char* argv[]){
 
 				if (P->p4["-elon"] == "1" and rank==0){
 					//want load the intervals of "interest"
-					map<int, string> IDS;	
 					T.start_time(rank, "combinding FSI and bidir intervals:");
 					FSI 		=  load_intervals_of_interest(P->p4["-f"], IDS ,0 );
 					//now we want to insert final_model_output data into FSI...	
@@ -203,6 +202,7 @@ int main(int argc, char* argv[]){
 				T.get_time(rank);
 				T.start_time(rank, "Writing Out Model Fits:");
 				write_gtf_file_model_fits(A, P);
+				write_config_file_model_fits(A, IDS, P);
 				T.get_time(rank);
 				
 				

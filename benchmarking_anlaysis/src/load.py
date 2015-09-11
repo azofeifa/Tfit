@@ -1,4 +1,4 @@
-import os, numpy as np
+import os, numpy as np, re
 
 def get_np_cpu_walltime(FILE):
 	np, CPU, wall 	= None,None,None
@@ -116,4 +116,57 @@ def RI_directory(directory):
 
 
 
+		
+
+
+
+class MPI_openMP:
+	def __init__(self, nodes, threads):
+		self.nodes 			= nodes
+		self.threads  		= threads
+		self.template 		= (None, None)
+		self.MLE_root 		= (None, None)
+		self.total 			= [0,0]
+	def add_time(self, line):
+		if "WT: " in line:
+
+			line, WT  	= line.strip("\n").split("WT: ")
+			line, CPU 	= line.strip("\n").split("CPU: ")
+			WT, CPU 	= float(WT), float(CPU.strip(","))
+			if "MLE" in line and "1st" in line:
+				self.MPI_root 	= (CPU, WT)
+			if "running template matching:" in line:
+				self.template 	= (CPU, WT)
+			self.total[0]+=CPU
+			self.total[1]+=WT
+
+def get_MPI_openMP_clocking_info(FILE):
+	with open(FILE) as FH:
+		threads,nodes,M 	= None, None,None
+		for line in FH:
+			if M is not None:
+				M.add_time(line)
+			else:
+				line_array 	= re.split(":", line.strip("\n"))
+				if len(line_array) ==2:
+					if line_array[0][:3]=="-np" or line_array[0][:9]=="-threads":
+						threads 	= int(line_array[1])
+					elif line_array[0][:10]=="-MPI_nodes":
+						nodes 		= int(line_array[1])
+				if threads!= None and nodes!=None:
+					M 	= MPI_openMP(nodes, threads)
+	return M
+
+
+
+def iterate_through_and_organize(directory):
+	G 	= {}
+	for FILE  in os.listdir(directory):
+		M 	= get_MPI_openMP_clocking_info(directory+"/"+FILE)
+		if M.nodes not in G:
+			G[M.nodes] 	= list()
+		G[M.nodes].append((M.nodes, M))
+	for t in G:
+		G[t].sort()
+	return G
 		

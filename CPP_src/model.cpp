@@ -951,7 +951,7 @@ int classifier::fit_uniform_only(segment * data){
 	double prevll 	= nINF;
 	int times 		= 0;
 	int changes 	= 0;
-	double var 		= 5;
+	double var 		= 10;
 
 	while (not converged and t < max_iterations){
 		

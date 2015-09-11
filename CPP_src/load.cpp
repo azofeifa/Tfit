@@ -1279,6 +1279,7 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS, int pad){
 	ifstream FH(FILE);
 	vector<segment *> G;
+	int ct 	= 1;
 	if (FH){
 		string line, chrom;
 		int start, stop;
@@ -1361,12 +1362,64 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 	}	
 }
 
+void write_config_file_model_fits(vector<final_model_output> A, map<int, string> IDS, params * P ){
+	double scale 	= stod(P->p4["-ns"]);
+	string out_dir 	= P->p4["-o"];
+	ofstream FHW_config;
+	FHW_config.open(out_dir+"model_fits.txt");
+	typedef vector<final_model_output>::iterator it_type;
+	typedef vector<rsimple_c>::iterator it_type_2;
+	string chrom_ID, ID;
+	string  sigmas, mus, lambdas, pis_N, weights_N, weights_F, weights_R, bounds_F, bounds_R, pis_F, pis_R;
+	string ll,N;
+	int k 	= 0;
+	FHW_config<<P->get_header(4);
+	FHW_config<<"#chrom:start-stop\tunique identifier\tlog-likelihood,N\tLoading Positions\tVariance in Loading\tInitiation Lengths\tStrand Prob. Loading\tWeights Loading\tWeights Forward\tWeights Reverse\tForward Support\tReverse Support\tForward Strand Prob\tReverse Strand Prob\n";
+	for (it_type a = A.begin(); a!= A.end(); a++){
+		sigmas= "", mus= "", lambdas="", pis_N= "", weights_N= "", weights_F= "", weights_R= "", bounds_F= "", bounds_R= "", pis_F="", pis_R="";
+		chrom_ID="", ID="", ll="";
+		chrom_ID=(*a).chrom + ":"+ to_string((*a).start) + "-" + to_string((*a).stop);
+		ID 		= IDS[(*a).ID];
+		string comma 	= "";
+		k 	= 0;
+		ll 	= to_string((*a).components[0].ps[1]);
+		N 	= to_string((*a).components[0].ps[13]);
+		for (it_type_2 r =(*a).components.begin(); r!= (*a).components.end(); r++ ){
+			if (k < (*a).components.size() -1 ){
+				comma = ",";
+			}else{
+				comma = "";
+			}
+			mus+=to_string((*r).ps[2]*scale + (*a).start) + comma;
+			sigmas+=to_string((*r).ps[3]*scale ) + comma;
+			lambdas+=to_string((1. / (*r).ps[4])*scale) + comma;
+			pis_N+=to_string( (*r).ps[5] ) + comma;
+			
+			weights_N+=to_string((*r).ps[6] ) + comma;
+			weights_F+=to_string((*r).ps[7] ) + comma;
+			weights_R+=to_string((*r).ps[8] ) + comma;
+			bounds_F+=to_string((*r).ps[9]*scale + (*a).start ) + comma;
+			bounds_R+=to_string((*r).ps[10]*scale + (*a).start )+ comma;
+			pis_F+=to_string((*r).ps[11]) + comma;
+			pis_R+=to_string((*r).ps[12]) + comma;
+			k++;
+		}
+		FHW_config<<chrom_ID+"\t"+ID+"\t"+ ll + ","+ N + "\t" + mus+"\t" + sigmas+"\t" + lambdas+ "\t" + pis_N+ "\t";
+		FHW_config<<weights_N+ "\t" + weights_F+ "\t" + weights_R+ "\t" + bounds_F+ "\t" + bounds_R + "\t";
+		FHW_config<<pis_F+ "\t" + pis_R+ "\n" ;
+	}
+
+
+
+}
+
 
 void write_gtf_file_model_fits(vector<final_model_output> A, params * P){
 	string out_dir 	= P->p4["-o"];
 
 	ofstream FHW_gff;
 	FHW_gff.open(out_dir+"model_fits.gff3");
+	
 	typedef vector<final_model_output>::iterator it_type;
 	typedef vector<rsimple_c>::iterator it_type_2;
 	string chrom;

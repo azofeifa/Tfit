@@ -167,4 +167,7 @@ vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *
 
 void write_out_single_simple_c(vector<single_simple_c>, map<int, string> , params * );
 
+void write_config_file_model_fits(vector<final_model_output> , map<int, string>, params * );
+
+
 #endif
