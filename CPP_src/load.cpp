@@ -1393,9 +1393,9 @@ void write_config_file_model_fits(vector<final_model_output> A, map<int, string>
 			mus+=to_string((*r).ps[2]*scale + (*a).start) + comma;
 			sigmas+=to_string((*r).ps[3]*scale ) + comma;
 			lambdas+=to_string((1. / (*r).ps[4])*scale) + comma;
-			pis_N+=to_string( (*r).ps[5] ) + comma;
+			pis_N+=to_string( (*r).ps[6] ) + comma;
 			
-			weights_N+=to_string((*r).ps[6] ) + comma;
+			weights_N+=to_string((*r).ps[5] ) + comma;
 			weights_F+=to_string((*r).ps[7] ) + comma;
 			weights_R+=to_string((*r).ps[8] ) + comma;
 			bounds_F+=to_string((*r).ps[9]*scale + (*a).start ) + comma;
