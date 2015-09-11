@@ -23,6 +23,7 @@ public:
 	clock_t t;		
 	chrono::time_point<chrono::system_clock> start, end;
 	int WT;
+	string HEADER;
 	void start_time(int rank, string header){
 		if (rank==0){
 			string white_space 	= "";
@@ -32,8 +33,7 @@ public:
 			for (int i = 0; i < (WT-header.size() ); i++ ){
 				white_space+= " ";
 			}
-			header=header+white_space;
-			printf("%s",header.c_str() );
+			HEADER=header+white_space;
 			start = chrono::system_clock::now();
 			t = clock();
 		}
@@ -45,6 +45,7 @@ public:
 			                             (end-start).count();
 			t = clock() - t;
 			if (rank ==0 ){
+				printf("%s",HEADER.c_str() );
 				printf("CPU: %.5g,",t / double(CLOCKS_PER_SEC)  );
 				printf("WT: %.5g\n", (elapsed_seconds/1000.));
 			}
@@ -69,7 +70,7 @@ int main(int argc, char* argv[]){
 		int nprocs		= MPI::COMM_WORLD.Get_size();
 		int rank 		= MPI::COMM_WORLD.Get_rank();
 	    int threads  	= omp_get_max_threads();
-		int verbose 			= stoi(P->p4["-v"]);
+		int verbose 	= stoi(P->p4["-v"]);
 		if (verbose and rank==0){//show current user parameters...
 			P->display(nprocs,threads);
 		}
@@ -92,7 +93,9 @@ int main(int argc, char* argv[]){
 		int np 						= stoi(P->p4["-np"]);
 		string spec_chrom 			= P->p4["-chr"];
 		timer T(50);
+		timer TF(50);
 		T.start_time(rank, "loading BG files:");
+		TF.start_time(rank, "Final Time:");
 		vector<segment*> segments 	= load_bedgraphs_total(forward_bedgraph, 
 			reverse_bedgraph, BINS, scale, spec_chrom);
 		T.get_time(rank);
@@ -211,7 +214,8 @@ int main(int argc, char* argv[]){
 			free_segments(segments);
 		}
 		MPI::Finalize();
-	
+		TF.get_time(rank);
+
 		return 0;
 	}
     else if (P->module=="MODEL"){
