@@ -15,6 +15,7 @@
 #include <thread>
 #include "template_matching.h"
 #include "MPI_comm.h"
+#include "omp.h"
 using namespace std;
 
 class timer{
@@ -65,12 +66,12 @@ int main(int argc, char* argv[]){
     	return 1;
 	}
 	if (P->module == "BIDIR"){
-		int nprocs = MPI::COMM_WORLD.Get_size();
-		int rank = MPI::COMM_WORLD.Get_rank();
-	    
+		int nprocs		= MPI::COMM_WORLD.Get_size();
+		int rank 		= MPI::COMM_WORLD.Get_rank();
+	    int threads  	= omp_get_max_threads();
 		int verbose 			= stoi(P->p4["-v"]);
 		if (verbose and rank==0){//show current user parameters...
-			P->display(nprocs);
+			P->display(nprocs,threads);
 		}
 
 		//load bed graph files into map<string, double **>;
@@ -226,11 +227,12 @@ int main(int argc, char* argv[]){
 	    // get the number of processes, and the id of this process
 	    int rank = MPI::COMM_WORLD.Get_rank();
 	    int nprocs = MPI::COMM_WORLD.Get_size();
+	   	int threads  	= omp_get_num_threads();
 
 		bool root 	= (rank==0)	;
 		
 		if (verbose and rank==0){//show current user parameters...
-			P->display(nprocs);
+			P->display(nprocs, threads);
 		}
 
 		//==========================================
@@ -319,7 +321,7 @@ int main(int argc, char* argv[]){
 		bool verbose 							= bool(stoi(P->p2["-v"]));
 		//==================================================================
 		if (verbose){//show current user parameters...
-			P->display(1);
+			P->display(1,1);
 		}
 		map<string, vector<merged_interval*> > G 	= load_intervals(interval_file, pad); //load the forward and reverse strand intervals, merge accordingly...
 		//====================================================
@@ -338,16 +340,17 @@ int main(int argc, char* argv[]){
 		int verbose 			= stoi(P->p3["-v"]);
 		
 		if (verbose){//show current user parameters...
-			P->display(1);
+			P->display(1,1);
 		}
 		run_model_selection(P->p3["-i"], P->p3["-o"], stod(P->p3["-penality"]));
 	}else if (P->module=="SINGLE"){
 		int nprocs = MPI::COMM_WORLD.Get_size();
 		int rank = MPI::COMM_WORLD.Get_rank();
-		int verbose 			= stoi(P->p3["-v"]);
-		
+		int verbose 	= stoi(P->p3["-v"]);
+	   	int threads  	= omp_get_num_threads();
+
 		if (verbose and rank==0){//show current user parameters...
-			P->display(nprocs);
+			P->display(nprocs, threads);
 		}	
 		string bed_graph_file 	= P->p5["-i"];
 		string interval_file 	= P->p5["-j"];

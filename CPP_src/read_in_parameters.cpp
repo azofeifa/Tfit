@@ -143,7 +143,7 @@ void params::help(){
 	cout<<"These parameters can also be set in seperate config file"<<endl;
 	cout<<"----------------------------------------------------------------"<<endl;	
 }
-void params::display(int nodes){
+void params::display(int nodes, int cores){
 	if (module=="MODEL"){
 		if (p["-template"]!="1"){
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -160,8 +160,8 @@ void params::display(int nodes){
 			cout<<"-ct       : "<<p["-ct"]<<endl;
 			cout<<"-mi       : "<<p["-mi"]<<endl;
 			cout<<"-max_noise: "<<p["-max_noise"]<<endl;
-			cout<<"-np       : "<<p["-np"]<<endl;
 			cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
+			cout<<"-threads  : "<<cores<<endl;
 			cout<<"-MPI_nodes: "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -179,10 +179,10 @@ void params::display(int nodes){
 			cout<<"-rounds    : "<<p["-rounds"]<<endl;
 			cout<<"-ct        : "<<p["-ct"]<<endl;
 			cout<<"-mi        : "<<p["-mi"]<<endl;
-			cout<<"-np        : "<<p["-np"]<<endl;
 			cout<<"-density   : "<<p["-density"]<<endl;
 			cout<<"-ct        : "<<p["-ct"]<<endl;
 			cout<<"-pad       : "<<p["-pad"]<<endl;
+			cout<<"-threads   : "<<cores<<endl;
 			cout<<"-MPI_nodes : "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -226,7 +226,7 @@ void params::display(int nodes){
 			cout<<"-pad         : "<<p4["-pad"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
-			cout<<"-np          : "<<p4["-np"]<<endl;
+			cout<<"-threads     : "<<cores<<endl;
 			cout<<"-MPI_nodes   : "<<nodes<<endl;
 
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
@@ -243,9 +243,9 @@ void params::display(int nodes){
 			cout<<"-o           : "<<p4["-o"]<<endl;
 			cout<<"-opt_res     : "<<p4["-opt_res"]<<endl;
 			cout<<"-chr         : "<<p4["-chr"]<<endl;
-			cout<<"-np          : "<<p4["-np"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;
+			cout<<"-threads     : "<<cores<<endl;
 			cout<<"-MPI_nodes   : "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
@@ -263,9 +263,9 @@ void params::display(int nodes){
 		cout<<"-br          : "<<p5["-br"]<<endl;
 		cout<<"-bct         : "<<p5["-bct"]<<endl;
 		cout<<"-opt_res     : "<<p5["-opt_res"]<<endl;
-		cout<<"-np          : "<<p5["-np"]<<endl;
 		cout<<"-chr         : "<<p5["-chr"]<<endl;
 		cout<<"-template    : "<<p5["-template"]<<endl;
+		cout<<"-threads     : "<<cores<<endl;
 		cout<<"-MPI_nodes   : "<<nodes<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 		cout<<"----------------------------------------------------------------"<<endl;

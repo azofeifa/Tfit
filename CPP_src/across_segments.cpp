@@ -296,7 +296,7 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 }
 
 vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
-	int num_proc 				= stoi(P->p["-np"]);
+	int num_proc 				= omp_get_num_threads();
 	vector<simple_c> fits;
 	vector<double> mu_seeds 	= peak_bidirs(s);
 	classifier noise_clf(0, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
