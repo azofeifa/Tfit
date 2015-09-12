@@ -703,23 +703,30 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 	while (getline(FH, line)){
 		lineArray=splitter(line, "\t");
 		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
-		if (chrom != prevChrom){
-			if (chrom == spec_chrom){
-				FOUND 	= true;
-			}
+		if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
+			FOUND 		= true;
 			G[chrom] 	= new segment(chrom, start, stop );
+		}
+		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
+			break;
 		}
 		G[chrom]->add2(1, double((stop + start) / 2.), coverage);
 		prevChrom=chrom;
 
 	}
-
+	prevChrom="";
+	FOUND=false;
 	while (getline(FH2, line)){
 		lineArray=splitter(line, "\t");
 		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
+		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
+			break;
+		}
 		if (G.find(chrom)!= G.end()){
 			G[chrom]->add2(-1,double((stop + start) / 2.), coverage);
+			FOUND= true;
 		}
+		prevChrom=chrom;
 	}
 	typedef map<string, segment*>::iterator it_type;
 	for (it_type i = G.begin(); i != G.end(); i++){
@@ -1005,9 +1012,11 @@ map<string, interval_tree *> load_bidir_bed_files(string in_directory, string sp
 }
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G, 
-	string forward_file, string reverse_file, int pad){
+	string forward_file, string reverse_file, int pad, string spec_chrom){
+	
 	typedef map<string , vector<vector<double> > >::iterator it_type;
 	typedef map<string, vector<segment *> >::iterator it_type_2;
+	
 	vector<segment*> segments;
 	map<string, vector<segment*> > A;
 	map<string, vector<segment*> > B;
@@ -1057,17 +1066,25 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 	int o_st, o_sp;
 	vector<string> lineArray;
 	string chrom, prevchrom, line;
+	bool FOUND;
+	bool ALL 	= spec_chrom == "all";
 	for (int i =0;i<2;i++){
 		strand 	= strands[i];
 		ifstream FH(FILES[i]);
 		if (FH){
+			FOUND 	= false;
 			prevchrom="";
 			while (getline(FH, line)){
 				lineArray 	= splitter(line, "\t");
 				chrom 		= lineArray[0];
+				if (FOUND and not ALL and chrom != spec_chrom  ){
+					break;
+
+				}
 				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
 				if (prevchrom!=chrom){
 					if (A.find(chrom)!=A.end()){
+						FOUND=true;
 						N 	= A[chrom].size(), j = 0;
 					}else{
 						N 	= 0,j=0;

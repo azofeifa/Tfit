@@ -94,8 +94,10 @@ int main(int argc, char* argv[]){
 		string spec_chrom 			= P->p4["-chr"];
 		timer T(50);
 		timer TF(50);
-		T.start_time(rank, "loading BG files:");
+		
 		TF.start_time(rank, "Final Time:");
+		
+		T.start_time(rank, "loading BG files:");
 		vector<segment*> segments 	= load_bedgraphs_total(forward_bedgraph, 
 			reverse_bedgraph, BINS, scale, spec_chrom);
 		T.get_time(rank);
@@ -140,7 +142,8 @@ int main(int argc, char* argv[]){
 			vector<segment *> bidir_segments;
 			if (not G.empty()  ){
 				T.start_time(rank, "loading BG files:");
-				bidir_segments 	= bidir_to_segment( G, forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]));
+				bidir_segments 	= bidir_to_segment( G, 
+					forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]),P->p4["-chr"]   );
 				T.get_time(rank);
 
 			}

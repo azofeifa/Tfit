@@ -377,6 +377,7 @@ struct seg_and_bidir{
 	char chrom[5];
 	int st_sp[4];
 	double parameters[4];
+
 };
 
 seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
@@ -391,7 +392,6 @@ seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
 	sb.st_sp[0] 		= i, sb.st_sp[1] = s->start, sb.st_sp[2] = s->stop, sb.st_sp[3]=s->ID;
 	sb.parameters[0] 	= ps[2],sb.parameters[1] 	= ps[3];
 	sb.parameters[2] 	= ps[4],sb.parameters[3] 	= ps[5];
-
 	return sb;
 	
 }
@@ -418,7 +418,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 	MPI_Type_commit( &mystruct );
 	map<int, vector<seg_and_bidir> > GG;
 	//make seg_and_bidir vector<>
-	if (not FSI.empty()){ //this must be root
+	if (not FSI.empty() and rank==0){ //this must be root
 		vector<seg_and_bidir> sabs;
 		typedef vector<segment *>::iterator it_type;
 		int t 	= 0;
@@ -462,12 +462,16 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			}
 			vector<int> b(2);
 			b[0] 	= start,b[1] 	= stop;
+			if (N==0){
+				b[0] 	= 0, b[1] 	= 0;
+			}
 			size_assignment[j] 	= b;
 		}
 		for (int j  = 1; j < nprocs; j++){
 			int S 	= size_assignment[j][1]-size_assignment[j][0];
 			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
 			int t 	= 0;
+
 			for (int i 	= size_assignment[j][0]; i < size_assignment[j][1]; i++ ){
 				MPI_Send(&sabs[i], 3, mystruct, j,t,MPI_COMM_WORLD);
 				t++;
@@ -482,6 +486,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		int S;
 		MPI_Recv(&S, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
 		for (int i = 0; i < S;i++){
+			
 			MPI_Recv(&sb, 3, mystruct, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
 			GG[sb.st_sp[0]].push_back(sb);
 		}

@@ -506,14 +506,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 			start 			= B->second[1][0].st_sp[0];
 			stop 			= B->second[1][0].st_sp[1];
 			chr 			= B->second[1][0].chrom;
-			// printf("\n");
-			// printf("%s:%d-%d, K: %d\n",chr.c_str(), start, stop , scores[i]);
-			// for (it_type_2 c = B->second.begin(); c!= B->second.end(); c++){
-			// 	printf("-----------------\n");
-			// 	for (int u = 0; u< c->second.size(); u++){
-			// 		printf("mu: %f, si: %f, l: %f, w: %f, pi: %f, ll: %f\n", c->second[u].ps[2],c->second[u].ps[3], c->second[u].ps[4], c->second[u].ps[5],  c->second[u].ps[6], c->second[u].ps[1] );
-			// 	}
-			// }
+			
 			if (B->second.find(scores[i])!=B->second.end()){
 				components 	= B->second[scores[i]];
 				k_ll 		= components[0].ps[1];
