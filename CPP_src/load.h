@@ -153,7 +153,7 @@ void write_out_bidirs(map<string , vector<vector<double> > >, string);
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
 	string , string, int, string );
-void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , vector<segment *> );
+vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , vector<segment *> );
 
 void write_out_MLE_model_info(vector<final_model_output>, params *);
 

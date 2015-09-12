@@ -377,6 +377,9 @@ struct seg_and_bidir{
 	char chrom[5];
 	int st_sp[4];
 	double parameters[4];
+	void print(){
+		printf("%s:%d-%d,%d,%d...%f,%f,%f,%f\n", chrom, st_sp[1], st_sp[2], st_sp[0], st_sp[3], parameters[0],parameters[1],parameters[2],parameters[3] );
+	}
 
 };
 
@@ -437,20 +440,23 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		//want to make a map
 		map<int, vector<int> > size_assignment;
 		int N 		= sabs.size();
+
 		int counts  = tot / nprocs;
+		printf("Total: %d, counts: %d,tot: %d\n", N , counts, tot);
 		int i 		= 0;
 		int start, stop;
 		int prev 	= -1;
 		for (int j = 0; j < nprocs; j++){
 			int ct 	= 0;
 			start 	= i;
-
-			while (ct < counts and i < N){
+			int bi_ct= 0;
+			while (ct < counts and i < N){	
 				if (prev!=sabs[i].st_sp[0]){
 					stop 	= i;
 					ct++;
 				}
 				prev 	= sabs[i].st_sp[0];
+				bi_ct++;
 				i++;
 			}
 			if (i>1){
@@ -460,8 +466,8 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			if (j+1==nprocs){
 				stop 	= sabs.size();
 			}
-			vector<int> b(2);
-			b[0] 	= start,b[1] 	= stop;
+			vector<int> b(3);
+			b[0] 	= start,b[1] 	= stop, b[2] 	= bi_ct;;
 			if (N==0){
 				b[0] 	= 0, b[1] 	= 0;
 			}
@@ -469,9 +475,9 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		}
 		for (int j  = 1; j < nprocs; j++){
 			int S 	= size_assignment[j][1]-size_assignment[j][0];
+			printf("Rank: %d,%d\n",S, size_assignment[j][2] );
 			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
 			int t 	= 0;
-
 			for (int i 	= size_assignment[j][0]; i < size_assignment[j][1]; i++ ){
 				MPI_Send(&sabs[i], 3, mystruct, j,t,MPI_COMM_WORLD);
 				t++;

@@ -177,7 +177,7 @@ int main(int argc, char* argv[]){
 					T.start_time(rank, "combinding FSI and bidir intervals:");
 					FSI 		=  load_intervals_of_interest(P->p4["-f"], IDS ,0 );
 					//now we want to insert final_model_output data into FSI...	
-					combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
+					FSI 		= combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
 					T.get_time(rank);			
 				}
 			}

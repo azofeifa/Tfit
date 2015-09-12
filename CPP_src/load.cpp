@@ -1321,7 +1321,7 @@ vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS,
 
 
 
-void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A, vector<segment *> FSI ){
+vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A, vector<segment *> FSI ){
 	map<string, vector< vector<double> >> a;
 	for (int i = 0; i < A.size(); i++){
 		vector<vector<double>> d 	= A[i].get_bounds();
@@ -1335,7 +1335,7 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 	for (int i = 0; i < FSI.size(); i++){
 		fsi[FSI[i]->chrom].push_back(FSI[i]);
 	}
-	
+	vector<segment *> final_segments;
 	typedef map<string, vector<segment *> >::iterator it_type;
 	typedef vector<segment *>::iterator it_type_2;
 	typedef map<string, vector< vector<double> >> ::iterator it_type_3;
@@ -1357,9 +1357,7 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 			j=0,N=a[i->first].size();
 			vector<vector<double> > current 	= a[i->first];
 			for (it_type_2 s 	= i->second.begin(); s != i->second.end(); s++ ){
-				bool skipped 	= false;
 				while (j < N and current[j][1] < (*s)->start){
-					skipped 	= true;
 					j++;
 				}
 				while (j < N and current[j][0] < (*s)->stop ){
@@ -1377,6 +1375,15 @@ void combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> A,
 			}
 		}
 	}	
+	for (it_type i = fsi.begin(); i !=fsi.end(); i++){
+		for (int j = 0; j < i->second.size(); j++){
+			final_segments.push_back(i->second[j]);
+
+		}
+	}
+	return final_segments;
+
+
 }
 
 void write_config_file_model_fits(vector<final_model_output> A, map<int, string> IDS, params * P ){
