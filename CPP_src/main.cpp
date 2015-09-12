@@ -147,10 +147,11 @@ int main(int argc, char* argv[]){
 			vector<simple_c> fits;
 			
 			if (not bidir_segments.empty()){
-				T.start_time(rank, "running model (1st) MLE on bidir segments:" );
+
 				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
+				T.start_time(0, "MLE fit, rank " + to_string(rank) + ",on " + to_string(int(bidir_segments.size())) + " segments: ");
 				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
-				T.get_time(rank);
+				T.get_time(0);
 			}
 			T.start_time(rank, "(MPI) gathering MLE results:");
 			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
@@ -174,12 +175,9 @@ int main(int argc, char* argv[]){
 					FSI 		=  load_intervals_of_interest(P->p4["-f"], IDS ,0 );
 					//now we want to insert final_model_output data into FSI...	
 					combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
-					T.get_time(rank);
-			
+					T.get_time(rank);			
 				}
 			}
-
-
 			fits.clear();
 			if (P->p4["-elon"] == "1"){
 				T.start_time(rank, "(MPI) sending out elongation assignments:");
@@ -191,20 +189,21 @@ int main(int argc, char* argv[]){
 					integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph,rank);
 					BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
 					T.get_time(rank);
-					T.start_time(rank, "moving elongation support:");
+					T.start_time(0, "shift elon. rank " + to_string(rank) + ",on " + to_string(int(integrated_segments.size())) + " segments:");
 					fits 	= move_elongation_support(integrated_segments, P);
-					T.get_time(rank);
+					T.get_time(0);
 				}
 				T.start_time(rank, "(MPI) gathering elongation results:");
 				map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(integrated_segments, fits, rank, nprocs);
 				vector<final_model_output> A 					= convert_to_final_model_output(rcG, P);
 				//convert to final_model_output
-				T.get_time(rank);
-				T.start_time(rank, "Writing Out Model Fits:");
-				write_gtf_file_model_fits(A, P);
-				write_config_file_model_fits(A, IDS, P);
-				T.get_time(rank);
-				
+				if (rank==0){
+					T.get_time(rank);
+					T.start_time(rank, "Writing Out Model Fits:");
+					write_gtf_file_model_fits(A, P);
+					write_config_file_model_fits(A, IDS, P);
+					T.get_time(rank);
+				}
 				
 			}
 		}
