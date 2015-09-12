@@ -1278,11 +1278,9 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 	ofstream FHW_config;
 	
 	FHW_bed.open(out_file_dir+"bidirectional_hits_intervals.bed");
-	FHW_config.open(out_file_dir+"parameters_out.tsv");
 	
 	for (int i = 0; i < A.size(); i++){
 		FHW_bed<<A[i].write_out_bed();
-		FHW_config<<A[i].write_out_config();
 	}
 
 	FHW_bed.close();
@@ -1366,9 +1364,11 @@ vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_mo
 					j++;
 				}
 			}
+			int p=0;
 			for (int u = 0; u < current.size(); u++){
 				if (current[u][current[u].size()-1] == 0){
-					segment * NS 	= new segment(i->first, current[u][0]-3000, current[u][1]+3000 );
+					p++;
+					segment * NS 	= new segment(i->first, current[u][0]-3000, current[u][1]+3000, -p );
 					NS->add_fitted_bidir(current[u]);
 					i->second.push_back(NS);
 				}
@@ -1381,6 +1381,7 @@ vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_mo
 
 		}
 	}
+	//sort by starting posision
 	return final_segments;
 
 
@@ -1403,7 +1404,10 @@ void write_config_file_model_fits(vector<final_model_output> A, map<int, string>
 		sigmas= "", mus= "", lambdas="", pis_N= "", weights_N= "", weights_F= "", weights_R= "", bounds_F= "", bounds_R= "", pis_F="", pis_R="";
 		chrom_ID="", ID="", ll="";
 		chrom_ID=(*a).chrom + ":"+ to_string((*a).start) + "-" + to_string((*a).stop);
-		ID 		= IDS[(*a).ID];
+		ID 			= ".";
+		if (IDS.find((*a).ID)  != IDS.end() ){
+			ID 		= IDS[(*a).ID];
+		}
 		string comma 	= "";
 		k 	= 0;
 		ll 	= to_string((*a).components[0].ps[1]);

@@ -405,6 +405,23 @@ struct simple_seg_struct{
 	int st_sp[3]; //first->start, second->stop
 };
 
+vector<segment *> segment_sort(vector<segment *> X){
+	bool changed=true;
+	while (changed){
+		changed=false;
+		for (int i = 0; i < X.size()-1; i++  )	{
+			if (X[i]->start > X[i+1]->start){ //sort by starting position
+				segment * copy 			= X[i];
+				X[i] 					= X[i+1];
+				X[i+1] 					= copy;
+				changed=true;
+			}
+		}
+	}
+	return X;
+}
+
+
 map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *> FSI, int rank, int nprocs){
 	seg_and_bidir sb;
 	MPI_Datatype mystruct;
@@ -475,7 +492,6 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		}
 		for (int j  = 1; j < nprocs; j++){
 			int S 	= size_assignment[j][1]-size_assignment[j][0];
-			printf("Rank: %d,%d\n",S, size_assignment[j][2] );
 			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
 			int t 	= 0;
 			for (int i 	= size_assignment[j][0]; i < size_assignment[j][1]; i++ ){
@@ -522,6 +538,13 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		}else{
 			printf("what??????\n");
 		}
+
+	}
+
+	//sort final_out
+	typedef map<string, vector<segment *> >::iterator final_out_type;
+	for (final_out_type i =final_out.begin(); i!=final_out.end(); i++ ){
+		final_out[i->first] 	= segment_sort(i->second);
 	}
 	return final_out;
 

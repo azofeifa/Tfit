@@ -388,7 +388,8 @@ string final_model_output::write_out_bed(){
 	for (int k = 0; k < components.size(); k++){
 		int center 	= (components[k].ps[2]*scale + start);
 		int std 	= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
-		line+=chrom + "\t" + to_string(center-std) + "\t" + to_string(center+std) + "\n";
+		string INFO = to_string(components[k].ps[2]*scale + start) + "_" + to_string(components[k].ps[3]*scale) + "_" + to_string( (1. / components[k].ps[4] )*scale) + "_" + to_string(components[k].ps[5]) + "_" + to_string(components[k].ps[5]);
+		line+=chrom + "\t" + to_string(center-std) + "\t" + to_string(center+std) + "\t" + INFO+ "\n";
 	}
 	return line;
 }
