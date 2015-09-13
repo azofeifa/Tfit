@@ -472,6 +472,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		if (counts == 0){
 			counts	= 1;
 		}
+		printf("Counts: %d\n", counts );
 		map<int, vector<int> > assignments; 
 		typedef vector<seg_and_bidir>::iterator sab_type;
 		int prev_ID 		= -100000000;
@@ -481,7 +482,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		int j 				= 0;
 		for (sab_type s 	= send_outs.begin(); s!= send_outs.end(); s++ ){
 			if ((*s).st_sp[2]!=prev_ID){
-				if (counter>counts and j+1 < nprocs){
+				if (counter>=counts and j+1 < nprocs){
 					vector<int > bounds(3);
 					bounds[0] 	= start, bounds[1] 	= stop, bounds[2]= stop-start;
 					assignments[j] 	= bounds;
@@ -530,8 +531,23 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			recieved_sb.push_back(sb);
 		}
 	}
-	printf("Rank %d on %d\n", rank, int(recieved_sb.size() ));
-	
+	map<int, segment * > almost_there;
+	typedef vector<seg_and_bidir>::iterator  rsb_type;
+	for (rsb_type r = recieved_sb.begin(); r!= recieved_sb.end(); r++ )	{
+		if (almost_there.find( (*r).st_sp[2] ) == almost_there.end()  ){
+			almost_there[(*r).st_sp[2]] 	= new segment((*r).chrom, (*r).st_sp[0], (*r).st_sp[1],(*r).st_sp[2] );
+		}
+		vector<double> fb 	= {(*r).parameters[0],(*r).parameters[1], (*r).parameters[2], (*r).parameters[3] };
+		almost_there[(*r).st_sp[2]]->add_fitted_bidir(fb);
+	}
+
+	printf("Rank %d on %d, %d\n", rank, int(recieved_sb.size() ), int(almost_there.size())  );
+	//now finally to final_out
+	typedef map<int, segment * >::iterator at_type;
+	for (at_type a = almost_there.begin(); a!= almost_there.end(); a++ ){
+		final_out[a->second->chrom].push_back(a->second);
+	}
+
 
 
 

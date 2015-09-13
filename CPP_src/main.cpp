@@ -194,20 +194,20 @@ int main(int argc, char* argv[]){
 					BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
 					T.get_time(rank);
 					T.start_time(0, "shift elon. rank " + to_string(rank) + ",on " + to_string(int(integrated_segments.size())) + " segments:");
-					//fits 	= move_elongation_support(integrated_segments, P);
+					fits 	= move_elongation_support(integrated_segments, P);
 					T.get_time(0);
 				}
-				// T.start_time(rank, "(MPI) gathering elongation results:");
-				// map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(integrated_segments, fits, rank, nprocs);
-				// vector<final_model_output> A 					= convert_to_final_model_output(rcG, P);
-				// //convert to final_model_output
-				// if (rank==0){
-				// 	T.get_time(rank);
-				// 	T.start_time(rank, "Writing Out Model Fits:");
-				// 	write_gtf_file_model_fits(A, P);
-				// 	write_config_file_model_fits(A, IDS, P);
-				// 	T.get_time(rank);
-				// }
+				T.start_time(rank, "(MPI) gathering elongation results:");
+				map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(integrated_segments, fits, rank, nprocs);
+				vector<final_model_output> A 					= convert_to_final_model_output(rcG, P);
+				//convert to final_model_output
+				if (rank==0){
+					T.get_time(rank);
+					T.start_time(rank, "Writing Out Model Fits:");
+					write_gtf_file_model_fits(A, P);
+					write_config_file_model_fits(A, IDS, P);
+					T.get_time(rank);
+				}
 				
 			}
 		}
