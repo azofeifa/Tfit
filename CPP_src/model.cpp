@@ -229,8 +229,8 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		//for the bidirectional/EMG component
 		gamma_distribution<double> dist_sigma(alpha_0,beta_0);
 		gamma_distribution<double> dist_lambda(alpha_1,beta_1);
-		uniform_real_distribution<double> dist_lambda_2(1, 1000);
-		uniform_real_distribution<double> dist_sigma_2(1, 100);
+		uniform_real_distribution<double> dist_lambda_2(1, 500);
+		uniform_real_distribution<double> dist_sigma_2(1, 50);
 		gamma_distribution<double> dist_lengths(1,( (data->maxX-data->minX)/(K)));
 		
 		sigma 		= dist_sigma_2(mt)/scale;
@@ -436,6 +436,26 @@ void component::initialize_with_parameters(vector<double> init_parameters, segme
 		forward 	= UNI(mu+(1.0/l), right_move(mt) , 1. / double(K), 1, 0, 1);
 				
 		reverse 	= UNI(left_move(mt), mu-(1.0/l ), 1. / double(K), -1, 0,0.);
+		type 		= 1;
+	}	
+}
+
+void component::initialize_with_parameters2(vector<double> init_parameters, segment * data, 
+	int K, double left, double right){
+	if (init_parameters.empty()){
+		noise 	= NOISE(data->minX, data->maxX, 0.01, 0.5);
+		type 	= 0; 
+	}else{
+		double mu 	= init_parameters[0];
+		double si 	= init_parameters[1];
+		double l 	= init_parameters[2];
+		double pi 	= init_parameters[3];
+		bidir 		= EMG(mu, si, l, 1.0 / (3*K), pi);//bidir component
+		//now choose supports of forward and reverse
+		
+		forward 	= UNI(mu+(1.0/l), right , 1. / double(3*K), 1, 0, 1);
+				
+		reverse 	= UNI(left, mu-(1.0/l ), 1. / double(3*K), -1, 0,0.);
 		type 		= 1;
 	}	
 }
@@ -994,13 +1014,175 @@ int classifier::fit_uniform_only(segment * data){
 
 	return 1;
 
+}
+int classifier::fit_uniform_only2(segment * data){
+	
+
+	int K 			= init_parameters.size();
+	init_parameters  = sort_mus(init_parameters);
+	
+	//vector<vector<double>> init_parameters;
+	typedef vector<vector<double>>::iterator ip_type;
+	int count 		= 0;
+	int IN 			= init_parameters.size();
+	vector<vector<double>>BOUNDS;
+	for (ip_type p = init_parameters.begin(); p!=init_parameters.end(); p++){
+		//find best split points on the foward/reverse strands
+		int i,j,k, l,t, argj, argl;
+		double std 		= (1./(*p)[2]) + (*p)[1];
+		double forward_a = (*p)[0] + std*1.5;
+		double reverse_b = (*p)[0] - std*1.5;
+		//first thing is to get i and k
+		i= 0, k =0;
+		double prev_dist_i, prev_dist_k,dist_i,dist_k, bound_forward, bound_reverse, left_vl, right_vl;
+		prev_dist_i=INF, prev_dist_k = INF;
+		while (i < data->XN and k < data->XN){
+
+			dist_i 	= abs(data->X[0][i] - forward_a);
+			dist_k 	= abs(data->X[0][k] - reverse_b);
+			if (prev_dist_k > dist_k ){
+				k++;
+			}
+			if (prev_dist_i > dist_i){
+				i++;
+			}
+			if (prev_dist_k <= dist_k and prev_dist_i <= dist_i  ){
+				break;
+			}
+			prev_dist_i=dist_i, prev_dist_k = dist_k;
+
+		}
+		//now pick best split_point
+		if (count==0){
+			bound_reverse 	= data->minX;
+		}else{
+			bound_reverse 	= init_parameters[count][0];
+		}
+		if (count+1 >= IN){
+			bound_forward 	= data->maxX;
+		}else{
+			bound_forward 	= init_parameters[count+1][0];
+		}
+		bool FIRST_TIME = true;
+		double left_N, right_N,w, current_ll, max_ll;
+		max_ll 	= nINF;
+		j 	= i+1;
+		argj = j;
+		while (j < data->XN and data->X[0][j] < bound_forward){
+			left_vl 	= 1. / (data->X[0][j] -data->X[0][i]  );
+			right_vl  	= 1. / (bound_forward -data->X[0][j]  );
+			if (FIRST_TIME){
+				left_N=0, right_N=0;
+				t 	= i;
+				while (t < data->XN and t < j){
+					left_N+=data->X[1][t];
+					t++;
+				}
+				t 	= j;
+				while (t < data->XN and data->X[0][t] < bound_forward){
+					right_N+=data->X[1][t];
+					t++;
+
+				}
+				FIRST_TIME=false;
+			}else{
+				left_N+=data->X[1][j];
+				right_N-=data->X[1][j];
+			}
+			w 	= left_N / (left_N + right_N);
+			left_vl*=w;
+			right_vl*=(1-w);
+			current_ll 	= log(left_vl)*left_N + log(right_vl)*right_N;
+			if (current_ll > max_ll){
+				max_ll 	= current_ll;
+				argj 	= j;
+			}
+			j++;
+		}
+		FIRST_TIME = true;
+		l 	= k-1;
+		left_N=0, right_N=0;
+		max_ll 	= nINF;
+		argl = l;
+		while (l >= 0 and data->X[0][l] > bound_reverse){
+			right_vl  	= 1. / abs(data->X[0][k] -data->X[0][l]  );
+			left_vl  	= 1. / abs(data->X[0][l] - bound_reverse);
+			if (FIRST_TIME){
+				left_N=0, right_N=0;
+				t 	= k;
+				while (t >= 0 and t > l){
+					right_N+=data->X[2][t];
+					t--;
+				}
+				t 	= l;
+				while (t >= 0 and data->X[0][t] > bound_reverse){
+					left_N+=data->X[2][t];
+					t--;
+
+				}
+			//	printf("%f,%d, %f, %f\n",left_N, l, data->X[0][l], bound_reverse );
+				FIRST_TIME=false;
+			}else{
+				left_N-=data->X[2][l];
+				right_N+=data->X[2][l];
+			}
+			if (left_N==0){
+				break;
+			}
+			//printf("%f,%f\n", left_N, right_N );
+			w 	= left_N / (left_N + right_N);
+//			w 	= 0.1;
+			left_vl*=w;
+			right_vl*=(1.-w);
+			current_ll 	= log(left_vl)*left_N + log(right_vl)*right_N;
+			//printf("%f\n", current_ll );
+			if (current_ll 	> max_ll){
+				max_ll 	= current_ll;
+				argl 	= l;
+			}
+
+			l--;
+		}
+
+		vector<double> current_bounds(2);
+		if (argj < data->XN){
+			current_bounds[0] 	= data->X[0][argj];
+		}else{
+			current_bounds[0] 	= data->maxX;	
+		}
+		if (argl >=0){
+			current_bounds[1] 	= data->X[0][argl];
+		}else{
+			current_bounds[1] 	= data->minX;	
+		}
+		count++;
+		BOUNDS.push_back(current_bounds);
+	}
+
+	components 	= new component[K+1];
+	for (int k =0; k < K;k++){
+		components[k].initialize_with_parameters2(init_parameters[k], data, K, BOUNDS[k][1], BOUNDS[k][0]);
+	}
+	vector<double> empty;
+	components[K].initialize_with_parameters(empty, data, K, data->minX,data->maxX);
 
 
-
-
-
-
-
+	// //fit weights?
+	int t 	= 0;
+	double prevll 	= nINF;
+	bool 	converged =false;
+	while (not converged and t < max_iterations){
+		
+		update_weights_only(components, data, K, 1);
+		ll 	= calc_log_likelihood(components, K+1, data  );
+		if (abs(ll-prevll) < convergence_threshold){
+			converged=true;
+		}
+		prevll=ll;
+		t++;
+	}
+	
+	return 1;
 
 }
 string classifier::print_out_components(){

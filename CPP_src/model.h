@@ -79,6 +79,7 @@ public:
 	component();
 	void initialize(double, segment *, int , double , double, double);
 	void initialize_with_parameters(vector<double>, segment *, int, double, double);
+	void initialize_with_parameters2(vector<double>, segment *, int, double, double);
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
 	double pdf(double , int);
@@ -116,6 +117,8 @@ public:
 	void free_classifier();
 	string print_out_components();
 	int fit_uniform_only(segment * );
+	int fit_uniform_only2(segment * );
+	
 	//===================================================================================
 	//final important parameters
 	double ll,pi;
