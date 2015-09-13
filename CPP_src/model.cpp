@@ -386,11 +386,11 @@ void component::update_parameters(double N, int K){
 		
 		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
-		if (bidir.si >= 10.){//this component is blowing up
+		if (bidir.si > 10){
 			EXIT 	= true;
 		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
-		if (bidir.l < 0.01){//this component is blowing up
+		if (bidir.l < 0.05 ){
 			EXIT 	= true;
 		}
 		//now for the forward and reverse strand elongation components
@@ -880,6 +880,13 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 			ll 	= move_uniforom_support(components, K, add, data,move, ll);
 		}
 		if (abs(ll-prevll)<convergence_threshold){
+			for (int k = 0; k < K; k++){
+				double std 	= (components[k].bidir.si + (1.0 / components[k].bidir.l)) ;
+				if (std > 10){
+					ll 		= nINF;	
+				}
+			}	
+		
 			converged=true;
 		}
 		if (not isfinite(ll)){
@@ -895,6 +902,13 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 
 		t++;
 	}
+	for (int k = 0; k < K; k++){
+		double std 	= (components[k].bidir.si + (1.0 / components[k].bidir.l)) ;
+		if (std > 10){
+			ll 		= nINF;	
+		}
+	}	
+
 
 	return 1;
 }

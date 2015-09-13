@@ -377,10 +377,21 @@ struct seg_and_bidir{
 	char chrom[5];
 	int st_sp[4];
 	double parameters[4];
-	void print(){
-		printf("%s:%d-%d,%d,%d...%f,%f,%f,%f\n", chrom, st_sp[1], st_sp[2], st_sp[0], st_sp[3], parameters[0],parameters[1],parameters[2],parameters[3] );
+	seg_and_bidir(segment * current, vector<double> p){
+		for (int c = 0; c < 5; c++){
+			if (c < current->chrom.size()){
+				chrom[c] 	= current->chrom[c];
+			}else{
+				chrom[c] 	= '\0';
+			}
+		}
+		st_sp[0] 		= current->start,st_sp[1] 	= current->stop;
+		st_sp[2] 		= current->ID;
+		parameters[0] 	= p[2],parameters[1] 	= p[3];
+		parameters[2] 	= p[4],parameters[3] 	= p[5];
+		
 	}
-
+	seg_and_bidir(){};
 };
 
 seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
@@ -427,125 +438,104 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 	MPI_Datatype mystruct;
 	
 	int blocklens[3]={5,4,4};
-	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
-	MPI_Aint displacements[3];
-	displacements[0] 	= offsetof(seg_and_bidir, chrom);
-	displacements[1] 	= offsetof(seg_and_bidir, st_sp);
-	displacements[2] 	= offsetof(seg_and_bidir, parameters);
 	
+	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
+	
+	MPI_Aint displacements[3];
+	
+	displacements[0] = offsetof(seg_and_bidir, chrom),displacements[1] = offsetof(seg_and_bidir, st_sp),displacements[2] = offsetof(seg_and_bidir, parameters);
 	
 	MPI_Type_create_struct( 3, blocklens, displacements, old_types, &mystruct );
-	MPI_Type_commit( &mystruct );
-	map<int, vector<seg_and_bidir> > GG;
-	//make seg_and_bidir vector<>
-	if (not FSI.empty() and rank==0){ //this must be root
-		vector<seg_and_bidir> sabs;
-		typedef vector<segment *>::iterator it_type;
-		int t 	= 0;
-		int tot = 0;
-		for (it_type s = FSI.begin(); s!=FSI.end(); s++){
-			if ((*s)->fitted_bidirs.size()){
-				tot++;
-			}
-			for (int i = 0; i < (*s)->fitted_bidirs.size(); i++ ){
-				seg_and_bidir sb 	= seg_to_seg_and_bidir((*s), (*s)->fitted_bidirs[i] , t );
-				sabs.push_back(sb);
-			}
-			t++;
-		}
 	
-		//want to make a map
-		map<int, vector<int> > size_assignment;
-		int N 		= sabs.size();
+	MPI_Type_commit( &mystruct );
+	
+	map<string, vector<segment *> > 	final_out;
+	vector<seg_and_bidir> recieved_sb; 
+	if (rank== 0){
+		//each segment * in FSI has a variable number of bidir predictions...
+		//need to send each and keep track...
+	
+		//1. first make a vector<> of simple_seg_struct
+		vector<seg_and_bidir> send_outs;
+		typedef vector<segment *>::iterator FSI_type;
+		typedef vector<vector<double> >::iterator fitted_type;
+		for (FSI_type f = FSI.begin(); f!=FSI.end(); f++){
+			for (fitted_type b = (*f)->fitted_bidirs.begin(); b != (*f)->fitted_bidirs.end(); b++ )	{
+				seg_and_bidir sab( (*f), (*b)  );
+				send_outs.push_back(sab);
+			}
+		}
 
-		int counts  = tot / nprocs;
-		printf("Total: %d, counts: %d,tot: %d\n", N , counts, tot);
-		int i 		= 0;
-		int start, stop;
-		int prev 	= -1;
-		for (int j = 0; j < nprocs; j++){
-			int ct 	= 0;
-			start 	= i;
-			int bi_ct= 0;
-			while (ct <= counts and i < N){	
-				if (prev!=sabs[i].st_sp[0]){
-					stop 	= i;
-					ct++;
+		//now we need to send these out to all the other slave nodes
+		int N 		= send_outs.size();
+		int counts  = N / nprocs;
+		if (counts == 0){
+			counts	= 1;
+		}
+		map<int, vector<int> > assignments; 
+		typedef vector<seg_and_bidir>::iterator sab_type;
+		int prev_ID 		= -100000000;
+		int start 			= 0;
+		int stop 			= 0;
+		int counter 		= 0;
+		int j 				= 0;
+		for (sab_type s 	= send_outs.begin(); s!= send_outs.end(); s++ ){
+			if ((*s).st_sp[2]!=prev_ID){
+				if (counter>counts and j+1 < nprocs){
+					vector<int > bounds(3);
+					bounds[0] 	= start, bounds[1] 	= stop, bounds[2]= stop-start;
+					assignments[j] 	= bounds;
+					start 	= stop;
+					counter 	= 0;
+					j++;
 				}
-				prev 	= sabs[i].st_sp[0];
-				bi_ct++;
-				i++;
 			}
-			if (i>1){
-				i--;
-			}
-			
-			if (j+1==nprocs){
-				stop 	= sabs.size();
-			}
-			vector<int> b(3);
-			b[0] 	= start,b[1] 	= stop, b[2] 	= bi_ct;;
-			if (N==0){
-				b[0] 	= 0, b[1] 	= 0;
-			}
-			size_assignment[j] 	= b;
+			prev_ID 		= (*s).st_sp[2];
+			counter++;
+			stop++;
 		}
-		for (int j  = 1; j < nprocs; j++){
-			int S 	= size_assignment[j][1]-size_assignment[j][0];
+		vector<int > bounds(3);
+		bounds[0] 	= start, bounds[1] 	= stop, bounds[2]= stop-start;
+		assignments[j] 	= bounds;
+		int S 	= 0;
+		for (int j = 1; j < nprocs; j++){
+			S  	= 0;
+			if (assignments.find(j) != assignments.end() ){
+				S 	=  assignments[j][2];
+			}
 			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
-			int t 	= 0;
-			for (int i 	= size_assignment[j][0]; i < size_assignment[j][1]; i++ ){
-				MPI_Send(&sabs[i], 3, mystruct, j,t,MPI_COMM_WORLD);
-				t++;
+			if (S!=0){
+				int u 	= 0;
+				for (int i = assignments[j][0]; i < assignments[j][1]; i++ ){
+					MPI_Send(&send_outs[i], 1, mystruct, j, u, MPI_COMM_WORLD);	
+					u++;
+				}
 			}
 		}
-		for (int i = size_assignment[0][0]; i < size_assignment[0][1]; i++ ){
-			sb 	= sabs[i];
-			GG[sb.st_sp[0]].push_back(sb);
+		j 	= 0;
+		if (assignments.find(j) != assignments.end()){
+			for (int i = assignments[j][0]; i < assignments[j][1]; i++ ){
+				recieved_sb.push_back(send_outs[i]);
+			}	
 		}
 
-	}else if (rank!=0){
+
+
+
+	}else{
 		int S;
 		MPI_Recv(&S, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
-		for (int i = 0; i < S;i++){
-			
-			MPI_Recv(&sb, 3, mystruct, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
-			GG[sb.st_sp[0]].push_back(sb);
+		for (int i 	= 0; i < S; i++){
+			MPI_Recv(&sb, 1, mystruct, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);			
+			recieved_sb.push_back(sb);
 		}
 	}
-	typedef map<int, vector<seg_and_bidir> >::iterator it_type_G;
-	segment * S 	= NULL;
-	map<string, vector<segment *> > final_out;
-	int SS 	= 0;
-	for (it_type_G g = GG.begin(); g!=GG.end(); g++){
-		for (int i = 0; i < g->second.size(); i++){
-			vector<double> parameters(4);
-			for (int p =0; p < 4; p++){
-				parameters[p] 	= g->second[i].parameters[p];
-			}
-			if (i == 0){
-				S 	= new segment(g->second[i].chrom, g->second[i].st_sp[1], g->second[i].st_sp[2], g->second[i].st_sp[3] );
-				SS++;
-			}
-			if (S!= NULL){
-				S->fitted_bidirs.push_back(parameters);
-			}else{
-				printf("what???\n");
-			}
-		}
-		if (S!=NULL){
-			final_out[S->chrom].push_back(S);
-		}else{
-			printf("what??????\n");
-		}
+	printf("Rank %d on %d\n", rank, int(recieved_sb.size() ));
+	
 
-	}
 
-	//sort final_out
-	typedef map<string, vector<segment *> >::iterator final_out_type;
-	for (final_out_type i =final_out.begin(); i!=final_out.end(); i++ ){
-		final_out[i->first] 	= segment_sort(i->second);
-	}
+
+
 	return final_out;
 
 }

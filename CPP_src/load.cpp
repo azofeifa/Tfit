@@ -1378,7 +1378,9 @@ vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_mo
 	for (it_type i = fsi.begin(); i !=fsi.end(); i++){
 		
 		for (int j = 0; j < i->second.size(); j++){
-			final_segments.push_back(i->second[j]);
+			if (!i->second[j]->fitted_bidirs.empty()){
+				final_segments.push_back(i->second[j]);
+			}
 
 		}
 	}
