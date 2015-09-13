@@ -404,7 +404,6 @@ void run_global_template_matching(vector<segment*> segments,
 		}
 		for (int w = 0 ; w<res; w++){
 			window 	= (window_a + window_delta*w) / scale;
-
 			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single);
 			
 			//write out contigous regions of up?

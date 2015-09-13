@@ -467,7 +467,7 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 			int ct 	= 0;
 			start 	= i;
 			int bi_ct= 0;
-			while (ct < counts and i < N){	
+			while (ct <= counts and i < N){	
 				if (prev!=sabs[i].st_sp[0]){
 					stop 	= i;
 					ct++;
