@@ -3,10 +3,27 @@ import look_at_parameters as lap
 import numpy as np
 import BIC
 import display_model_fits as dmf
+import correlations
 def run(root):
 
-	display_fits 	= True
+	display_fits 	= False
 	parameters 		= False
+	correlation 	= True
+	if correlation:
+		DIR 			="/Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/"
+		DMSO1hr101911 	="DMSO1hr101911_model_fits/model_fits.txt"
+		DMSO1027 		="DMSO1027_1212_model_fits/model_fits.txt"
+		Ma6_NoIndex 	="Ma6_NoIndex_L008_R1_001/model_fits.txt"
+		DMSO2_3 		="DMSO2_3_model_fits/model_fits.txt"
+		Nutlin2_3 		= "Nutlin2_3_model_fits/model_fits.txt"
+		DMSO1hr101911_L,DMSO1hr101911_G = load.load_model_fits_txt_file(DIR+DMSO1hr101911)
+		DMSO1027_L,DMSO1027_G 			= load.load_model_fits_txt_file(DIR+DMSO1027)
+		Ma6_NoIndex_L,Ma6_NoIndex_G 	= load.load_model_fits_txt_file(DIR+Ma6_NoIndex)
+		DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_txt_file(DIR+DMSO2_3)
+		Nutlin2_3_L,Nutlin2_3_G 		= load.load_model_fits_txt_file(DIR+Nutlin2_3)
+		
+		correlations.run(DMSO2_3_L,DMSO2_3_L,DMSO1027_L,Nutlin2_3_G )
+
 	if display_fits:
 		out_dir 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/"
 		model_file 	= out_dir+"model_fits_out_all_4"
