@@ -179,7 +179,7 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 
 	int res 	= stoi(P->p4["-foot_res"]);
 	double lower, upper;
-	lower=0, upper=150;
+	lower=0, upper=350;
 
 	double delta 	= (upper-lower) / float(res);
 	if (res==0){
