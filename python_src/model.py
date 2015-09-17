@@ -506,18 +506,17 @@ if __name__ == "__main__":
 	#==================================
 	#testing MAP-EM procedure
 	X 	= simulate.runOne(mu=0, s=1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-		N=1000, SHOW=False, bins=300, noise=False, foot_print=1 )
-	X[:,0]*=100
-	X[:,0]+=abs(X[0,0])
-	print X[:,0]
-	#make test_file
-	FHW_f 	= open("test_forward.bedgraph", "w")
-	FHW_r 	= open("test_reverse.bedgraph", "w")
-	for i in range(X.shape[0]):
-		x 		= int(X[i,0])
+		N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
+	# X[:,0]*=100
+	# X[:,0]+=abs(X[0,0])
+	# #make test_file
+	# FHW_f 	= open("test_forward.bedgraph", "w")
+	# FHW_r 	= open("test_reverse.bedgraph", "w")
+	# for i in range(X.shape[0]):
+	# 	x 		= int(X[i,0])
 
-		FHW_f.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,1])) + "\n" )
-		FHW_r.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,2])) + "\n" )
+	# 	FHW_f.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,1])) + "\n" )
+	# 	FHW_r.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,2])) + "\n" )
 
 
 
@@ -533,11 +532,11 @@ if __name__ == "__main__":
 	
 	# print max(X[:,0])
 
-	# clf = EMGU(noise=True, K=1,noise_max=0.,moveUniformSupport=0,max_it=200, cores=1, 
-	# 	seed=True,foot_print=0)
-	# clf.fit(X)
+	clf = EMGU(noise=True, K=1,noise_max=0.,moveUniformSupport=0,max_it=200, cores=1, 
+		seed=True,foot_print=10)
+	clf.fit(X)
 
-	# clf.draw(X)
+	clf.draw(X)
 	#==================================
 	
 

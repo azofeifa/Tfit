@@ -243,6 +243,7 @@ vector<simple_c> get_max(vector<classifier> clfs,
 		sc.ps[9] 	= 0;
 		sc.ps[10] 	= 0;
 		sc.ps[11] 	= NN;
+		sc.ps[12] 	= 0;
 		sc.ll 		= max, sc.noise_ll 	= noise_ll;		
 		scs.push_back(sc);
 	}else{
