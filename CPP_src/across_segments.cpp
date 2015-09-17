@@ -33,7 +33,7 @@ map<int,vector<classifier> > initialize_data_struct(int minK, int maxK,
 		data_struct[k] 	= vector<classifier>(rounds);
 		for (int r = 0; r<rounds; r++){
 			data_struct[k][r] 	= classifier(k,  convergence_tresh, max_iterations, 
-					max_noise,r_mu, ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
+					max_noise,r_mu, ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3,0);
 		}
 	}
 	return data_struct;
@@ -125,7 +125,7 @@ void run_model_accross_segments(vector<segment*> segments, params *P){
 			
 
 			classifier clf(0, convergence_tresh, max_iterations, 
-						max_noise,r_mu, ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
+						max_noise,r_mu, ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3,0);
 			clf.fit(segments[i], mu_seeds);
 			
 			FHW<<segments[i]->write_out();
@@ -170,17 +170,35 @@ vector<classifier> get_vector_classifiers(params * P, int K){
 	for (int i =0 ; i< stoi(P->p["-rounds"]); i++ ){
 		clfs[i] 	= classifier(K, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
 			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
-			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]) );
+			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 );
 	}
 	return clfs;
 }
 
 vector<classifier> get_vector_classifiers2(params * P, int K){
-	vector<classifier> clfs(stoi(P->p4["-rounds"]));
-	for (int i =0 ; i< stoi(P->p4["-rounds"]); i++ ){
-		clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
-			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false );
+
+	int res 	= stoi(P->p4["-foot_res"]);
+	double lower, upper;
+	lower=0, upper=150;
+
+	double delta 	= (upper-lower) / float(res);
+	if (res==0){
+		res 		= 1;
+		delta 		= 0;
+	}
+	vector<classifier> clfs(stoi(P->p4["-rounds"])*res  );
+	double foot_print;
+	int i 	= 0;
+	double scale 	= stod(P->p4["-ns"]);
+	while (i < clfs.size()){
+		for (int j = 0; j < res; j++){
+			foot_print = lower+delta*(j+1);
+			foot_print/=scale;
+			clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
+				stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
+				stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,foot_print );
+			i++;
+		}
 	}
 	return clfs;
 }
@@ -194,7 +212,7 @@ classifier fit_noise(params *P){
 					stod(P->p["-ALPHA_1"]), 
 					stod(P->p["-BETA_1"]), 
 					stod(P->p["-ALPHA_2"]), 
-					stod(P->p["-ALPHA_3"]) 									
+					stod(P->p["-ALPHA_3"]),0 									
 					);
 	return clf;
 }
@@ -246,7 +264,9 @@ vector<simple_c> get_max(vector<classifier> clfs,
 			scc.ps[10] 	= argmax.components[c].reverse.pi;
 			
 			scc.ps[11] 	= NN;
+			scc.ps[12] 	= argmax.foot_print;
 			scc.ll 	= max, scc.noise_ll 	= noise_ll;		
+
 			scs.push_back(scc);
 			
 		}
@@ -274,7 +294,7 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 		vector<double> mu_seeds 			= peak_bidirs(s->bidirectional_data[j]);
 		classifier noise_clf(0, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
 			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
-			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]) );
+			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 );
 		noise_clf.fit(s->bidirectional_data[j], mu_seeds);
 		double noise_ll 	= noise_clf.ll;
 		for (int k =1 ; k <= s->bidirectional_data[j]->counts; k++ ){
@@ -298,19 +318,18 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
 	int num_proc 				= omp_get_max_threads();
 	vector<simple_c> fits;
-	vector<double> mu_seeds 	= peak_bidirs(s);
 	classifier noise_clf(0, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 		stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-		stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) );
+		stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), 0. );
 	
 	noise_clf.fit(s, s->centers);
 	
 	double noise_ll 	= noise_clf.ll;
 	
-	for (int k = 1; k<= s->counts;k++){
+	for (int k = s->counts; k<= s->counts;k++){
 		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
 		#pragma omp parallel for num_threads(num_proc)
-		for (int t = 0; t <  stoi(P->p4["-rounds"]); t++){
+		for (int t = 0; t <  clfs.size(); t++){
 			clfs[t].fit(s, s->centers);
 		}
 		vector<simple_c> bidir_components = get_max(clfs, noise_ll, seg, k, s->counts, 1, s->N );
@@ -375,7 +394,7 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 	for (int i = 0; i < segments.size(); i++){
 		vector<simple_c> curr_fits 	= wrapper_pp_just_segments(segments[i], P , i);
 		for (int j = 0; j < curr_fits.size(); j++){
-    		fits.push_back(curr_fits[j]);
+			fits.push_back(curr_fits[j]);
     	}	
 	}
 	return fits;
@@ -403,7 +422,7 @@ vector<simple_c> move_elongation_support(vector<segment *> FSI, params * P){
 		// }
 		classifier clf(stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) ,FSI[i]->fitted_bidirs ) 	 ;
+			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) ,FSI[i]->fitted_bidirs ,0 ) 	 ;
 		clf.fit_uniform_only2(FSI[i]);
 
 		clfs[i] 	= clf;

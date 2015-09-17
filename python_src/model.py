@@ -13,7 +13,7 @@ import load
 import template_window_matching as twm
 
 class component_elongation:
-	def __init__(self, a,b, w, pi, bidir_component, ty, classifier, j):
+	def __init__(self, a,b, w, pi, bidir_component, ty, classifier, j, foot_print=0):
 		self.a, self.b 	= a,b
 		self.w, self.pi = w,pi
 		self.r 			= {1:0., -1:0.}
@@ -25,6 +25,7 @@ class component_elongation:
 		self.c 			= classifier #larger classifier wrapper, which has the hyperparameters
 		self.j 			= j #index of data from which b came from
 		self.remove 	= False
+		self.foot_print = foot_print
 
 	def __str__(self):
 		return "U: " + str(self.a) + "," + str(self.b) + "," + str(self.w) + "," + str(self.pi)
@@ -55,11 +56,11 @@ class component_elongation:
 		self.ri[1], self.ri[-1] 		= 0,0
 
 		if self.type=="forward" :
-			self.a 			= self.bidir.mu
+			self.a 			= self.bidir.mu +self.foot_print
 			if abs(self.b - self.a) < 2:
 				self.b 		= self.a + min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
 		elif self.type=="reverse" :
-			self.b 			= self.bidir.mu
+			self.b 			= self.bidir.mu - self.foot_print
 			if abs(self.b - self.a) < 2:
 				self.a 			= self.b - min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
 
@@ -80,13 +81,19 @@ class component_elongation:
 			self.r[-1]+=r
 		
 	def pdf(self, z,s,move_a=0, move_b=0):
-		vl 	= int((s==1 and self.type=="forward") or (s==-1 and self.type=="reverse") or self.type=="noise" or self.type=="uniform_model")*int(self.a+move_a<=z<=self.b+move_b)*(self.w / abs((self.b+move_b) - (self.a + move_a) ))
 		if s== 1:
-			return vl*self.pi
-		return vl*(1-self.pi)
+			PI 	= self.pi
+		else:
+			PI 	= (1-self.pi)
+
+
+		vl 	= int(self.a+move_a<=z<=self.b+move_b)*(self.w / abs((self.b+move_b) - (self.a + move_a) ))*PI
+
+
+		return vl
 	
 class component_bidir:
-	def __init__(self, mu, si, l, w,pi , classifier):
+	def __init__(self, mu, si, l, w,pi , classifier,foot_print=0):
 		#============================
 		self.mu, self.si, self.l 	= mu, si, l
 		self.w, self.pi 			= w,  pi
@@ -102,10 +109,11 @@ class component_bidir:
 		self.remove 				= False
 		self.forward  				= None #elongation component to the right
 		self.reverse 		 		= None #elongation component to the left
-
+		self.foot_print 			= foot_print
 
 
 	def __str__(self):
+		return "N: " + str(self.mu) + "," +str(self.si) + "," +str(self.l) + "," + str(self.w) + "," + str(self.pi) 
 		return ("N: " + str(self.mu) + "," +str(self.si) + "," +str(self.l) + "," + str(self.w) + "," + str(self.pi) + "\n" +
 			self.forward.__str__() + "\n" + 
 			self.reverse.__str__())
@@ -123,12 +131,29 @@ class component_bidir:
 			return 1.0 / m.pow(10,-15)
 		return m.exp(m.log(1. - N)-m.log(D))
 	def EY(self, z, s):
-		return  max((s*(z-self.mu) -self.l*pow(self.si,2) + self.si / (self.R(self.l*self.si - s*((z-self.mu)/ self.si))),0.))
+		if s==1:
+			z-=self.foot_print
+		else:
+			z+=self.foot_print
+
+		return max((s*(z-self.mu) -self.l*pow(self.si,2) + self.si / (self.R(self.l*self.si - s*((z-self.mu)/ self.si))),0.))
+
+
+
 	def EY2(self, z, s):
+		if s==1:
+			z-=self.foot_print
+		else:
+			z+=self.foot_print
+
 		return pow(self.l,2)*pow(self.si,4) + pow(self.si,2)*(2*self.l*s*(self.mu-z)+1) + pow(self.mu-z,2)  - ((self.si*(self.l*pow(self.si,2) + s*(self.mu -z)) ) /  self.R(self.l*self.si - s*((z-self.mu)/ self.si)) )	
 	
 	
 	def pdf(self, z,s,move_a=0, move_b=0):
+		if s == 1:
+			z-=self.foot_print
+		else:
+			z+=self.foot_print
 		vl 		= (self.l /2.)* (s*2*(self.mu-z) + self.l*self.si**2. )
 		if vl > 200: #overflow error, try this one...
 			p 	= self.l*self.IN((z-self.mu)/self.si)*self.R(self.l*self.si - s*((z - self.mu)/self.si))
@@ -136,6 +161,7 @@ class component_bidir:
 			p 		= (self.l / 2.)*m.exp( vl )*erfc( (s*(self.mu- z) + self.l*self.si**2. ) / (m.sqrt(2)*self.si) )
 		except:
 			self.remove,p 	= True,0.
+		step 	= 0
 
 		return p*self.w*pow(self.pi, max(0, s) )*pow(1-self.pi, max(0, -s) )
 	def check(self):
@@ -153,7 +179,7 @@ class component_bidir:
 		if forward_ct and norm_forward:
 			r 	= forward_ct*self.ri[1]/norm_forward
 			E_Y = self.EY(z,1)
-			E_X = z-E_Y 
+			E_X = z-E_Y -self.foot_print 
 
 			self.E_X+=E_X *r
 			self.E_Y+=E_Y*r
@@ -162,7 +188,7 @@ class component_bidir:
 		if reverse_ct and norm_reverse:
 			r 	= reverse_ct*(self.ri[-1]/norm_reverse)
 			E_Y = self.EY(z,-1)
-			E_X = z+E_Y
+			E_X = z+E_Y + self.foot_print
 
 			self.E_X+=E_X*r
 			self.E_Y+=E_Y*r
@@ -227,7 +253,7 @@ class component_bidir:
 class EMGU:
 	def __init__(self, max_ct=pow(10, -4), max_it=200, K=2, bayes=False, noise=True, 
 		noise_max=0.1, moveUniformSupport=5, cores=1,
-		seed=False):
+		seed=False, foot_print=0):
 		self.max_ct 	= max_ct
 		self.max_it 	= max_it
 		self.K 			= K
@@ -238,6 +264,7 @@ class EMGU:
 		self.cores 		= cores
 		self.converged 	= False
 		self.resets 	= 0.
+		self.foot_print = foot_print
 		#=================================
 		#prior parameters
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
@@ -253,7 +280,6 @@ class EMGU:
 	def pdf(self, x,s):
 		assert self.rvs is not None, "need to running fit before evalauting mixture pdf"
 		vl 	= sum([rv.pdf(x, s) for rv in self.rvs ])
-		print vl
 		return vl
 
 
@@ -346,7 +372,7 @@ class EMGU:
 	def fit(self, X):
 		if self.seed:
 			self.peaks 	= twm.sample(X, self.K,std=1, lam=.1)
-
+		FHW=open("iterates.tsv", "w")
 
 
 
@@ -368,9 +394,10 @@ class EMGU:
 		ws 			= np.random.dirichlet([self.alpha_0]*self.K*3).reshape(self.K, 3)
 		pis 		= np.random.beta(self.beta_0, self.beta_0, self.K*3).reshape(self.K,3)
 		if self.peaks is None:
-			mus 		= np.random.uniform(minX, maxX, self.K)
+			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
+			#mus 		= [40,70]
 		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
@@ -378,9 +405,14 @@ class EMGU:
 
 		self.uniform_rate= (maxX-minX)/(1*self.K)
 
-		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self) for k in range(self.K)] 
-		uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
-		uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
+		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self, foot_print=self.foot_print) for k in range(self.K)] 
+		if self.move != 0:
+			uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
+			uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
+		else:
+			uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 , foot_print=self.foot_print) for k in range(self.K)]
+			uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] , foot_print=self.foot_print) for k in range(self.K)]
+			
 		if self.noise:
 			uniforms+=[component_elongation(minX, maxX, self.noise_max, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
@@ -388,6 +420,10 @@ class EMGU:
 		t,converged 		= 0 , False
 		ll, prevll 			= 0., -np.inf
 		st 					= time.clock()
+		iter_parameters 	= list()
+		FHW.write("#Data\n")
+		for i in range(X.shape[0]):
+			FHW.write(str(X[i,0])+"\t" + str(X[i,1]) + "\t" + str(X[i,2]) + "\n")
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
 			#self.draw(X)
@@ -398,7 +434,7 @@ class EMGU:
 			
 			#######
 			#E-step
-			#######
+			#####
 			ll 	= 0.
 			st 	= time.clock()
 			for i in range(X.shape[0]):
@@ -417,8 +453,12 @@ class EMGU:
 			#######
 			
 			N 	= sum([sum(c.r.values()) for c in components])
+			FHW.write("#" + str(t) + "," + str(ll) +"\n" )
 			for k,c in enumerate(components):
+
+				FHW.write(c.__str__()+ "\n")
 				c.set_new_parameters(N)
+				
 				
 				
 			#check which components blew up and reset
@@ -465,29 +505,39 @@ if __name__ == "__main__":
 	N 	= 29692.0
 	#==================================
 	#testing MAP-EM procedure
-	X 	= simulate.runOne(mu=0, s=0.1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-		N=1000, SHOW=False, bins=300, noise=True )
+	X 	= simulate.runOne(mu=0, s=1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
+		N=1000, SHOW=False, bins=300, noise=False, foot_print=1 )
+	X[:,0]*=100
+	X[:,0]+=abs(X[0,0])
+	print X[:,0]
+	#make test_file
+	FHW_f 	= open("test_forward.bedgraph", "w")
+	FHW_r 	= open("test_reverse.bedgraph", "w")
+	for i in range(X.shape[0]):
+		x 		= int(X[i,0])
+
+		FHW_f.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,1])) + "\n" )
+		FHW_r.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,2])) + "\n" )
+
+
+
+
+
+
 	#2,518,131-2,523,183
-	X 	= load.grab_specific_region("chr1",2518131,2523183, SHOW=False, bins=300 )
-	X[:,0]-=min(X[:,0])
-	X[:,0]/=100.
-	print np.sum(X[:,1:])
+	#chr1:25,656,111-25,693,262
+	#chr1:28,569,727-28,580,179
+	# X 	= load.grab_specific_region("chr1",28569727,28580179, SHOW=False, bins=300 )
+	# X[:,0]-=min(X[:,0])
+	# X[:,0]/=100.
+	
 	# print max(X[:,0])
 
-	clf = EMGU(noise=True, K=1,noise_max=0.3,moveUniformSupport=3,max_it=200, cores=1, 
-		seed=False)
-	clfN = EMGU(noise=True, K=0,noise_max=0.3,moveUniformSupport=3,max_it=200, cores=1, 
-		seed=True)
+	# clf = EMGU(noise=True, K=1,noise_max=0.,moveUniformSupport=0,max_it=200, cores=1, 
+	# 	seed=True,foot_print=0)
+	# clf.fit(X)
 
-	clf.fit(X)
-	clf.draw(X)
-	#print clf.ll
-	rvs, ll 	= clfN.fit(X)
-	clfN.draw(X)
-	BICU 	= -2*ll + 1*math.log(N)
-	BICN 	= -2*-120376.261402 + 7*math.log(N)
-	D 		= -2*ll + 2*(-120376.261402)
-	print ll, BICU, BICN, BICU < BICN
+	# clf.draw(X)
 	#==================================
 	
 

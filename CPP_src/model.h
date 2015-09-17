@@ -29,6 +29,7 @@ public:
 	//sufficient stats
 	double ri_forward, ri_reverse; //current responsibility
 	double ey, ex, ex2, r_forward, r_reverse;//running total
+	double foot_print;
 	EMG();
 	EMG(double, double, double, double, double);
 	double pdf(double,int);
@@ -73,13 +74,13 @@ public:
 	//FOR PI ; strand prob. , beta
 	double ALPHA_3;
 
-
+	double foot_print;
 
 
 	component();
-	void initialize(double, segment *, int , double , double, double);
-	void initialize_with_parameters(vector<double>, segment *, int, double, double);
-	void initialize_with_parameters2(vector<double>, segment *, int, double, double);
+	void initialize(double, segment *, int , double , double, double, double);
+	void initialize_with_parameters(vector<double>, segment *, int, double, double, double);
+	void initialize_with_parameters2(vector<double>, segment *, int, double, double, double);
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
 	double pdf(double , int);
@@ -104,14 +105,15 @@ public:
 	//===================================================================================
 	//Bayesian Priors
 	double p;
+	double foot_print;
 	int fit(segment *,vector<double>);
 	classifier(int, double, int, double, double, double, double
-		, double, double, double, double);
+		, double, double, double, double, double);
 	classifier(int, double, int, double, double, double, double
-		, double, double, double, double, bool);
+		, double, double, double, double, bool, double);
 	classifier(double , int  , double ,
 		double , double , double ,
-		double , double , double ,double , vector<vector<double>> );
+		double , double , double ,double , vector<vector<double>>, double );
 
 	classifier();
 	void free_classifier();

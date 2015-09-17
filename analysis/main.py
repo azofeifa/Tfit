@@ -4,11 +4,54 @@ import numpy as np
 import BIC
 import display_model_fits as dmf
 import correlations
+import density_plots
 def run(root):
 
 	display_fits 	= False
 	parameters 		= False
-	correlation 	= True
+	correlation 	= False
+	correlation_BO 	= True
+	if correlation_BO:
+		DIR 			="/Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/"
+		DMSO1hr101911 	="DMSO1hr101911_model_fits/bidirectional_hits_intervals.bed"
+		DMSO1027 		="DMSO1027_1212_model_fits/bidirectional_hits_intervals.bed"
+		Ma6_NoIndex 	="Ma6_NoIndex_L008_R1_001/bidirectional_hits_intervals.bed"
+		DMSO2_3 		="DMSO2_3_model_fits/bidirectional_hits_intervals.bed"
+		Nutlin2_3 		= "Nutlin2_3_model_fits/bidirectional_hits_intervals.bed"
+		
+		RefSeq 			= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
+		ChIP_p53 		= "/Users/joazofeifa/Lab/ACM_IEEE_Paper_analysis/files/bedFiles/Atleast7of7.bedbothstrands.bed_norefgene.bed"
+		DMSO_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
+		DMSO_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph"
+		Nutlin_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/Nutlin2_3.sorted.pos.BedGraph"
+		Nutlin_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/Nutlin2_3.sorted.neg.BedGraph"
+
+		DMSO1hr101911_L,DMSO1hr101911_G = load.load_model_fits_bed_file(DIR+DMSO1hr101911)
+		DMSO1027_L,DMSO1027_G 			= load.load_model_fits_bed_file(DIR+DMSO1027)
+		Ma6_NoIndex_L,Ma6_NoIndex_G 	= load.load_model_fits_bed_file(DIR+Ma6_NoIndex)
+		DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_bed_file(DIR+DMSO2_3)
+		Nutlin2_3_L,Nutlin2_3_G 		= load.load_model_fits_bed_file(DIR+Nutlin2_3)
+		R 								= load.load_Refseq(RefSeq)
+		ChIP 							= load.load_ChIP_p53(ChIP_p53)
+		load.label(DMSO2_3_L, R, "annotated")
+		load.label(DMSO2_3_L, ChIP, "p53_site")
+		load.label(Nutlin2_3_L, ChIP, "p53_site")
+		load.label(Nutlin2_3_L, R, "annotated")
+		# density_plots.insert_bedgraph(DMSO2_3_L,(DMSO_forward,DMSO_reverse ))
+		# density_plots.insert_bedgraph(Nutlin2_3_L,(Nutlin_forward,Nutlin_reverse ))
+
+
+
+
+		overlaps 						= correlations.match_UP(DMSO2_3_L, Nutlin2_3_L)
+#		density_plots.plot_density(overlaps)
+#		correlations.p53_binding(Nutlin2_3_L, DMSO2_3_L, overlaps)
+#		correlations.label_p53(overlaps, attr="lam", LOG=True )
+#		correlations.promoter_differences_test((DMSO2_3_L,Nutlin2_3_L))		
+#		correlations.p53_differences_test((Nutlin2_3_L,))		
+
+#		correlations.si_lam(overlaps)
+		correlations.run(overlaps, attr="dist", LOG=False )
 	if correlation:
 		DIR 			="/Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/"
 		DMSO1hr101911 	="DMSO1hr101911_model_fits/model_fits.txt"
@@ -16,13 +59,13 @@ def run(root):
 		Ma6_NoIndex 	="Ma6_NoIndex_L008_R1_001/model_fits.txt"
 		DMSO2_3 		="DMSO2_3_model_fits/model_fits.txt"
 		Nutlin2_3 		= "Nutlin2_3_model_fits/model_fits.txt"
-		DMSO1hr101911_L,DMSO1hr101911_G = load.load_model_fits_txt_file(DIR+DMSO1hr101911)
-		DMSO1027_L,DMSO1027_G 			= load.load_model_fits_txt_file(DIR+DMSO1027)
-		Ma6_NoIndex_L,Ma6_NoIndex_G 	= load.load_model_fits_txt_file(DIR+Ma6_NoIndex)
-		DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_txt_file(DIR+DMSO2_3)
-		Nutlin2_3_L,Nutlin2_3_G 		= load.load_model_fits_txt_file(DIR+Nutlin2_3)
+		DMSO1hr101911_L,DMSO1hr101911_G = load.load_model_fits_bed_file(DIR+DMSO1hr101911)
+		DMSO1027_L,DMSO1027_G 			= load.load_model_fits_bed_file(DIR+DMSO1027)
+		Ma6_NoIndex_L,Ma6_NoIndex_L 	= load.load_model_fits_bed_file(DIR+Ma6_NoIndex)
+		DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_bed_file(DIR+DMSO2_3)
+		Nutlin2_3_L,Nutlin2_3_G 		= load.load_model_fits_bed_file(DIR+Nutlin2_3)
 		
-		correlations.run(DMSO2_3_L,DMSO2_3_L,DMSO1027_L,Nutlin2_3_G )
+		correlations.run(DMSO2_3_L,DMSO2_3_L,Ma6_NoIndex_L,Ma6_NoIndex_L )
 
 	if display_fits:
 		out_dir 	= "/Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/EMG_out_files/"

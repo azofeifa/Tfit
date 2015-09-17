@@ -91,9 +91,13 @@ int main(int argc, char* argv[]){
 		double density 				= stod(P->p4["-density"]) / scale;
 		int opt_res 				= stod(P->p4["-opt_res"]);
 		int np 						= stoi(P->p4["-np"]);
+		char processor_name[MPI_MAX_PROCESSOR_NAME];
+		int namelen;  
+		MPI_Get_processor_name(processor_name, &namelen); 
+		string node_name 			= processor_name;
 		string spec_chrom 			= P->p4["-chr"];
-		timer T(50);
-		timer TF(50);
+		timer T(80);
+		timer TF(80);
 		
 		TF.start_time(rank, "Final Time:");
 		
@@ -148,11 +152,10 @@ int main(int argc, char* argv[]){
 
 			}
 			vector<simple_c> fits;
-			
 			if (not bidir_segments.empty()){
 
 				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
-				T.start_time(0, "MLE fit, rank " + to_string(rank) + ",on " + to_string(int(bidir_segments.size())) + " segments: ");
+				T.start_time(0, "MLE fit on " + node_name + ", going to process " + to_string(int(bidir_segments.size())) + " segments: ");
 				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
 				T.get_time(0);
 			}

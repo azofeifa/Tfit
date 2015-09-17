@@ -88,7 +88,7 @@ params::params(){
 	p4["-ALPHA_3"] 			= "1";
 	p4["-elon"] 			= "0";
 	p4["-show_seeds"] 		= "0";
-	
+	p4["-foot_res"] 		= "5";
 	p5["-v"] 			= "1";
 	p5["-i"]  			= "";
 	p5["-j"]  			= "";
@@ -303,11 +303,18 @@ string params::get_header(int ID){
 		header+="#-br          : "+p4["-br"]+"\n";
 		header+="#-bct         : "+p4["-bct"]+"\n";
 		header+="#-window_res  : "+p4["-window_res"]+"\n";
-		
 		header+="#-mi          : "+p4["-mi"]+"\n";
 		header+="#-ct          : "+p4["-ct"]+"\n";
 		header+="#-rounds      : "+p4["-rounds"]+"\n";
+		header+="#-foot_res    : "+p4["-foot_res"]+"\n";
 		header+="#-pad         : "+p4["-pad"]+"\n";	
+	
+		header+="#-ALPHA_0     : "+p4["-ALPHA_0"]+"\n";	
+		header+="#-BETA_0      : "+p4["-BETA_0"]+"\n";	
+		header+="#-BETA_1      : "+p4["-BETA_1"]+"\n";	
+		header+="#-ALPHA_2     : "+p4["-ALPHA_2"]+"\n";	
+		header+="#-ALPHA_3     : "+p4["-ALPHA_3"]+"\n";	
+
 		header+="#----------------------------------------------------\n";
 	}
 

@@ -109,7 +109,9 @@ string EMG::print(){
 	return text;
 }
 
-EMG::EMG(){}//empty constructor
+EMG::EMG(){
+	foot_print=0;
+}//empty constructor
 
 EMG::EMG(double MU, double SI, double L, double W, double PI ){
 	mu 	= MU;
@@ -121,6 +123,11 @@ EMG::EMG(double MU, double SI, double L, double W, double PI ){
 
 
 double EMG::pdf(double z, int s ){
+	if (s==1){
+		z-=foot_print;
+	}else{
+		z+=foot_print;
+	}
 	double vl 		= (l/2)*(s*2*(mu-z) + l*pow(si,2));
 	double p;
 	if (vl > 100){ //potential for overflow, inaccuracies
@@ -136,10 +143,21 @@ double EMG::pdf(double z, int s ){
 
 }
 double EMG::EY(double z, int s){
+	if (s==1){
+		z-=foot_print;
+	}else{
+		z+=foot_print;
+	}
+	
 	return max(0. , s*(z-mu) - l*pow(si, 2) + (si / R(l*si - s*((z-mu)/si))));
 }
 double EMG::EY2(double z, int s){
-
+	if (s==1){
+		z-=foot_print;
+	}else{
+		z+=foot_print;
+	}
+	
 	return pow(l,2)*pow(si,4) + pow(si, 2)*(2*l*s*(mu-z)+1 ) + pow(mu-z,2) - ((si*(l*pow(si,2) + s*(mu-z)))/R(l*si - s*((z-mu)/si) ));
 	
 }
@@ -148,6 +166,7 @@ double EMG::EY2(double z, int s){
 //components wrapper class for EMG and UNIFORM objects
 
 component::component(){//empty constructor
+	foot_print 	= 0;
 } 
 
 void component::set_priors(double s_0, double s_1, 
@@ -209,7 +228,8 @@ bool check_uniform_support(component c, int forward){
 
 
 void component::initialize(double mu, segment * data , int K, double scale, double noise_w, 
-	double noise_pi){//random seeds...
+	double noise_pi, double fp){//random seeds...
+	foot_print 	= fp;
 	EXIT=false;
 	if (noise_w>0){
 		noise 	= NOISE(data->minX, data->maxX, 
@@ -250,7 +270,8 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		
 		a_reverse 	= data->X[0][j];
 
-		bidir 		= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
+		bidir 				= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
+		bidir.foot_print 	= foot_print;
 		if (a_reverse > mu-(1.0/lambda) ){
 			reverse 	= UNI(data->minX, mu-(1.0/lambda), 0., -1, j,0.5);
 		}else{
@@ -343,9 +364,10 @@ void component::add_stats(double x, double y, int st, double normalize){
 			forward.r_reverse+=(vl3*y);
 		}
 		//now adding all the conditional expections for the convolution
+
 		double current_EY 	= bidir.EY(x, st);
 		double current_EY2 	= bidir.EY2(x, st);
-		double current_EX 	= x-(st*current_EY);
+		double current_EX 	= x-(st*current_EY)-foot_print*st;
 		bidir.ey+=current_EY*vl*y;
 		bidir.ex+=current_EX*vl*y;
 		bidir.ex2+=(pow(current_EX,2) + current_EY2 - pow(current_EY,2))*vl*y;	
@@ -371,7 +393,8 @@ double component::get_all_repo(){
 	if (type==1){
 		return bidir.r_forward+bidir.r_reverse+forward.r_forward+reverse.r_reverse;
 	}
-	return noise.r_forward+noise.r_reverse;
+//	return noise.r_forward+noise.r_reverse;
+	return 0.;
 
 }
 
@@ -417,7 +440,8 @@ bool component::check_elongation_support(){
 
 
 void component::initialize_with_parameters(vector<double> init_parameters, segment * data, 
-	int K, double left, double right){
+	int K, double left, double right, double fp){
+	foot_print 	= fp;
 	if (init_parameters.empty()){
 		noise 	= NOISE(data->minX, data->maxX, 0.01, 0.5);
 		type 	= 0; 
@@ -441,7 +465,8 @@ void component::initialize_with_parameters(vector<double> init_parameters, segme
 }
 
 void component::initialize_with_parameters2(vector<double> init_parameters, segment * data, 
-	int K, double left, double right){
+	int K, double left, double right,double fp){
+	foot_print 	= fp;
 	if (init_parameters.empty()){
 		noise 	= NOISE(data->minX, data->maxX, 0.01, 0.5);
 		type 	= 0; 
@@ -714,7 +739,8 @@ double move_uniforom_support2(component * components, int K, int add,
 
 classifier::classifier(int k, double ct, int mi, double nm,
 	double R_MU, double alpha_0, double beta_0,
-	double alpha_1, double beta_1, double alpha_2,double alpha_3){
+	double alpha_1, double beta_1, double alpha_2,double alpha_3, double fp){
+	foot_print 				= fp;
 	K 						= k ;
 	seed 					= true;
 	convergence_threshold 	= ct;
@@ -734,7 +760,8 @@ classifier::classifier(int k, double ct, int mi, double nm,
 }
 classifier::classifier(int k, double ct, int mi, double nm,
 	double R_MU, double alpha_0, double beta_0,
-	double alpha_1, double beta_1, double alpha_2,double alpha_3, bool MOVE){
+	double alpha_1, double beta_1, double alpha_2,double alpha_3, bool MOVE, double fp){
+	foot_print 				= fp;
 	K 						= k ;
 	seed 					= true;
 	convergence_threshold 	= ct;
@@ -752,7 +779,9 @@ classifier::classifier(int k, double ct, int mi, double nm,
 }
 classifier::classifier(double ct, int mi, double nm,
 	double R_MU, double alpha_0, double beta_0,
-	double alpha_1, double beta_1, double alpha_2,double alpha_3, vector<vector<double>> IP){
+	double alpha_1, double beta_1, double alpha_2,double alpha_3, vector<vector<double>> IP, double fp){
+	
+	foot_print 				= fp;
 	seed 					= true;
 	convergence_threshold 	= ct;
 	max_iterations 			= mi;
@@ -772,9 +801,11 @@ classifier::classifier(double ct, int mi, double nm,
 
 
 
-classifier::classifier(){};//empty constructor
+classifier::classifier(){
+	foot_print 	= 0;
+};//empty constructor
 
-int classifier::fit(segment * data, vector<double> mu_seeds){
+int classifier::fit(segment * data, vector<double> mu_seeds ){
 	//=========================================================================
 	//for resets
 	random_device rd;
@@ -799,7 +830,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		converged=true;
 		last_diff=0;
 		components 	= new component[1];
-		components[K].initialize(0., data, 0., 0. , noise_max, pi);
+		components[K].initialize(0., data, 0., 0. , noise_max, pi,0.);
 		return 1;
 	}
 	int add 	= noise_max>0;
@@ -827,14 +858,14 @@ int classifier::fit(segment * data, vector<double> mu_seeds){
 		}else{
 			mu 			= dist_uni(mt);
 		}
-		components[k].initialize(mu, data, K, data->SCALE , 0., 0.);
+		components[k].initialize(mu, data, K, data->SCALE , 0., 0.,foot_print);
 		if (mu_seeds.size() > 0){
 			mu_seeds.erase (mu_seeds.begin()+i);	
 		}
 	}
        
 	if (add){
-		components[K].initialize(0., data, 0., 0. , noise_max, pi);
+		components[K].initialize(0., data, 0., 0. , noise_max, pi, foot_print);
 	}
  		
 	//===========================================================================
@@ -952,6 +983,7 @@ vector<vector<double>> sort_mus(vector<vector<double>> X){
 int classifier::fit_uniform_only(segment * data){
 	//so in this case, there are a set of bidirectionals that are set and we are going to just try and maximize their 
 	//elongation support first (and then maybe restimate parameters?)
+	double foot_print 	=1;
 	int K 			= init_parameters.size();
 	init_parameters  = sort_mus(init_parameters);
 	components 	= new component[K+1];
@@ -972,12 +1004,12 @@ int classifier::fit_uniform_only(segment * data){
 	right.push_back(data->maxX);
 
 	for (int k =0; k < K;k++){
-		components[k].initialize_with_parameters(init_parameters[k], data, K, left[k], right[k]);
+		components[k].initialize_with_parameters(init_parameters[k], data, K, left[k], right[k],foot_print);
 		//components[k].print();
 	}
 			
 	vector<double> empty;
-	components[K].initialize_with_parameters(empty, data, K, data->minX,data->maxX);
+	components[K].initialize_with_parameters(empty, data, K, data->minX,data->maxX,foot_print);
 
 	bool converged=false;
 	int t=0;
@@ -1017,7 +1049,7 @@ int classifier::fit_uniform_only(segment * data){
 }
 int classifier::fit_uniform_only2(segment * data){
 	
-
+	double foot_print 	= 0;
 	int K 			= init_parameters.size();
 	init_parameters  = sort_mus(init_parameters);
 	
@@ -1161,10 +1193,10 @@ int classifier::fit_uniform_only2(segment * data){
 
 	components 	= new component[K+1];
 	for (int k =0; k < K;k++){
-		components[k].initialize_with_parameters2(init_parameters[k], data, K, BOUNDS[k][1], BOUNDS[k][0]);
+		components[k].initialize_with_parameters2(init_parameters[k], data, K, BOUNDS[k][1], BOUNDS[k][0], foot_print);
 	}
 	vector<double> empty;
-	components[K].initialize_with_parameters(empty, data, K, data->minX,data->maxX);
+	components[K].initialize_with_parameters(empty, data, K, data->minX,data->maxX, foot_print);
 
 
 	// //fit weights?

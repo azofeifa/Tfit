@@ -14,7 +14,7 @@ public:
 	//3: need to konw what the complexity is so that we can match it up with other components that have the same stats
 	//####
 	//below is just all the parameter estimates for the component, EMG and forward/reverse uniforms
-	double ps[14]; //0->mu, 1->si, 2->l, 3->w, 
+	double ps[15]; //0->mu, 1->si, 2->l, 3->w, 
 				   //4->pi, 5->fw, 6->rw, 7->fb, 8->ra, 9->fpi, 10->rpi, 11->NN
 	rsimple_c();
 };

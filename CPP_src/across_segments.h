@@ -20,7 +20,7 @@ struct simple_c{
 	//IDS[1] 	= complexity, number of fitted models
 	//IDS[2] 	= number of predicted bidirs
 	//IDS[3] 	= bidir prediction, (possible merged segment)
-	double ps[12];
+	double ps[13];
 	
 //	string write_out();
 

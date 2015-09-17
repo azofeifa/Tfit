@@ -1035,6 +1035,9 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 		N 	= i->second.size(), j 	= 1;
 		S 	= i->second[0];
 		S->centers.push_back((S->start + S->stop) /2.);
+		if (N==1){
+			A[i->first].push_back(S);				
+		}
 		while (j < N){
 			while (j < N and i->second[j]->start < S->stop and i->second[j]->stop > S->start  ){
 				double center1=(S->start + S->stop) /2.;
@@ -1052,11 +1055,9 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 			A[i->first].push_back(S);
 			if (j < N){
 				S 			= i->second[j];
-		
 			}
 		}
 	}
-	
 	vector<string> FILES = {forward_file, reverse_file};
 	int strands[2] 		= {1,-1};
 	int start, stop;
@@ -1096,6 +1097,9 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 				if (j < N and A[chrom][j]->start < stop){ //overlap!
 					o_st 	= max(A[chrom][j]->start, start);
 					o_sp 	= min(A[chrom][j]->stop, stop);
+					if (o_st == o_sp){
+						o_sp+=1;
+					}
 					for (int u = o_st; u < o_sp; u++){
 						A[chrom][j]->add(strand, double(u), coverage );
 					}
@@ -1111,13 +1115,11 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 		}
 		FH.close();
 	}
-	
 	for (it_type_2 i = A.begin(); i!=A.end();i++){
 		for (int j = 0; j < i->second.size();j++){
 			segments.push_back(i->second[j]);
 		}
 	}
-	
 	return segments;
 }
 
@@ -1278,7 +1280,7 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 	ofstream FHW_config;
 	
 	FHW_bed.open(out_file_dir+"bidirectional_hits_intervals.bed");
-	
+	FHW_bed<<P->get_header(4);
 	for (int i = 0; i < A.size(); i++){
 		FHW_bed<<A[i].write_out_bed();
 	}

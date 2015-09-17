@@ -389,6 +389,7 @@ string final_model_output::write_out_bed(){
 		int center 	= (components[k].ps[2]*scale + start);
 		int std 	= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
 		string INFO = to_string(components[k].ps[2]*scale + start) + "_" + to_string(components[k].ps[3]*scale) + "_" + to_string( (1. / components[k].ps[4] )*scale) + "_" + to_string(components[k].ps[5]) + "_" + to_string(components[k].ps[6]);
+		INFO+="_" + to_string(int(components[k].ps[13]*components[k].ps[5])) + "_"+ to_string(int(components[k].ps[14]*scale));
 		line+=chrom + "\t" + to_string(center-std) + "\t" + to_string(center+std) + "\t" + INFO+ "\n";
 	}
 	return line;
@@ -500,22 +501,18 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	string chr;
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
 		vector<rsimple_c> components;
-		if (B->second.find(1)==B->second.end()){//everybody should have at least one model fit
-			printf("serious ! what! optimize_model_selection_bidirs\n");
-		}else{
-			noise_ll 		= B->second[1][0].ps[0];
-			start 			= B->second[1][0].st_sp[0];
-			stop 			= B->second[1][0].st_sp[1];
-			chr 			= B->second[1][0].chrom;
-			
-			if (B->second.find(scores[i])!=B->second.end()){
-				components 	= B->second[scores[i]];
-				k_ll 		= components[0].ps[1];
-			}else{
-				k_ll 		= nINF;
-			}
+		if (B->second.find(scores[i])!=B->second.end()){
+			components 		= B->second[scores[i]];
+			k_ll 			= components[0].ps[1];
+			noise_ll 		= B->second[scores[i]][0].ps[0];
+			start 			= B->second[scores[i]][0].st_sp[0];
+			stop 			= B->second[scores[i]][0].st_sp[1];
+			chr 			= B->second[scores[i]][0].chrom;
 			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop,i ) );
+		}else{
+			k_ll 			= nINF;
 		}
+		
 		i++;		
 	}
 	return A;

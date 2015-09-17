@@ -307,7 +307,7 @@ rsimple_c transform(simple_c sc, vector<segment *> segments ){
 	rc.st_sp[2]=sc.IDS[0], 	rc.st_sp[3]=sc.IDS[1], rc.st_sp[4]=sc.IDS[2];
 
 	rc.ps[0]=sc.noise_ll,rc.ps[1]=sc.ll;
-	for (int i = 0; i < 12; i++){
+	for (int i = 0; i < 13; i++){
 		rc.ps[i+2]=sc.ps[i];
 	}
 	return rc;
@@ -321,7 +321,7 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 	rsimple_c rc;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={5,5,14};
+	int blocklens[3]={5,5,15};
 	MPI_Datatype old_types[3] = {MPI_INT, MPI_CHAR, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(rsimple_c, st_sp);
