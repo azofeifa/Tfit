@@ -191,8 +191,8 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 	int i 	= 0;
 	double scale 	= stod(P->p4["-ns"]);
 	while (i < clfs.size()){
-		for (int j = 0; j < res; j++){
-			foot_print = lower+delta*(j+1);
+		for (int j = 0; j < res+1; j++){
+			foot_print = lower+delta*j;
 			foot_print/=scale;
 			clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 				stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 

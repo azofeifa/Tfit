@@ -22,8 +22,7 @@ def match_UP(A_L, B_L):
 				m.annotated 	= S.annotated
 				m.p53_site 		= S.p53_site
 				m.dist 			= S.dist
-				m.N 			= S.N
-
+			
 				A[chrom].append((st,sp, m))
 	for chrom in B_L:
 		if chrom not in B:
@@ -33,7 +32,6 @@ def match_UP(A_L, B_L):
 				m.annotated 	= S.annotated
 				m.p53_site 		= S.p53_site
 				m.dist 			= S.dist
-				m.N 			= S.N
 				st, sp 	= m.mu - m.std, m.mu+m.std
 				B[chrom].append((st,sp, m))
 	overlaps 	= {}
@@ -69,7 +67,6 @@ def overlaps_and_not(A_L, B_L):
 				m.annotated 	= S.annotated
 				m.p53_site 		= S.p53_site
 				m.dist 			= S.dist
-
 				A[chrom].append((st,sp, m))
 	for chrom in B_L:
 		if chrom not in B:
@@ -121,6 +118,9 @@ def run(overlaps, attr ="si", LOG=False):
 	axHisty = plt.axes(rect_histy)
 
 	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, attr) is not None and  getattr(y, attr) is not None ]
+
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, "wEM") >0.5 and  getattr(y, "wEM") > 0.5]
+	print len(overlaps)
 	x,y 		= [math.log(getattr(x, attr) ,10) if LOG else getattr(x, attr) for x,y in overlaps],[math.log(getattr(y, attr) ,10) if LOG else getattr(y, attr) for x,y in overlaps]
 	xy = np.vstack([x,y])
 	
@@ -149,16 +149,17 @@ def run(overlaps, attr ="si", LOG=False):
 
 def si_lam(overlaps):
 
-	X_si_wEM 	= [(a.si, a.wEM) for a,b in overlaps] + [(b.si, b.wEM) for a,b in overlaps]
+	X_si_wEM 	= [(a.lam, a.fp) for a,b in overlaps] + [(b.lam, b.fp) for a,b in overlaps]
 	X_si_lam 	= [(a.si, a.lam) for a,b in overlaps] + [(b.si, b.lam) for a,b in overlaps]
 	X_lam_wEM 	= [(a.lam, a.wEM) for a,b in overlaps] + [(b.lam, b.wEM) for a,b in overlaps]
-	X_pi_wEM 	= [(a.pi, a.wEM) for a,b in overlaps] + [(b.pi, b.wEM) for a,b in overlaps]
+	X_pi_wEM 	= [(a.si, a.fp) for a,b in overlaps] + [(b.si, b.fp) for a,b in overlaps]
 	
 
 	F 			= plt.figure(figsize=(15,10))
 	
 	ax1 		= F.add_subplot(2,2,1)
 	x,y 		= [math.log(x,10) for x,y in X_si_wEM],[y for x,y in X_si_wEM]
+	x,y 		= [x for x,y in X_si_wEM],[y for x,y in X_si_wEM]
 	xy 			= np.vstack([x,y])
 	z 			= gaussian_kde(xy)(xy)
 	ax1.scatter(x, y, c=z, s=14, edgecolor='')
@@ -169,7 +170,8 @@ def si_lam(overlaps):
 
 	
 	ax2 		= F.add_subplot(2,2,2)
-	x,y 		= [math.log(x,10) for x,y in X_si_lam],[math.log(y) for x,y in X_si_lam]
+	x,y 		= [math.log(x,10) for x,y in X_si_lam],[math.log(y,10) for x,y in X_si_lam]
+	x,y 		= [x for x,y in X_si_lam],[y for x,y in X_si_lam]
 	xy 			= np.vstack([x,y])
 	z 			= gaussian_kde(xy)(xy)
 	ax2.set_xlabel("Variance in Loading")
