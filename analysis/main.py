@@ -16,8 +16,8 @@ def run(root):
 		DMSO1hr101911 	="DMSO1hr101911_model_fits/bidirectional_hits_intervals.bed"
 		DMSO1027 		="DMSO1027_1212_model_fits/bidirectional_hits_intervals.bed"
 		Ma6_NoIndex 	="Ma6_NoIndex_L008_R1_001/bidirectional_hits_intervals.bed"
-		DMSO2_3 		="DMSO2_3_model_fits/bidirectional_hits_intervals.bed"
-		Nutlin2_3 		= "Nutlin2_3_model_fits/bidirectional_hits_intervals.bed"
+		DMSO2_3 		="DMSO2_3_model_fits/bidirectional_hits_intervals2.bed"
+		Nutlin2_3 		= "Nutlin2_3_model_fits/bidirectional_hits_intervals2.bed"
 		
 		RefSeq 			= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
 		ChIP_p53 		= "/Users/joazofeifa/Lab/ACM_IEEE_Paper_analysis/files/bedFiles/Atleast7of7.bedbothstrands.bed_norefgene.bed"
@@ -26,9 +26,9 @@ def run(root):
 		Nutlin_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/Nutlin2_3.sorted.pos.BedGraph"
 		Nutlin_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/Nutlin2_3.sorted.neg.BedGraph"
 
-		DMSO1hr101911_L,DMSO1hr101911_G = load.load_model_fits_bed_file(DIR+DMSO1hr101911)
-		DMSO1027_L,DMSO1027_G 			= load.load_model_fits_bed_file(DIR+DMSO1027)
-		Ma6_NoIndex_L,Ma6_NoIndex_G 	= load.load_model_fits_bed_file(DIR+Ma6_NoIndex)
+		# DMSO1hr101911_L,DMSO1hr101911_G = load.load_model_fits_bed_file(DIR+DMSO1hr101911)
+		# DMSO1027_L,DMSO1027_G 			= load.load_model_fits_bed_file(DIR+DMSO1027)
+		# Ma6_NoIndex_L,Ma6_NoIndex_G 	= load.load_model_fits_bed_file(DIR+Ma6_NoIndex)
 		DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_bed_file(DIR+DMSO2_3)
 		Nutlin2_3_L,Nutlin2_3_G 		= load.load_model_fits_bed_file(DIR+Nutlin2_3)
 		R 								= load.load_Refseq(RefSeq)
@@ -51,7 +51,7 @@ def run(root):
 #		correlations.p53_differences_test((Nutlin2_3_L,))		
 
 #		correlations.si_lam(overlaps)
-		correlations.run(overlaps, attr="dist", LOG=False )
+		correlations.run(overlaps, attr="lam", LOG=True )
 	if correlation:
 		DIR 			="/Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/"
 		DMSO1hr101911 	="DMSO1hr101911_model_fits/model_fits.txt"

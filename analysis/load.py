@@ -56,6 +56,7 @@ class model:
 		self.annotated = False
 		self.p53_site 	 = False
 		self.dist 	= None
+		self.fp 	= 0
 		self.overlap 	= False
 	def check(self):
 		parameters 	= ("mu","si","lam","pi","wEM","wF", "wR" ,"bF","bR" )
@@ -71,6 +72,7 @@ class segment:
 		self.p53_site 	 	= False
 		self.dist 			= None
 		self.N 				= 0
+
 		if param_txt:
 			line_array 			= line.strip("\n").split("\t")
 			self.chrom,st_sp 	= line_array[0].split(":")
@@ -86,9 +88,10 @@ class segment:
 			chrom,start, stop, parameters 	= line.strip("\n").split("\t")
 			self.chrom 				= chrom 
 			self.start, self.stop 	= int(start), int(stop)
-			mu,si,l,w, pi 			= parameters.split("_")
+			mu,si,l,w, pi, N, fp 	= parameters.split("_")
 			self.models.append(model(float(mu),float(si),float(l),float(pi),float(w) , 0,0,0,0   )  )
-
+			self.models[-1].N 		= float(N)
+			self.models[-1].fp 		= float(fp)
 		self.K 				= len(self.models)
 			
 	def add_models(self, line_array):
@@ -125,11 +128,13 @@ def load_model_fits_bed_file(FILE):
 	L 	= {} #by chrom and then a list of start and stops
 	with open(FILE) as FH:
 		for line in FH:
-			S 	= segment(line, param_txt = False)
-			if S.chrom not in L:
-				L[S.chrom] 	= list()
-			if 0.99 > S.models[0].wEM >0 and S.models[0].lam!=25:
-				L[S.chrom].append((S.start, S.stop, S))
+			if line[0]!="#":
+				S 	= segment(line, param_txt = False)
+
+				if S.chrom not in L:
+					L[S.chrom] 	= list()
+				if 0.99 > S.models[0].wEM >0 and S.models[0].lam!=25:
+					L[S.chrom].append((S.start, S.stop, S))
 	for chrom in L:
 		L[chrom].sort()
 	return L,G

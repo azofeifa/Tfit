@@ -412,8 +412,8 @@ void component::update_parameters(double N, int K){
 		if (bidir.si > 10){
 			EXIT 	= true;
 		}
-		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 4.);
-		if (bidir.l < 0.05 ){
+		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 5.);
+		if (bidir.l < 0.05 or bidir.l > 4.5 ){
 			EXIT 	= true;
 		}
 		//now for the forward and reverse strand elongation components
