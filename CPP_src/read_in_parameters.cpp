@@ -89,6 +89,9 @@ params::params(){
 	p4["-elon"] 			= "0";
 	p4["-show_seeds"] 		= "0";
 	p4["-foot_res"] 		= "5";
+	p4["-log_out"] 			= "";
+
+
 	p5["-v"] 			= "1";
 	p5["-i"]  			= "";
 	p5["-j"]  			= "";
@@ -225,6 +228,7 @@ void params::display(int nodes, int cores){
 			cout<<"-MLE         : "<<p4["-MLE"]<<endl;
 			cout<<"-mi          : "<<p4["-mi"]<<endl;
 			cout<<"-ct          : "<<p4["-ct"]<<endl;
+			cout<<"-fp          : "<<p4["-fp"]<<endl;
 			
 			cout<<"-elon        : "<<p4["-elon"]<<endl;			
 			cout<<"-pad         : "<<p4["-pad"]<<endl;
@@ -233,7 +237,6 @@ void params::display(int nodes, int cores){
 			cout<<"-rounds      : "<<p4["-rounds"]<<endl;
 			cout<<"-threads     : "<<cores<<endl;
 			cout<<"-MPI_nodes   : "<<nodes<<endl;
-
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 			cout<<"----------------------------------------------------------------"<<endl;
 		

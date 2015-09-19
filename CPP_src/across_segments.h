@@ -33,7 +33,7 @@ struct single_simple_c{
 
 vector<simple_c> run_model_accross_segments_template(vector<segment*>, 
 	params *);
-vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *>, params *);
+vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *>, params *, ofstream&);
 string get_header(params *);
 
 vector<simple_c> move_elongation_support(vector<segment *>, params *);

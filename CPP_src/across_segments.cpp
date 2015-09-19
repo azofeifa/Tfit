@@ -181,12 +181,13 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 	double lower, upper;
 	lower=0, upper=350;
 
-	double delta 	= (upper-lower) / float(res);
+	double delta; 
 	if (res==0){
-		res 		= 1;
 		delta 		= 0;
+	}else{
+		delta 	= (upper-lower) / float(res);
 	}
-	vector<classifier> clfs(stoi(P->p4["-rounds"])*res  );
+	vector<classifier> clfs(stoi(P->p4["-rounds"])*(res+1)  );
 	double foot_print;
 	int i 	= 0;
 	double scale 	= stod(P->p4["-ns"]);
@@ -390,14 +391,27 @@ vector<simple_c> run_model_accross_segments_template(vector<segment*> segments,
     return fits;
 }
 
-vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segments, params * P){
+vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segments, 
+	params * P, ofstream& log_file){
 	vector<simple_c> fits;
+	log_file<<"(across_segments) running model on bidirectional possibilities...";
+	log_file<<to_string(0) + "%%,";
+	log_file.flush();
+
+	double percent 	= 0;
+	double N 		= segments.size();
 	for (int i = 0; i < segments.size(); i++){
+		if ((i / N) > (percent+0.25)){
+			log_file<<to_string(int((i / N)*100))+"%,";
+			percent 	= (i / N);
+		}
+
 		vector<simple_c> curr_fits 	= wrapper_pp_just_segments(segments[i], P , i);
 		for (int j = 0; j < curr_fits.size(); j++){
 			fits.push_back(curr_fits[j]);
     	}	
 	}
+	log_file<<"...done\n";
 	return fits;
 }
 

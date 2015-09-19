@@ -60,7 +60,7 @@ void run_model_selection(string, string, double );
 map<int, map<int, bidir_preds> > run_model_selection_bidir_template(
 	map<int, map<int, bidir_preds> > , double );
 
-vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > >, params *);
+vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > >, params *, ofstream&);
 vector<final_model_output> convert_to_final_model_output(map<string, map<int, vector<rsimple_c> > >, params *);
 vector<final_model_output> convert_bidir_segs_to_final_model(map<string, vector<vector<double>>  > );
 

@@ -444,7 +444,8 @@ vector<int> get_scores(map<string, map<int, vector<rsimple_c> > > G, double pena
 	}
 	return best_models;
 }
-vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > G, params * P){
+vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > G, 
+	params * P, ofstream& log_file){
 	double scale 	= stod(P->p4["-ns"]);
 	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
 	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
@@ -463,6 +464,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 		delta 	= 1;
 	}
 	vector <int > counts,scores;
+	log_file<<"(optimize_model_selection_bidirs) getting counts...";
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
 		count 		= 1;
 		for (it_type_2 C = B->second.begin(); C!=B->second.end(); C++){ //complexity
@@ -474,12 +476,12 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 		}
 		counts.push_back(count);
 	}	
-
+	log_file<<"done\n";
 	while (penality <= upper_bound){
 		error 			= 0;
 		scores 			= get_scores(G, penality);
 		if (scores.size()!=counts.size()){
-			printf("WJAT?\n");
+			log_file<<"(optimize_model_selection_bidirs) ERROR: scores.size()!=counts.size()\n";
 		}else{
 			for (int i =0; i < scores.size(); i++){
 				error+=abs(scores[i]-counts[i]);
@@ -499,6 +501,8 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	double k_ll;
 	int start, stop;
 	string chr;
+	log_file<<"(optimize_model_selection_bidirs) best error: " + to_string(best_penality)+ "\n";
+	log_file<<"(optimize_model_selection_bidirs) covering to final_model_output...";
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
 		vector<rsimple_c> components;
 		if (B->second.find(scores[i])!=B->second.end()){
@@ -515,6 +519,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 		
 		i++;		
 	}
+	log_file<<"done\n";
 	return A;
 }
 

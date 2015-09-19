@@ -1,0 +1,55 @@
+#Temp Log File for mpi process: 0
+#----------------------------------------------------
+#Date Time    : 09/18/2015 18:26:55
+#-i           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+#-j           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+#-f           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
+#-o           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+#-ns          : 100
+#-br          : 100
+#-bct         : 0.95
+#-window_res  : 2
+#-mi          : 2000
+#-ct          : 0.0001
+#-rounds      : 5
+#-foot_res    : 5
+#-pad         : 3000
+#-ALPHA_0     : 1
+#-BETA_0      : 1
+#-BETA_1      : 1
+#-ALPHA_2     : 1
+#-ALPHA_3     : 100
+#----------------------------------------------------
+(main) loaded begraph files...done
+(main) sliced segments: 1 on this process
+(template_matching) beginning to run template matching...done, found: 32 potential sites of bidirectional transcription
+ran template matching algorithm
+(main) gathering all bidir predictions...done
+(main) loading bidir prediction files...done
+(main) bining bidir segments...done
+(across_segments) running model on bidirectional possibilities...0%%,28.571429%,57.142857%,85.714286%,...done
+(main) (MPI) gathering MLE results...done
+=======MPI Call: 1=======
+(main) loaded begraph files...done
+(main) sliced segments: 0 on this process
+(main) gathering all bidir predictions...done
+(main) loading bidir prediction files...done
+(main) bining bidir segments...done
+(across_segments) running model on bidirectional possibilities...0%%,40.000000%,80.000000%,...done
+(main) (MPI) gathering MLE results...done
+=======MPI Call: 2=======
+(main) loaded begraph files...done
+(main) sliced segments: 0 on this process
+(main) gathering all bidir predictions...done
+(main) loading bidir prediction files...done
+(main) bining bidir segments...done
+(across_segments) running model on bidirectional possibilities...0%%,28.571429%,57.142857%,85.714286%,...done
+(main) (MPI) gathering MLE results...done
+=======MPI Call: 3=======
+(main) loaded begraph files...done
+(main) sliced segments: 0 on this process
+(main) gathering all bidir predictions...done
+(main) loading bidir prediction files...done
+(main) bining bidir segments...done
+(across_segments) running model on bidirectional possibilities...0%%,37.500000%,75.000000%,...done
+(main) (MPI) gathering MLE results...done

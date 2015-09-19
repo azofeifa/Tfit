@@ -170,4 +170,8 @@ void write_out_single_simple_c(vector<single_simple_c>, map<int, string> , param
 void write_config_file_model_fits(vector<final_model_output> , map<int, string>, params * );
 
 
+void collect_all_tmp_files(string , int );
+
+
+
 #endif

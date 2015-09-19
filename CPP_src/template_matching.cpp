@@ -367,7 +367,7 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 
 void run_global_template_matching(vector<segment*> segments, 
 	string out_dir,  double res, double density,
-	double scale, double ct, int np, double skew, int single){
+	double scale, double ct, int np, double skew, int single, ofstream& log_file){
 	
 	ofstream FHW;
 	ofstream FHW_intervals;
@@ -390,7 +390,9 @@ void run_global_template_matching(vector<segment*> segments,
 		window_b 	= 4000;
 	
 	}
+	int all 	= 0;
 	double window_delta = (window_b-window_a)/res;
+	log_file<<"(template_matching) beginning to run template matching...";
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
 		double * BIC_values 	= new double[int(segments[i]->XN)];
@@ -409,7 +411,7 @@ void run_global_template_matching(vector<segment*> segments,
 			//write out contigous regions of up?
 			for (int j = 1; j<segments[i]->XN-1; j++){
 				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
-					if (BIC_values[j] >=ct  and densities[j]>window*0.75  and densities_r[j]>window*0.75 and skews[j][0] >= skew and skews[j][1] <= -skew){
+					if (BIC_values[j] >=ct  and densities[j]>window*0.15  and densities_r[j]>window*0.15 and skews[j][0] >= skew and skews[j][1] <= -skew){
 						if (lambdas[j]>0){
 							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
@@ -486,7 +488,7 @@ void run_global_template_matching(vector<segment*> segments,
 			for (int m = 0; m < mergees.size(); m++){
 				scores.push_back(mergees[m].get_best());
 			}
-			
+			all+=int(scores.size());
 			for (int j = 0; j < scores.size();j++){
 
 				center 		= int((scores[j][1]+scores[j][0]) / 2.);
@@ -499,10 +501,8 @@ void run_global_template_matching(vector<segment*> segments,
 			}
 		}
 		scores.clear();
-
-	
-
 	}
+	log_file<<"done, found: " + to_string(all) + " potential sites of bidirectional transcription\n";
 }
 
 
@@ -613,16 +613,7 @@ void optimize(map<string, interval_tree *> I,
 	}else{
 		printf("\nFinished Optimization");
 		printf("\n---------------------\n");
-		run_global_template_matching( segments, out_dir,
-			window_a + window_delta*arg_v, density_a+density_delta*(arg_k), scale, ct_a 	+ ct_delta*(arg_l),np,0,0);
-		ofstream FHW;
-		FHW.open(out_dir+"bidirectional_hits_intervals.bed");
-		for (int i = 0; i < segments.size();i++){
-			for (int j = 0; j < segments[i]->bidirectional_bounds.size();j++){
-				FHW<<segments[i]->chrom<<"\t"<<to_string(int( segments[i]->bidirectional_bounds[j][0] ))<<"\t"<<to_string(int( segments[i]->bidirectional_bounds[j][1] ))<<endl;
-			}
-		}
-
+		
 
 	}
 		

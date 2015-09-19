@@ -30,5 +30,6 @@
 -max_noise		= 0.05 #weight of the random/uniform noise component
 -optimize 		= 0 #whether or not we should train on the bed files in the -k dir
 -foot_res 		= 5
--show_seeds 	= 1 #show the pseudo moment estimators that the MLE will be fit on
+-show_seeds 		= 1 #show the pseudo moment estimators that the MLE will be fit on
+-log_out 		= /Users/joazofeifa/Lab/EMG/
 

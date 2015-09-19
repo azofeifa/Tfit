@@ -38,18 +38,25 @@ public:
 			t = clock();
 		}
 	}
-	void get_time(int rank){
+	string get_time(int rank){
+		string out 	= "";
+			
 		if (rank==0){
 			end = chrono::system_clock::now();
 			int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
 			                             (end-start).count();
 			t = clock() - t;
 			if (rank ==0 ){
+				out+=HEADER;
+				out+="CPU: " + to_string(t / double(CLOCKS_PER_SEC));
+				out+="WT:  " + to_string(elapsed_seconds/1000.);
 				printf("%s",HEADER.c_str() );
 				printf("CPU: %.5g,",t / double(CLOCKS_PER_SEC)  );
 				printf("WT: %.5g\n", (elapsed_seconds/1000.));
 			}
 		}
+		return out;
+
 	}
 	timer(int wt){
 		WT = wt;
@@ -71,9 +78,16 @@ int main(int argc, char* argv[]){
 		int rank 		= MPI::COMM_WORLD.Get_rank();
 	    int threads  	= omp_get_max_threads();
 		int verbose 	= stoi(P->p4["-v"]);
+		string log_out 	= P->p4["-log_out"] + "tmp_log_file_" + to_string(rank) + ".log"  ;
+		ofstream 	FHW;
+		FHW.open(log_out);
+
 		if (verbose and rank==0){//show current user parameters...
 			P->display(nprocs,threads);
 		}
+		FHW<<"#Temp Log File for mpi process: " + to_string(rank) + "\n";
+		FHW<<P->get_header(4);
+
 
 		//load bed graph files into map<string, double **>;
 		string forward_bedgraph 	= P->p4["-i"] ;
@@ -102,8 +116,10 @@ int main(int argc, char* argv[]){
 		TF.start_time(rank, "Final Time:");
 		
 		T.start_time(rank, "loading BG files:");
+		FHW<<"(main) loaded begraph files...";
 		vector<segment*> segments 	= load_bedgraphs_total(forward_bedgraph, 
 			reverse_bedgraph, BINS, scale, spec_chrom);
+		FHW<<"done\n";
 		T.get_time(rank);
 		if (segments.empty()){
 			printf("segments not populated, exiting...\n");
@@ -113,9 +129,12 @@ int main(int argc, char* argv[]){
 		vector<segment*> all_segments  	= segments;
 		
 		segments 						= slice_segments(segments, rank, nprocs);
+		FHW<<"(main) sliced segments: " + to_string(int(segments.size()))+ " on this process\n";
+		FHW.flush();
 		if (not optimize_directory.empty() and rank==0 and not segments.empty() ){
 			map<string, interval_tree *> I = load_bidir_bed_files(optimize_directory, 
 				spec_chrom);
+
 			if (I.empty()){
 				printf("exiting...\n");
 				MPI::Finalize();
@@ -127,12 +146,14 @@ int main(int argc, char* argv[]){
 		}else if(optimize_directory.empty() and not segments.empty() ){
 			T.start_time(rank, "running template matching:");	
 			run_global_template_matching(segments, out_file_dir, window, 
-				density,scale,ct, np,0. ,0 );	
+				density,scale,ct, np,0. ,0, FHW );	
 			T.get_time(rank);
+			FHW<<"ran template matching algorithm\n";
 			
 		}
 		map<string , vector<vector<double> > > G;
 		T.start_time(rank, "(MPI) gathering bidir predictions:");	
+		FHW<<"(main) gathering all bidir predictions...";
 		if (P->p4["-show_seeds"] == "1"){
 			G = gather_all_bidir_predicitions(all_segments, 
 				segments , rank, nprocs, out_file_dir);
@@ -140,27 +161,42 @@ int main(int argc, char* argv[]){
 			G = gather_all_bidir_predicitions(all_segments, 
 				segments , rank, nprocs, "");
 		}
+		FHW<<"done\n";
+		FHW.flush();
+		
 		T.get_time(rank);
 
 		if (P->p4["-MLE"] == "1"){
 			vector<segment *> bidir_segments;
 			if (not G.empty()  ){
 				T.start_time(rank, "loading BG files:");
+				FHW<<"(main) loading bidir prediction files...";
+				FHW.flush();
+
 				bidir_segments 	= bidir_to_segment( G, 
 					forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]),P->p4["-chr"]   );
 				T.get_time(rank);
+				FHW<<"done\n";
+
+				FHW.flush();
 
 			}
 			vector<simple_c> fits;
 			if (not bidir_segments.empty()){
-
+				FHW<<"(main) bining bidir segments...";
 				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
+				FHW<<"done\n";
+				FHW.flush();
 				T.start_time(0, "MLE fit on " + node_name + ", going to process " + to_string(int(bidir_segments.size())) + " segments: ");
-				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P);
+				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P,FHW);
 				T.get_time(0);
 			}
+			FHW<<"(main) (MPI) gathering MLE results...";
+				
 			T.start_time(rank, "(MPI) gathering MLE results:");
 			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
+			FHW<<"done";
+			FHW.flush();
 			T.get_time(rank);
 			
 			vector<segment *> FSI;
@@ -168,7 +204,7 @@ int main(int argc, char* argv[]){
 					
 			if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
 				T.start_time(rank, "opt model selection:");
-				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P);
+				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P, FHW);
 				T.get_time(rank);
 				T.start_time(rank, "writing out bidir model selection:");
 				write_out_MLE_model_info(A, P);
@@ -186,9 +222,12 @@ int main(int argc, char* argv[]){
 			}
 			fits.clear();
 			if (P->p4["-elon"] == "1"){
+				FHW<<"(main) (MPI) sending out elongation assignments...";
 				T.start_time(rank, "(MPI) sending out elongation assignments:");
 				map<string, vector<segment *> > GG 	= send_out_elongation_assignments(FSI, rank, nprocs);
 				T.get_time(rank);
+				FHW<<"done\n";
+				FHW.flush();
 				vector<segment*> integrated_segments;
 				if (not GG.empty()){
 					T.start_time(rank, "loading BG and integrating segments:");
@@ -214,6 +253,9 @@ int main(int argc, char* argv[]){
 				
 			}
 		}
+		if (rank==0){
+			collect_all_tmp_files(P->p4["-log_out"], nprocs);
+		}
 		
 
 		if (not segments.empty()){
@@ -223,136 +265,7 @@ int main(int argc, char* argv[]){
 		TF.get_time(rank);
 
 		return 0;
-	}
-    else if (P->module=="MODEL"){
-    	
-
-    	//==========================================
-		//Parameters
-		int verbose 			= stoi(P->p["-v"]);
-		int template_match 		= stoi(P->p["-template"]);
-		string formatted_file 	= P->p["-i"]; 
-		string out_file_dir 	= P->p["-o"] ;
-		
-	    // get the number of processes, and the id of this process
-	    int rank = MPI::COMM_WORLD.Get_rank();
-	    int nprocs = MPI::COMM_WORLD.Get_size();
-	   	int threads  	= omp_get_num_threads();
-
-		bool root 	= (rank==0)	;
-		
-		if (verbose and rank==0){//show current user parameters...
-			P->display(nprocs, threads);
-		}
-
-		//==========================================
-		vector<segment*> segments		= load_EMGU_format_file(formatted_file, P->p["-chr"]);
-		vector<segment*> all_segments  	= segments;
-		if (segments.empty()){
-			cout<<"segments was not populated"<<endl;
-			cout<<"exiting"<<endl;
-			delete P;
-			MPI::Finalize();
-			return 1;
-
-		}
-		segments 	= slice_segments(segments, rank, nprocs);
-		int interval_number;
-		map<int, int> bidir_number_table;
-		
-		if (not template_match){
-			BIN(segments, stod(P->p["-br"]), stod(P->p["-ns"]), true);
-		}else{
-			BIN(segments, stod(P->p["-br"]), stod(P->p["-ns"]), false );
-			//need to write a function to insert eRNA predictions 
-			//for each segment
-			run_global_template_matching(segments, "", 
-				stod(P->p["-window"])/stod(P->p["-ns"]), stod(P->p["-density"])/stod(P->p["-ns"]) ,
-				stod(P->p["-ns"]) ,stod(P->p["-ct"]), 
-				stoi(P->p["-np"]) ,0,0);
-			//now we want to collapse all segments into one large vector<segment *>
-		}
-		
-		//==========================================
-		//Model Parameters
-		clock_t t;
-		chrono::time_point<chrono::system_clock> start, end;
-		start = chrono::system_clock::now();
-
-		t = clock();
-		vector<simple_c> fits;
-		vector<simple_c> all_fits;
-		map<int, map<int, bidir_preds> > G;
-		if (not template_match){
-			run_model_accross_segments(segments, P);
-		}else{//need to write a function to fit bidirectionals in isolation...
-			fits 	= run_model_accross_segments_template(segments, P);
-		}
-		if (root){
-			bidir_number_table 	= get_all_bidir_sizes(fits, nprocs);
-			typedef map<int, int>::iterator it_type;
-			
-			for (it_type cc = bidir_number_table.begin(); cc != bidir_number_table.end() ; cc++){
-				printf("Node %d ran %d model fits\n", cc->first, cc->second );
-			}
-		}else{
-			send_bidir_size(fits);
-		}
-		//now we want to collate all the results;
-		if (root){
-			G 	= gather_all_simple_c_fits(fits, bidir_number_table, interval_number, nprocs);
-		}else{
-			send_all_simple_c_fits(fits);
-		}
-		//need to perform model selection
-		if (root){
-			G 	= run_model_selection_bidir_template(G, 1.);
-			write_out_bidir_fits(all_segments, G, P);
-		}
-		free_segments(segments);
-		end = chrono::system_clock::now();
-		int elapsed_seconds = std::chrono::duration_cast<std::chrono::milliseconds >
-	                             (end-start).count();
-		t = clock() - t;
-		if (root){
-			printf("Wall Time %f\n", float(elapsed_seconds)/1000.);
-		}				
-	}else if (P->module=="FORMAT"){
-		//==================================================================
-		//Necessary FILES
-		string interval_file 					= P->p2["-i"];
-		string forward_strand_bedgraph_file 	= P->p2["-j"];
-		string reverse_strand_bedgraph_file 	= P->p2["-k"];
-		
-		string out_file_name 					= P->p2["-o"];
-		//==================================================================
-		//Some cosmetic parameters
-		int pad 								= stoi(P->p2["-pad"]);
-		bool verbose 							= bool(stoi(P->p2["-v"]));
-		//==================================================================
-		if (verbose){//show current user parameters...
-			P->display(1,1);
-		}
-		map<string, vector<merged_interval*> > G 	= load_intervals(interval_file, pad); //load the forward and reverse strand intervals, merge accordingly...
-		//====================================================
-		//making interval tree
-		map<string, interval_tree *> A;
-		typedef map<std::string, vector<merged_interval*>>::iterator it_type;
-		for(it_type c = G.begin(); c != G.end(); c++) {
-			A[c->first] 	= new interval_tree();
-			A[c->first]->construct(c->second);
-		}
-		insert_bedgraph(A, forward_strand_bedgraph_file, 1);
-		insert_bedgraph(A, reverse_strand_bedgraph_file, -1);
-		write_out(out_file_name, A);
-	}
-	else if(P->module=="SELECTION"){
-		int verbose 			= stoi(P->p3["-v"]);
-		
-		if (verbose){//show current user parameters...
-			P->display(1,1);
-		}
-		run_model_selection(P->p3["-i"], P->p3["-o"], stod(P->p3["-penality"]));
+    
 	}else if (P->module=="SINGLE"){
 		int nprocs = MPI::COMM_WORLD.Get_size();
 		int rank = MPI::COMM_WORLD.Get_rank();
@@ -378,37 +291,6 @@ int main(int argc, char* argv[]){
 		map<string, vector<segment *> > GG;
 		timer T(50);
 				
-		if (run_template){
-			
-
-			T.start_time(rank, "loading BG files:");
-			vector<segment*> segments 	= load_bedgraphs_single(bed_graph_file, 
-			 BINS, scale, spec_chrom);
-			T.get_time(rank);
-			if (segments.empty()){
-				printf("segments not populated, exiting...\n");
-				MPI::Finalize();
-				return 1;
-			}
-			
-			vector<segment*> all_segments  	= segments;
-			segments 						= slice_segments(segments, rank, nprocs);
-			
-			T.start_time(rank, "running template matching:");	
-			run_global_template_matching(segments, out_file_dir, opt_res, 
-				1,scale,ct, np,0. ,1 );	
-			T.get_time(rank);
-			T.start_time(rank, "(MPI) gathering loading predictions:");	
-			if (P->p5["-show_seeds"] == "1"){
-				G = gather_all_bidir_predicitions(all_segments, 
-					segments , rank, nprocs, out_file_dir);
-			}else{
-				G = gather_all_bidir_predicitions(all_segments, 
-					segments , rank, nprocs, "");
-			}
-			T.get_time(rank);
-			
-		}
 		map<int, string> IDS;
 		if (rank==0){
 			T.start_time(rank, "Loading/Converting intervals of interest:");

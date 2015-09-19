@@ -16,134 +16,96 @@ def grab_data(forward, reverse):
 	X[:,0] 	-= X[0,0]
 	X[:,0] /=100.
 	return X
-def draw(components, X):
-	F 			= plt.figure(figsize=(15,10))
-	xs 	= np.linspace(X[0,0], X[-1,0], 1000)
-	ysf = map(lambda x: sum([c.pdf(x,1) for c in components]) , xs )
-	ysr = map(lambda x: -sum([c.pdf(x,-1) for c in components]) , xs )
-	bins 		= 300
-	fct, fe 	= np.histogram(X[:,0], weights=X[:,1,] ,normed=1, bins=bins)
-	fe 			= (fe[:-1] + fe[1:])/2.
-	rct, re 	= np.histogram(X[:,0], weights=X[:,2], normed=1, bins=bins)
-	re 			= (re[:-1] + re[1:])/2.
-	widthf 		= (fe[-1] - fe[0])/bins
-	widthr 		= (re[-1] - re[0])/bins
-	
-	plt.plot(xs, ysf,linewidth=2., color="black")
-	plt.plot(xs, ysr,linewidth=2., color="black")
-	plt.bar(fe, fct, width=widthf, edgecolor="blue", color="blue", alpha=0.5)
-	plt.bar(re, -rct, width=widthr, edgecolor="red", color="red", alpha=0.5)
-	plt.grid()
-	plt.show()
-def compute_log_likelihood(X, components,  move_as=None, move_bs=None):
-	forward, reverse 	= 0. , 0.
-	if move_as is None:
-		move_as 		= np.zeros((len(components, )))
-	if move_bs is None:
-		move_bs 		= np.zeros((len(components, )))
-	
-	for i in range(X.shape[0]):
-		x,forward_ct, reverse_ct 	= X[i,:]
-		forward+=m.log(sum([c.pdf(x,1, move_a=move_as[i], move_b=move_bs[i]) for i,c in enumerate(components)]))*forward_ct
+def LOG(x):
+	if x ==0:
+		return -np.inf
+	return m.log(x)
+def prior_l_norm(l, mu, si):
 
-	for i in range(X.shape[0]):
-		x,forward_ct, reverse_ct 	= X[i,:]
-		reverse+=m.log(sum([c.pdf(x,-1, move_a=move_as[i], move_b=move_bs[i]) for i,c in enumerate(components)]))*reverse_ct
-	return forward + reverse
+	return 1.0 / m.sqrt(2*m.pi)
 
 
-
-
-def move_l(X, parameters):
-	minX, maxX 	= X[0,0], X[-1,0]
-	K 			= len(parameters)
-	noise_max 	= 0.01
-	bidirs 		= [component_bidir(mu, si,l, w,pi,None) for mu, si,l, w, pi in parameters] 
-	right_bounds= [ mu for mu, si,l, w, pi in parameters[1:] ] + [maxX]
-	left_bounds = [minX] + [ mu for mu, si,l, w, pi in parameters[:-1] ] 
-	uniforms    = [component_elongation(np.random.uniform(left_bounds[k], parameters[k][0]), parameters[k][0], 0.111, 0., bidirs[k], "reverse",None ,0 ) for k in range(K)]
-	uniforms   += [component_elongation(parameters[k][0],np.random.uniform(parameters[k][0], right_bounds[k]) , 0.111, 1., bidirs[k], "forward",None, X.shape[0] ) for k in range(K)]
-	uniforms   += [component_elongation(minX, maxX, noise_max, 0.5, bidirs[0], "noise", None, X.shape[0]) ]
-	components 	= bidirs + uniforms
-
-	ll 			= compute_log_likelihood(X, components)
-	t 			= 0
-	EX 			= np.zeros((len(components), ))
-	weights 	= np.zeros((len(components),))
-	current 	= np.zeros((len(components), 2))
-	prevll 		= -np.inf
-	converged 	= False
-	while t < 300 and not converged:
-		#update weights
+def move_l(X, parameters,penality=2):
+	forward_as 	= [mu+si + (1.0 / l) for mu, si, l, w, pi in parameters]
+	reverse_bs 	= [mu-si - (1.0 / l) for mu, si, l, w, pi in parameters]
+	forward_is 	= list()
+	reverse_is 	= list()
+	for f in range(len(parameters)):
 		for i in range(X.shape[0]):
-			x,f,r 		= X[i,:]
-			normed_f 	= 0
-			normed_r 	= 0
-			for k,c in enumerate(components):
-				prob_f 	= c.pdf(x,1)
-				prob_r 	= c.pdf(x,-1)
-				normed_f+=prob_f
-				normed_r+=prob_r
-				current[k,0] 	= prob_f
-				current[k,1] 	= prob_r
-			for k,c in enumerate(components):
-				if (normed_f):
-					EX[k]+=(current[k,0]/normed_f)*f
-				if (normed_r):
-					EX[k]+=(current[k,1]/normed_r)*r
-		N 	= 0
-		for k,c in enumerate(components):
-			N+=EX[k]
-		W 	= 0
-		for k,c in enumerate(components):
+			if X[i,0] > forward_as[f]:
+				break
+		for j in range(X.shape[0]):
+			if X[j,0] > reverse_bs[f]:
+				break
+		forward_is.append(i)	
+		reverse_is.append(j)
+	for f,i in enumerate(forward_is):
+		lls 	= list()
+		if f < len(forward_is)-1:
+			j 	= reverse_is[f+1]
+		else:
+			j 	= X.shape[0]-1
+		N 		= sum(X[i:j,1])
+		oll 		= sum(X[i:j,1])*m.log(1. / (X[j,0]-X[i,0] ))
+		NULL 	= -2*oll + LOG(N)
+		for l in range(i,j):
+			N_left , N_right 	= sum(X[i:l, 1]),sum(X[l:j, 1])
+			w_left 				= N_left / (N_right + N_left)
+			vl_left 			= LOG(w_left/(X[l,0] - X[i,0]))
+			vl_right 			= LOG((1.0-w_left)/(X[j,0] - X[l,0]))
+		
+			ll 					= vl_left*N_left + vl_right*N_right
+			print oll, ll
+			BIC 				= -2*ll + penality*LOG(N)
+			lls.append(NULL/BIC)
+		F 	= plt.figure(figsize=(15,10))
+		ax1 	= F.add_subplot(311)
+		ax2 	= F.add_subplot(312)
+		ax3 	= F.add_subplot(313)
+		ax1.bar(X[:,0], X[:,1])
+		ax1.bar(X[:,0], -X[:,2])
+		ax1.scatter([X[i,0],X[j,0]], [0,0], s=30 )
 
-			c.w 	= EX[k]/N	
-			if c.type == "noise":
-				c.w = min(c.w, noise_max)
-			else:
-				W+=c.w
-			EX[k] 	= 0
-		for c in components:
-			if c.type!="noise":
-				c.w/=W
-		#now move lls
-		ll 			= compute_log_likelihood(X, components)
-		change 		= False
-		for c in components:
+		ax2.bar(X[i:j, 0], X[i:j, 1])
+		ax2.grid()
+		ax3.plot(X[i:j, 0], lls)
+		ax3.grid()
+		plt.show()
+	for f,j in enumerate(reverse_is):
+		lls 	= list()
+		if f == 0:
+			i 	= 0
+		elif f>0:
+			i 	= forward_is[f-1]
+		N 		= sum(X[i:j,2])
+		oll 		= sum(X[i:j,2])*m.log(1. / (X[j,0]-X[i,0] ))
+		NULL 	= -2*oll + LOG(N)
+		for l in range(i,j):
+			N_left , N_right 	= sum(X[i:l, 2]),sum(X[l:j, 2])
+			w_left 				= N_left / (N_right + N_left)
+			vl_left 			= LOG(w_left/(X[l,0] - X[i,0]))
+			vl_right 			= LOG((1.0-w_left)/(X[j,0] - X[l,0]))
+			ll 					= vl_left*N_left + vl_right*N_right
+			BIC 				= -2*ll + penality*LOG(N)
+			lls.append(NULL/BIC) 
+		F 	= plt.figure(figsize=(15,10))
+		ax1 	= F.add_subplot(311)
+		ax2 	= F.add_subplot(312)
+		ax3 	= F.add_subplot(313)
+		ax1.bar(X[:,0], X[:,1])
+		ax1.bar(X[:,0], -X[:,2])
+		ax1.scatter([X[i,0],X[j,0]], [0,0], s=30 )
+		ax3.grid()
 
-			if c.type=="forward":
-				oldb 	= c.b
-				c.b 	+=np.random.normal(0,10)
-				nll 	= compute_log_likelihood(X, components)
-				if nll < ll:
-					c.b = oldb
-				else:
-					change=True
-					ll 	= nll
-			elif c.type=="reverse":
-				olda 	= c.a
-				c.a 	+=np.random.normal(0,10)
-				nll 	= compute_log_likelihood(X, components)
-				if nll < ll:
-					c.a = olda
-				else:
-					change=True
-					ll 	= nll
-		print t
-
-
-		if abs(ll - prevll) < pow(10,-1):
-			converged 	= True
-			draw(components, X)
-
-		prevll 		= ll
+		ax2.bar(X[i:j, 0], -X[i:j, 2])
+		ax2.grid()
+		ax3.plot(X[i:j, 0], lls)
+		plt.show()
+	
 
 
 
-		t+=1
-
-	draw(components, X)
-
+	
 
 
 
@@ -156,4 +118,16 @@ if __name__=="__main__":
 	parameters 	= [	(298.119448,1.036515,0.228770,0.111111,0.423449), 
 					(358.097039,3.538068,0.129734,0.111111,0.391122), 
 					(660.517058,0.063181,0.187830,0.111111,0.379944)]
-	move_l(X, parameters)
+	move_l(X, parameters, penality=1000)
+
+
+
+
+
+
+
+
+
+
+
+

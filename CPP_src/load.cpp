@@ -12,6 +12,9 @@
 #include "across_segments.h"
 #include "model_selection.h"
 #include <cmath>
+#include <stdio.h>
+#include <time.h>
+
 using namespace std;
 //========================
 //model fit wrapper classes
@@ -1665,9 +1668,41 @@ void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> ID
 
 	}
 
+}
 
-	
+void collect_all_tmp_files(string dir, int nprocs){
+	int c 	= 0;
+	time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%m_%d_%H_%M", &tstruct);
+    string DT 	= buf;
+	string OUT 		= dir+"EMGU_" + DT+ ".log";
+	ofstream FHW(OUT);
+	for (int rank = 0; rank < nprocs; rank++){
+		string FILE 	= dir+"tmp_log_file_" + to_string(rank) + ".log";
+		string line;
+		ifstream FH(FILE);
+		if (FH){
+			if (rank!=0){
+				FHW<<"=======MPI Call: " + to_string(rank) +"=======\n";
+			}
+			while (getline(FH, line)){
+				if ("#" != line.substr(0,1) or rank==0){
+					FHW<<line<<endl;
+				}
+			}
 
+			FH.close();
+			remove( FILE.c_str()) ;
+			c++;
+		}else{
+
+		}
+	}
 }
 
 

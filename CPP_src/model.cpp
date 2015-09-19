@@ -534,20 +534,8 @@ int get_new_position(geometric_distribution<int> dist_uni, mt19937 mt,
 	int j = 0;
 
 	if (direction==1){
-		// while (i < (N-1) and j < ct){
-		// 	if (data->X[st][i] > 0){
-		// 		j++;
-		// 	}
-		// 	i++;
-		// }
 		i 	= min(N-1, i+ct);
 	}else{
-		// while (i > 0 and j < ct){
-		// 	if (data->X[st][i]>0){
-		// 		j++;
-		// 	}
-		// 	i--;
-		// }
 		i 	= max(0, i-ct);
 	}
 	//printf("old: %d,new: %d, change: %d,old: %f, new: %f\n", pos,i, ct*direction, data->X[0][pos], data->X[0][i] );
@@ -825,7 +813,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 			SS+=data->X[1][i];
 		}
 		if (not isfinite(ll) or ll==nINF){
-			printf("%f, %f, %f\n",SS ,data->minX, data->maxX );
+			printf("%s:%d-%d,%f, %f, %f,\n",data->chrom.c_str(), data->start, data->stop, SS ,data->minX, data->maxX );
 		}
 		converged=true;
 		last_diff=0;
