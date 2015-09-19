@@ -403,6 +403,7 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 	for (int i = 0; i < segments.size(); i++){
 		if ((i / N) > (percent+0.25)){
 			log_file<<to_string(int((i / N)*100))+"%,";
+			log_file.flush();
 			percent 	= (i / N);
 		}
 
@@ -412,6 +413,7 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
     	}	
 	}
 	log_file<<"...done\n";
+	log_file.flush();
 	return fits;
 }
 
