@@ -73,7 +73,6 @@ map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_
 	
 	MPI_Datatype old_types[4] 	={MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[4];
-	MPI_Aint intex, doublex;
 
 	displacements[0] 	= offsetof(simple_c, ll);
 	displacements[1] 	= offsetof(simple_c, noise_ll);
