@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "split.h"
+#include <stddef.h>
 using namespace std;
 
 vector<segment *> slice_segments(vector<segment *> segments, int rank, int nprocs){
