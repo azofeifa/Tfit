@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
 		int nprocs		= MPI::COMM_WORLD.Get_size();
 		int rank 		= MPI::COMM_WORLD.Get_rank();
 	    int threads  	= omp_get_max_threads();
-		int verbose 		= stoi(P->p4["-v"]);
+		int verbose 	= stoi(P->p4["-v"]);
 
 		int job_ID 		=  get_job_ID(P->p4["-log_out"], rank, nprocs);
 

@@ -344,15 +344,19 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 	int S;
 	if (rank==0){
 		for (int j = 1; j < nprocs; j++){
+			printf("Rank: 0, waiting on rank: %d \n", j );
 			MPI_Recv(&S, 1, MPI_INT, j, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+			printf("Rank: 0 received: %d \n", S );
 			for (int b = 0; b < S; b++){
 				MPI_Recv(&rc, 1, mystruct, j, b, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
+				printf("Rank: 0 received: %d of %d \n", b,S );
 				rsimple_c_fits.push_back(rc);
 			}
 		}				
 	}else{	
 		S 	= rsimple_c_fits.size();
 		MPI_Send(&S, 1, MPI_INT, 0,1, MPI_COMM_WORLD);
+		printf("Rank: %d, sending: %d \n", rank , S );
 		for (int b = 0; b < S; b++){
 			MPI_Send(&rsimple_c_fits[b], 1, mystruct, 0, b, MPI_COMM_WORLD);			
 		}
