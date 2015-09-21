@@ -77,8 +77,11 @@ int main(int argc, char* argv[]){
 		int nprocs		= MPI::COMM_WORLD.Get_size();
 		int rank 		= MPI::COMM_WORLD.Get_rank();
 	    int threads  	= omp_get_max_threads();
-		int verbose 	= stoi(P->p4["-v"]);
-		string log_out 	= P->p4["-log_out"] + "tmp_log_file_" + to_string(rank) + ".log"  ;
+		int verbose 		= stoi(P->p4["-v"]);
+
+		int job_ID 		=  get_job_ID(P->p4["-log_out"], rank, nprocs);
+
+		string log_out 	= P->p4["-log_out"] + "tmp_EMGU-" + to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
 		ofstream 	FHW;
 		FHW.open(log_out);
 
@@ -254,7 +257,7 @@ int main(int argc, char* argv[]){
 			}
 		}
 		if (rank==0){
-			collect_all_tmp_files(P->p4["-log_out"], nprocs);
+			collect_all_tmp_files(P->p4["-log_out"], nprocs, job_ID);
 		}
 		
 

@@ -9,11 +9,11 @@
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/ #output file directory
 -chr 			= chr1 #specific chromosome
 -br 			= 100 #binning resolution do not consider changing
--window_res 		= 2 #window
+-window_res 		= 10 #window
 -pad 			= 3000
--MLE			= 1 #get Maximum likelihood estimates
+-MLE			= 0 #get Maximum likelihood estimates
 -elon 			= 0
--bct 			= 0.95 #confidence threshold
+-bct 			= 1.0 #confidence threshold
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -opt_res 		= 5 #grid search resolution
 -np 			= 4 #number of CPU cores/processors
@@ -31,5 +31,5 @@
 -optimize 		= 0 #whether or not we should train on the bed files in the -k dir
 -foot_res 		= 5
 -show_seeds 		= 1 #show the pseudo moment estimators that the MLE will be fit on
--log_out 		= /Users/joazofeifa/Lab/EMG/
+-log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 

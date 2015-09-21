@@ -35,4 +35,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 
 vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> , int, int   );
 
+int get_job_ID(string,int, int);
+
+
 #endif

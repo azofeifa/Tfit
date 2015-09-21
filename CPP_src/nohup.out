@@ -1,0 +1,140 @@
+----------------------------------------------------------------
+              User Provided EMGU Parameters                     
+                 (BIDIRECTIONAL DETECTOR)                       
+-i           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-f           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
+-o           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-chr         : chr1
+-window_res  : 2
+-bct         : 0.95
+-MLE         : 1
+-mi          : 2000
+-ct          : 0.0001
+-fp          : 
+-elon        : 0
+-pad         : 3000
+-ns          : 100
+-br          : 100
+-rounds      : 5
+-threads     : 8
+-MPI_nodes   : 4
+Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu
+----------------------------------------------------------------
+loading BG files:                                                               CPU: 0.39533,WT: 0.395
+running template matching:                                                      CPU: 0.1704,WT: 0.053
+(MPI) gathering bidir predictions:                                              CPU: 0.000465,WT: 0
+loading BG files:                                                               CPU: 0.35831,WT: 0.367
+----------------------------------------------------------------
+              User Provided EMGU Parameters                     
+                 (BIDIRECTIONAL DETECTOR)                       
+-i           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-f           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
+-o           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-chr         : chr1
+-window_res  : 2
+-bct         : 0.95
+-MLE         : 1
+-mi          : 2000
+-ct          : 0.0001
+-fp          : 
+-elon        : 0
+-pad         : 3000
+-ns          : 100
+-br          : 100
+-rounds      : 5
+-threads     : 8
+-MPI_nodes   : 4
+Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu
+----------------------------------------------------------------
+----------------------------------------------------------------
+              User Provided EMGU Parameters                     
+                 (BIDIRECTIONAL DETECTOR)                       
+-i           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-f           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
+-o           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-chr         : chr1
+-window_res  : 2
+-bct         : 0.95
+-MLE         : 1
+-mi          : 2000
+-ct          : 0.0001
+-fp          : 
+-elon        : 0
+-pad         : 3000
+-ns          : 100
+-br          : 100
+-rounds      : 5
+-threads     : 8
+-MPI_nodes   : 4
+Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu
+----------------------------------------------------------------
+loading BG files:                                                               CPU: 0.74285,WT: 2.364
+running template matching:                                                      CPU: 0.19184,WT: 0.156
+(MPI) gathering bidir predictions:                                              CPU: 0.000651,WT: 0
+----------------------------------------------------------------
+              User Provided EMGU Parameters                     
+                 (BIDIRECTIONAL DETECTOR)                       
+-i           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-f           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
+-o           : /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-chr         : chr1
+-window_res  : 2
+-bct         : 0.95
+-MLE         : 1
+-mi          : 2000
+-ct          : 0.0001
+-fp          : 
+-elon        : 0
+-pad         : 3000
+-ns          : 100
+-br          : 100
+-rounds      : 5
+-threads     : 8
+-MPI_nodes   : 4
+Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu
+----------------------------------------------------------------
+loading BG files:                                                               CPU: 0.72369,WT: 2.203
+running template matching:                                                      CPU: 0.19116,WT: 0.143
+(MPI) gathering bidir predictions:                                              CPU: 0.000681,WT: 0
+loading BG files:                                                               CPU: 0.65166,WT: 2.597
+loading BG files:                                                               CPU: 0.72452,WT: 2.754
+running template matching:                                                      CPU: 0.19411,WT: 0.291
+(MPI) gathering bidir predictions:                                              CPU: 0.006019,WT: 0.006
+loading BG files:                                                               CPU: 0.63085,WT: 3.387
+loading BG files:                                                               CPU: 0.62694,WT: 4.311
+MLE fit on Josephs-MBP, going to process 10 segments:                           CPU: 11.759,WT: 16.041
+MLE fit on Josephs-MBP, going to process 10 segments:                           CPU: 11.919,WT: 25.324
+MLE fit on Josephs-MBP, going to process 10 segments:                           CPU: 12.471,WT: 24.15
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 17.876,WT: 28.47
+MLE fit on Josephs-MBP, going to process 10 segments:                           CPU: 13.034,WT: 29.363
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 21.361,WT: 35.188
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 24.261,WT: 40.624
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 19.009,WT: 31.487
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 39.273,WT: 55.105
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 36.087,WT: 55.405
+(MPI) gathering MLE results:                                                    CPU: 0.17264,WT: 0.243
+opt model selection:                                                            CPU: 0.011118,WT: 0.013
+writing out bidir model selection:                                              CPU: 0.000423,WT: 0
+Final Time:                                                                     CPU: 40.407,WT: 56.215
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 39.166,WT: 50.55
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 38.789,WT: 50.742
+(MPI) gathering MLE results:                                                    CPU: 0.000445,WT: 0
+opt model selection:                                                            CPU: 0.010636,WT: 0.01
+writing out bidir model selection:                                              CPU: 0.000425,WT: 0
+Final Time:                                                                     CPU: 40.412,WT: 55.968
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 32.363,WT: 46.117
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 39.972,WT: 50.764
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 40.497,WT: 51.714
+(MPI) gathering MLE results:                                                    CPU: 0.38367,WT: 0.571
+opt model selection:                                                            CPU: 0.007175,WT: 0.007
+writing out bidir model selection:                                              CPU: 0.000357,WT: 0
+Final Time:                                                                     CPU: 41.934,WT: 57.204
+MLE fit on Josephs-MBP, going to process 9 segments:                            CPU: 42.804,WT: 49.313
+(MPI) gathering MLE results:                                                    CPU: 0.000284,WT: 0
+opt model selection:                                                            CPU: 0.007387,WT: 0.007
+writing out bidir model selection:                                              CPU: 0.00035,WT: 0
+Final Time:                                                                     CPU: 44.388,WT: 56.933

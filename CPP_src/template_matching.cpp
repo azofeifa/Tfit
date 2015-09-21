@@ -157,14 +157,15 @@ int sample_centers(vector<double> centers, double p){
 	return i;
 }
 
-void sample_variance(double ** X, double mu, double * array, int j,int k){
+void sample_variance(double ** X, double mu, double * array, int j,int k, double foot_print){
 	double N_forward, N_reverse;
 	array[0] 	= 0;
 	array[1] 	= 0;
 	N_forward=0, N_reverse=0;
+	
 	for (int i =k; i < j;i++ ){
-		array[0]+=pow(X[0][i]-mu,2)*X[1][i];
-		array[1]+=pow(X[0][i]-mu,2)*X[2][i];
+		array[0]+=pow((X[0][i]-foot_print)-mu,2)*X[1][i];
+		array[1]+=pow((X[0][i]+foot_print)-mu,2)*X[2][i];
 		N_forward+=X[1][i];
 		N_reverse+=X[2][i];
 	}
@@ -202,13 +203,13 @@ void sample_variance2(double ** X, double mu, double * array, int j,int k){
 	array[0] 	= array[0] / N_forward;
 	array[1] 	= array[1] / N_reverse;	
 }
-void sample_skew(double **X , double mu, double * sample_variances, double * sample_skews, int j, int k){
+void sample_skew(double **X , double mu, double * sample_variances, double * sample_skews, int j, int k, double foot_print){
 	double N_forward, N_reverse;
 	sample_skews[0] 	= 0;
 	sample_skews[1] 	= 0;
 	for (int i = k; i<j;i++){
-		sample_skews[0]+=pow(X[0][i]-mu,3)*X[1][i];
-		sample_skews[1]+=pow(X[0][i]-mu,3)*X[2][i];
+		sample_skews[0]+=pow((X[0][i]-foot_print)-mu,3)*X[1][i];
+		sample_skews[1]+=pow((X[0][i]+foot_print)-mu,3)*X[2][i];
 		N_forward+=X[1][i];
 		N_reverse+=X[2][i];
 	}
@@ -217,15 +218,15 @@ void sample_skew(double **X , double mu, double * sample_variances, double * sam
 	sample_skews[0]/=pow(sample_variances[0], 3/2.);
 	sample_skews[1]/=pow(sample_variances[1], 3/2.);	
 }
-double moment_estimate_lambda(double ** X, double mu,int j, int k ){
+double moment_estimate_lambda(double ** X, double mu,int j, int k, double foot_print ){
 	double N_forward, N_reverse;
 	double means[2];
 	means[0]=0;
 	means[1]=0;
 	for (int i = k; i < j ;i++){
-		means[0]+=X[0][i]*X[1][i];
+		means[0]+=(X[0][i]-foot_print)*X[1][i];
 		N_forward+=X[1][i];
-		means[1]+=X[0][i]*X[2][i];
+		means[1]+=(X[0][i]+foot_print)*X[2][i];
 		N_reverse+=X[2][i];		
 	}
 	return 1.0 / (0.5*((means[0]/N_forward) - (means[1]/N_reverse) ));
@@ -235,18 +236,24 @@ double moment_estimate_sigma(double * sample_variances, double l){
 	return std 	= std - (1. / l);
 }
 
-double get_mean(double ** X, int j,int k,int s){
+double get_mean(double ** X, int j,int k,int s, double foot_print){
 	double SUM,N;
 	SUM=0;N=0;
+	int st;
+	if (s == 1){
+		st 	= s;
+	}else{
+		st 	= -1;
+	}
 	for (int i = k ; i<j; i++){
-		SUM+=X[0][i]*X[s][i];
+		SUM+=(X[0][i]-st*foot_print)*X[s][i];
 		N+=X[s][i];
 	}
 	return SUM/N;
 }
 
 double BIC(double ** X,  double * avgLL, double * variances,double * lambdas, 
-	double ** skews, double mu, int i, int j, int k , double pi, int single){
+	double ** skews, double mu, int i, int j, int k , double pi, int single, double foot_print){
 	double score 	= 0;
 	double a 	= X[0][k];
 	double b 	= X[0][j];	
@@ -259,12 +266,12 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 		
 		double * sample_variances 	= new double[2];
 		double * sample_skews 		= new double[2];
-		double MU 					= (get_mean(X, j,k,1) + get_mean(X, j,k,2))*0.5  ;
+		double MU 					= (get_mean(X, j,k,1, foot_print) + get_mean(X, j,k,2, foot_print))*0.5  ;
 		MU 							= mu;
-		sample_variance(X, MU, sample_variances, j,k);
-		sample_skew(X, mu, sample_variances, sample_skews, j,k);
+		sample_variance(X, MU, sample_variances, j,k, foot_print);
+		sample_skew(X, mu, sample_variances, sample_skews, j,k,foot_print);
 		skews[i][0] 	= sample_skews[0],skews[i][1] 	= sample_skews[1];
-		double ll 	= moment_estimate_lambda(X,MU,j,k);
+		double ll 	= moment_estimate_lambda(X,MU,j,k, foot_print);
 		if (ll < 0){
 			return 0.;
 		}
@@ -277,7 +284,7 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 		EMG EMG_clf(MU, sii, ll, 1.0, 0.5 );
 		double N 	= 0;
 		for (int i = k; i < j; i++ ){
-			emg_ll+=(LOG(EMG_clf.pdf(X[0][i],1))*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1))*X[2][i]);
+			emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);
 			uni_ll+=(LOG(	pi / (b-a) )*X[1][i]   + LOG((1-pi )/(b-a) )*X[2][i] ); 
 			N+=(X[1][i]+X[2][i]);
 		}
@@ -316,7 +323,7 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 }
 
 void BIC_template(segment * data, double * avgLL, double * BIC_values, double * densities, double * densities_r,
-	double * variances,double * lambdas, double ** skews ,double window, int np, int single){
+	double * variances,double * lambdas, double ** skews ,double window, int np, int single,double foot_print){
 	double vl;
 	int NN 	= int(data->XN);
 	#pragma omp parallel for num_threads(np)
@@ -351,9 +358,9 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 						
 					}
 					if (not single){
-						BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN, single );
+						BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN, single, foot_print );
 					}else{
-						BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN, single );	
+						BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k, N_pos/NN, single, foot_print );	
 					}
 				}
 		}else{
@@ -379,9 +386,9 @@ void run_global_template_matching(vector<segment*> segments,
 	vector<vector<double> > scores;
 	vector<double> current(5);
 	vector<string> INFOS;
-	double window;
-	double window_a;
-	double window_b;
+	double window, foot_print;
+	double window_a,fp_a;
+	double window_b,fp_b;
 	if (not single){
 		window_a 	= 500;
 		window_b 	= 2500;
@@ -390,9 +397,44 @@ void run_global_template_matching(vector<segment*> segments,
 		window_b 	= 4000;
 	
 	}
+	fp_a = 0, fp_b = 500;
 	int all 	= 0;
+	double fp_res = 20;
 	double window_delta = (window_b-window_a)/res;
+	double fp_delta 	= (fp_b - fp_a )/ res;
+	window 		= 1500/scale;
 	log_file<<"(template_matching) beginning to run template matching...";
+	//now we want to merge all of these overlaps...
+	struct merged{
+	public:
+		double start, stop;
+		vector<vector<double>> intervals;
+		void add(vector<double> insertee){
+			start 		= min(start, insertee[0]), stop= max(stop, insertee[1]);
+			intervals.push_back(insertee);
+		}
+		merged(){};
+		merged(vector<double> insertee ){
+			start=insertee[0], stop=insertee[1];
+			intervals.push_back(insertee);
+		};
+		vector<double> get_best(){
+			double current_BIC_score 	= INF;
+			vector<double> arg_bic;
+			for (int i = 0; i < intervals.size(); i++){
+				if (intervals[i][2] < current_BIC_score){
+					arg_bic 	= intervals[i];
+				}
+			}
+			if (arg_bic.empty()){
+				printf("WHAT?\n");
+			}
+			return arg_bic;
+		}
+		
+	};
+	int mj;
+	vector<merged> mergees;
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
 		double * BIC_values 	= new double[int(segments[i]->XN)];
@@ -404,35 +446,37 @@ void run_global_template_matching(vector<segment*> segments,
 		for (int t =0; t < segments[i]->XN; t++ ){
 			skews[t] 	= new double[2];
 		}
+		mergees.clear();
 		for (int w = 0 ; w<res; w++){
-			window 	= (window_a + window_delta*w) / scale;
-			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single);
-			
-			//write out contigous regions of up?
-			for (int j = 1; j<segments[i]->XN-1; j++){
-				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
-					if (BIC_values[j] >=ct  and densities[j]>window*0.15  and densities_r[j]>window*0.15 and skews[j][0] >= skew and skews[j][1] <= -skew){
-						if (lambdas[j]>0){
-							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-						}else{
-							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - (variances[j]/2.)*scale);
-							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + (variances[j]/2.)*scale);	
-						}
-						current[0] 	= start, current[1]=stop, current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
-						if (scores.empty()){
-							current[0] 	= start, current[1]=stop, current[2]=BIC_values[j];
-							scores.push_back(current);
-							INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
-						}else{
-							N 			= scores.size();
-							if ( ( stop > scores[N-1][0] and   start < scores[N-1][1] )  ){ //overlap
-								if (scores[N-1][2] < BIC_values[j]){
-									scores[N-1] = current;	
-								}
+			window 		= (window_a+window_delta*w)/scale;
+			for (int fpw =0; fpw < fp_res; fpw++){
+				foot_print 	= (fp_delta*fpw)/scale;
+				BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single, foot_print);
+				mj 	= 0;
+				//write out contigous regions of up?
+				for (int j = 1; j<segments[i]->XN-1; j++){
+					if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
+						if (BIC_values[j] >=ct  and densities[j]>window*0.75  and densities_r[j]>window*0.75 and skews[j][0] >= skew and skews[j][1] <= -skew){
+							if (lambdas[j]>0){
+								start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+								stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 							}else{
-								INFOS.push_back("BIC:" + to_string(BIC_values[j]) + "," + "VAR:" + to_string(sqrt(variances[j])*scale) + ",INIT:" + to_string(1.0/lambdas[j]*scale) );
-								scores.push_back(current);
+								start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - (variances[j]/2.)*scale);
+								stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + (variances[j]/2.)*scale);	
+							}
+							current[0] 	= double(start), current[1]=double(stop), current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
+							
+							merged M(current);
+							int N 		= mergees.size();
+							mj 			= 0;
+							while (mj < N and mergees[mj].stop < M.start){
+								mj++;
+							}
+							if (mj < N and mergees[mj].stop > M.start and mergees[mj].start < M.stop){
+								mergees[mj].add(current);
+							}else{
+								mergees.insert(mergees.begin() + mj, M);
+								
 							}
 						}
 					}
@@ -440,65 +484,19 @@ void run_global_template_matching(vector<segment*> segments,
 			}
 			
 		}
-		//now we want to merge all of these overlaps...
-		struct merged{
-		public:
-			double start, stop;
-			vector<vector<double>> intervals;
-			void add(vector<double> insertee){
-				start 		= min(start, insertee[0]), stop= max(stop, insertee[1]);
-				intervals.push_back(insertee);
-			}
-			merged(){};
-			merged(vector<double> insertee ){
-				start=insertee[0], stop=insertee[1];
-				intervals.push_back(insertee);
-			};
-			vector<double> get_best(){
-				double current_BIC_score 	= INF;
-				vector<double> arg_bic;
-				for (int i = 0; i < intervals.size(); i++){
-					if (intervals[i][2] < current_BIC_score){
-						arg_bic 	= intervals[i];
-					}
-				}
-				if (arg_bic.empty()){
-					printf("WHAT?\n");
-				}
-				return arg_bic;
-			}
-			
-		};
-		//sort_scores
-		int N 	= scores.size();
-		if (N){
-			scores 	= bubble_sort2(scores);
-			int j;
-			vector<merged> mergees;
-			for (int s = 0; s < scores.size(); s++){
-				merged 	M(scores[s]);
-				s++;
-				while (s < N and scores[s][1] > M.start and scores[s][0] < M.stop ) {
-					M.add(scores[s]);
-					s++;
-				}
-				mergees.push_back(M);
-			}
-			scores.clear();
-			for (int m = 0; m < mergees.size(); m++){
-				scores.push_back(mergees[m].get_best());
-			}
-			all+=int(scores.size());
-			for (int j = 0; j < scores.size();j++){
+		
+		scores.clear();
+		for (int m = 0; m < mergees.size(); m++){
+			scores.push_back(mergees[m].get_best());
+		}
+		all+=int(scores.size());
+		for (int j = 0; j < scores.size();j++){
 
-				center 		= int((scores[j][1]+scores[j][0]) / 2.);
-				//want to insert into
-				vector<double> bounds(2);
-				// bounds[0]=(center-scores[j][3]-scores[j][4] - segments[i]->start)/scale; 
-				// bounds[1]=(center+scores[j][3]+scores[j][4] - segments[i]->start)/scale ;
-				bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
-				segments[i]->bidirectional_bounds.push_back(bounds);	
-			}
+			center 		= int((scores[j][1]+scores[j][0]) / 2.);
+			//want to insert into
+			vector<double> bounds(2);
+			bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
+			segments[i]->bidirectional_bounds.push_back(bounds);	
 		}
 		scores.clear();
 	}
@@ -560,7 +558,7 @@ void optimize(map<string, interval_tree *> I,
 				for (int t =0; t < segments[i]->XN; t++ ){
 					skews[t] 	= new double[2];
 				}
-				BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas, skews, window,np,0);
+				BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas, skews, window,np,0,0);
 				
 				for (int k =0; k <= res; k++){
 					density 	= density_a+density_delta*(k);

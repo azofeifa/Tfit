@@ -3,6 +3,9 @@
 #include "load.h"
 #include <vector>
 #include "across_segments.h"
+#include <sys/types.h>
+#include <dirent.h>
+#include "split.h"
 using namespace std;
 
 vector<segment *> slice_segments(vector<segment *> segments, int rank, int nprocs){
@@ -205,6 +208,7 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 				collections.push_back(B2);
 			}
 		}
+		count 	= int(collections.size()) / nprocs;
 		for (int j =1; j < nprocs; j++){
 			int start 	= j * count;
 			int stop 	= min(start + count, int(N ));	
@@ -246,6 +250,7 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 	}
 	if (rank==0){
 		N 	= collections.size();
+
 		int count 	= N/ nprocs;
 		if (count==0){
 			count 	= 1;
@@ -282,7 +287,6 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	int namelen;  
 	MPI_Get_processor_name(processor_name, &namelen); 
-		
 	for (int i = 0 ; i < final_collections.size(); i++){
 		vector <double> BB(2);
 		BB[0] = final_collections[i].D[1], BB[1]= final_collections[i].D[2];
@@ -681,6 +685,65 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 	return recieved;
 
 }
+
+int get_job_ID(string path, int rank, int nprocs){
+	//string OUT = dir+"EMGU-" + to_string(job_ID) +"_" + DT+ ".log";
+	//tmp_EMGU-0_2.log
+	int current 			= 1;
+	string current_file 	= "";
+	vector<string> line_array;
+	bool FOUND = false;
+	if (rank==0){
+		DIR * dirFile = opendir( path.c_str() );
+		if ( dirFile ){
+			struct dirent* hFile;
+			errno = 0;
+			while (( hFile = readdir( dirFile )) != NULL ){
+				current_file 	= hFile->d_name;
+				if (current_file.substr(0,4) == "EMGU"){
+					line_array 	= splitter(current_file, "_");
+					if (line_array.size() > 0){
+						line_array 	= splitter(line_array[0], "-");
+						if (line_array.size() > 1){
+							current 	= max(current, stoi(line_array[1] ));
+							FOUND 		= true;
+						}
+					}
+				}
+				if (current_file.substr(0, 8 ) =="tmp_EMGU"){
+					line_array 	= splitter(current_file, "_");
+					if (line_array.size() > 1){
+						line_array 	= splitter(line_array[1], "-");
+						if (line_array.size() > 1){
+							current 	= max(current, stoi(line_array[1] ));
+							FOUND 		= true;
+						}	
+					}
+					
+				}
+
+			}	
+			closedir( dirFile );
+		}else{
+			cout<<"couldn't open temp log directory"<<endl;
+		}
+		if (FOUND){
+			current++;
+		}
+		for (int j =1; j < nprocs; j++ ){
+			MPI_Send(&current, 1, MPI_INT, j,1, MPI_COMM_WORLD);		
+		}
+
+
+	}else{
+		MPI_Recv(&current, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+		
+	}
+	return current;
+
+
+}
+
 
 
 

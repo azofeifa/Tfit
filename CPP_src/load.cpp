@@ -702,18 +702,25 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 	vector<string> lineArray;
 	string prevChrom="";
 	segment * S =NULL;
-	
+	bool INSERT 	= false;
 	while (getline(FH, line)){
 		lineArray=splitter(line, "\t");
 		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
 		if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
 			FOUND 		= true;
-			G[chrom] 	= new segment(chrom, start, stop );
+			if (chrom.size() < 6){
+				G[chrom] 	= new segment(chrom, start, stop );
+				INSERT 		= true;
+			}else{
+				INSERT 		= false;
+			}
 		}
 		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
 			break;
 		}
-		G[chrom]->add2(1, double((stop + start) / 2.), coverage);
+		if (INSERT){
+			G[chrom]->add2(1, double((stop + start) / 2.), coverage);
+		}
 		prevChrom=chrom;
 
 	}
@@ -1030,10 +1037,12 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 			S 			= new segment(i->first, int(G[i->first][j][0] )-pad, int(G[i->first][j][1])+pad);
 			B[i->first].push_back(S);
 		}
+	
 	}
 
 	int N,j;
 	//we want to merge the overlaping calls
+	int overlaps 	= 0;
 	for (it_type_2 i = B.begin(); i!=B.end();i++){
 		N 	= i->second.size(), j 	= 1;
 		S 	= i->second[0];
@@ -1053,6 +1062,7 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 				}
 				S->start 	= min(i->second[j]->start, S->start), S->stop 	= max(i->second[j]->stop,S->stop );
 				j++;
+				overlaps++;
 			}
 
 			A[i->first].push_back(S);
@@ -1060,6 +1070,7 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 				S 			= i->second[j];
 			}
 		}
+	
 	}
 	vector<string> FILES = {forward_file, reverse_file};
 	int strands[2] 		= {1,-1};
@@ -1670,7 +1681,7 @@ void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> ID
 
 }
 
-void collect_all_tmp_files(string dir, int nprocs){
+void collect_all_tmp_files(string dir, int nprocs, int job_ID){
 	int c 	= 0;
 	time_t     now = time(0);
     struct tm  tstruct;
@@ -1680,10 +1691,10 @@ void collect_all_tmp_files(string dir, int nprocs){
     // for more information about date/time format
     strftime(buf, sizeof(buf), "%m_%d_%H_%M", &tstruct);
     string DT 	= buf;
-	string OUT 		= dir+"EMGU_" + DT+ ".log";
+	string OUT 		= dir+"EMGU-" + to_string(job_ID) +"_" + DT+ ".log";
 	ofstream FHW(OUT);
 	for (int rank = 0; rank < nprocs; rank++){
-		string FILE 	= dir+"tmp_log_file_" + to_string(rank) + ".log";
+		string FILE 	= dir+"tmp_EMGU-" +to_string(job_ID) + "_" + to_string(rank) + ".log";
 		string line;
 		ifstream FH(FILE);
 		if (FH){
@@ -1700,10 +1711,11 @@ void collect_all_tmp_files(string dir, int nprocs){
 			remove( FILE.c_str()) ;
 			c++;
 		}else{
-
+			printf("HERE?????");
 		}
 	}
 }
+
 
 
 
