@@ -61,61 +61,6 @@ void send_bidir_size(vector<simple_c> fits){
 }
 
 
-map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_simple_fits, 
-	map<int,int> bidir_table, int N, int nproc ){ //for root, N expected number
-	int count 	= N/nproc;
-	vector<simple_c> all_fits ;
-	for (int j =0; j < root_simple_fits.size(); j++){
-		all_fits.push_back(root_simple_fits[j]);
-	}
-	MPI_Datatype mystruct;
-	int blocklens[4]={1, 1,4,12};
-	
-	
-	MPI_Datatype old_types[4] 	={MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
-	MPI_Aint displacements[4];
-
-	displacements[0] 	= offsetof(simple_c, ll);
-	displacements[1] 	= offsetof(simple_c, noise_ll);
-	displacements[2] 	= offsetof(simple_c, IDS);
-	displacements[3] 	= offsetof(simple_c, ps);
-	
-	
-	MPI_Type_create_struct( 4, blocklens, displacements, old_types, &mystruct );
-	MPI_Type_commit( &mystruct );
-	
-	MPI_Status status;
-	simple_c sr;
-	typedef map<int,int>::iterator it_type;
-	map<int, map<int, bidir_preds> > G; //map refering to segment ID and specific bidir ID
-	map<int, bidir_preds> A;
-
-	typedef map<int, map<int, bidir_preds> >::iterator it_type_2;
-	typedef map<int, bidir_preds>::iterator it_type_3;
-
-
-	int segment_id, bidir_id, Complexity, pred_bidirs_in_merged;
-	int total_bidir_preds 	= 0;
-	for (it_type cc=bidir_table.begin(); cc!=bidir_table.end(); cc++){
-		//cc->first is the job that we are expect it from
-		for (int j = 0; j < cc->second ; j++){
-			MPI_Recv(&sr, 1, mystruct, cc->first, j, MPI_COMM_WORLD,&status);
-			
-			segment_id=sr.IDS[0]+cc->first*count , bidir_id=sr.IDS[3], Complexity=sr.IDS[1], pred_bidirs_in_merged=sr.IDS[2];
-			if (G.find(segment_id) == G.end()  ){
-				G[segment_id] 	= A;
-			}
-			if (G[segment_id].find(bidir_id) == G[segment_id].end() ){
-				G[segment_id][bidir_id] 	= bidir_preds(sr.noise_ll, sr.ps[9]);
-			}
-			G[segment_id][bidir_id].insert_component(Complexity, sr, sr.ll);
-			total_bidir_preds++;
-		}
-	}
-	
-
-	return G;
-}
 
 void send_all_simple_c_fits(vector<simple_c> root_simple_fits ){ //slaves
 	//need to setup MPI derived datatype for simple_c struct
