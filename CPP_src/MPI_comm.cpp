@@ -171,7 +171,6 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 		  for (int i = 0; i < (stop-start) ; i++){
 				MPI_Recv(&S, 1, MPI_INT, j, i, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 			     
-				printf("recieved %d from rank %d\n", S, j);
 				
 				//MPI_Barrier(MPI_COMM_WORLD);
 				G[all[ start+i ]->chrom] 	= vector<vector<double> >(S);
@@ -313,9 +312,7 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 	if (rank==0){
 		for (int j = 1; j < nprocs; j++){
 		 
-		  printf("root waiting on rank %d\n", j);
 			MPI_Recv(&S, 1, MPI_INT, j, 0, MPI_COMM_WORLD,&stat);
-			printf("root recieved %d from %d\n", S, j);
 			
 			for (int b = 0; b < S; b++){
 			  	MPI_Recv(&rc, 1, mystruct, j, b+1, MPI_COMM_WORLD,&stat);					
@@ -323,9 +320,8 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 			}
 		}				
 	}else{	
-	        S 	= int(rsimple_c_fits.size());
-		
-		printf("Rank %d sending %d\n", rank, S);
+        S 	= int(rsimple_c_fits.size());
+	
 		MPI_Send(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
 		
 		for (int b = 0; b < S; b++){
@@ -456,7 +452,6 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		if (counts == 0){
 			counts	= 1;
 		}
-		printf("Counts: %d\n", counts );
 		map<int, vector<int> > assignments; 
 		typedef vector<seg_and_bidir>::iterator sab_type;
 		int prev_ID 		= -100000000;
@@ -525,7 +520,6 @@ map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *
 		almost_there[(*r).st_sp[2]]->add_fitted_bidir(fb);
 	}
 
-	printf("Rank %d on %d, %d\n", rank, int(recieved_sb.size() ), int(almost_there.size())  );
 	//now finally to final_out
 	typedef map<int, segment * >::iterator at_type;
 	for (at_type a = almost_there.begin(); a!= almost_there.end(); a++ ){
