@@ -13,7 +13,7 @@
 -pad 			= 2000
 -MLE			= 1 #get Maximum likelihood estimates
 -elon 			= 0
--bct 			= 0.95 #confidence threshold
+-bct 			= 1.0 #confidence threshold
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -opt_res 		= 5 #grid search resolution
 -r_mu 			= 1 #seed EM randomally from the peak finder

@@ -1,7 +1,6 @@
 #PBS -S /bin/bash
 
-#PBS -N DMSO2_3_
-###PBS -q shortgb
+#PBS -N DMSO2_3
 
 #PBS -m ae
 #PBS -M joseph.azofeifa@colorado.edu
@@ -10,15 +9,11 @@
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
 #PBS -l walltime=05:00:00
-
-#PBS -l nodes=16:ppn=1:mem=2gb
-
-#PBS -W x=HOSTLIST:node-32,node-33,node-34,node-35,node-36,node-37,node-38,node-39,node-40,node-41,node-42,node-43,node-44,node-45,node-46,node-47
-
-#PBS -W x=FLAGS:ADVRES:joey.0
-
+#PBS -l nodes=16:ppn=64
+#PBS -l mem=180gb
+hostlist=$( cat $PBS_NODEFILE | sort | uniq | tr '\n' ',' | sed -e 's/,$//' )
 # -- OpenMP environment variables --
-OMP_NUM_THREADS=32
+OMP_NUM_THREADS=64
 export OMP_NUM_THREADS
 module load gcc_4.9.2
 module load mpich_3.1.4
@@ -42,5 +37,7 @@ interval_file=DMSO2_3_Nutlin2_3_merged_FStitch.bed
 
 # -- program invocation here --
 chrom=all
+cmd="mpirun -np $PBS_NUM_NODES -hosts ${hostlist}"
 
-mpirun $src $config_file -i ${bedgraph_directory}$forward_bedgraph -j ${bedgraph_directory}$reverse_bedgraph -f ${interval_directory}$interval_file -chr $chrom   -o $out_directory -log_out $tmp_log_directory
+
+$cmd $src $config_file -i ${bedgraph_directory}$forward_bedgraph -j ${bedgraph_directory}$reverse_bedgraph -f ${interval_directory}$interval_file -chr $chrom   -o $out_directory -log_out $tmp_log_directory
