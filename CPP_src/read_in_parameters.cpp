@@ -228,8 +228,7 @@ void params::display(int nodes, int cores){
 			cout<<"-MLE         : "<<p4["-MLE"]<<endl;
 			cout<<"-mi          : "<<p4["-mi"]<<endl;
 			cout<<"-ct          : "<<p4["-ct"]<<endl;
-			cout<<"-fp          : "<<p4["-fp"]<<endl;
-			
+			cout<<"-foot_res    : "<<p4["-foot_res"]<<endl;
 			cout<<"-elon        : "<<p4["-elon"]<<endl;			
 			cout<<"-pad         : "<<p4["-pad"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
