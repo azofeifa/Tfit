@@ -1,6 +1,6 @@
 #PBS -S /bin/bash
 
-#PBS -N DMSO2_3
+#PBS -N DMSO2_3_
 ###PBS -q shortgb
 
 #PBS -m ae
