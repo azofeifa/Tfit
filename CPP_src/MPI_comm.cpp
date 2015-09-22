@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "split.h"
+#include <stddef.h>
 using namespace std;
 
 vector<segment *> slice_segments(vector<segment *> segments, int rank, int nprocs){
@@ -60,62 +61,6 @@ void send_bidir_size(vector<simple_c> fits){
 }
 
 
-map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c> root_simple_fits, 
-	map<int,int> bidir_table, int N, int nproc ){ //for root, N expected number
-	int count 	= N/nproc;
-	vector<simple_c> all_fits ;
-	for (int j =0; j < root_simple_fits.size(); j++){
-		all_fits.push_back(root_simple_fits[j]);
-	}
-	MPI_Datatype mystruct;
-	int blocklens[4]={1, 1,4,12};
-	
-	
-	MPI_Datatype old_types[4] 	={MPI_DOUBLE, MPI_DOUBLE,MPI_INT, MPI_DOUBLE}; 
-	MPI_Aint displacements[4];
-	MPI_Aint intex, doublex;
-
-	displacements[0] 	= offsetof(simple_c, ll);
-	displacements[1] 	= offsetof(simple_c, noise_ll);
-	displacements[2] 	= offsetof(simple_c, IDS);
-	displacements[3] 	= offsetof(simple_c, ps);
-	
-	
-	MPI_Type_create_struct( 4, blocklens, displacements, old_types, &mystruct );
-	MPI_Type_commit( &mystruct );
-	
-	MPI_Status status;
-	simple_c sr;
-	typedef map<int,int>::iterator it_type;
-	map<int, map<int, bidir_preds> > G; //map refering to segment ID and specific bidir ID
-	map<int, bidir_preds> A;
-
-	typedef map<int, map<int, bidir_preds> >::iterator it_type_2;
-	typedef map<int, bidir_preds>::iterator it_type_3;
-
-
-	int segment_id, bidir_id, Complexity, pred_bidirs_in_merged;
-	int total_bidir_preds 	= 0;
-	for (it_type cc=bidir_table.begin(); cc!=bidir_table.end(); cc++){
-		//cc->first is the job that we are expect it from
-		for (int j = 0; j < cc->second ; j++){
-			MPI_Recv(&sr, 1, mystruct, cc->first, j, MPI_COMM_WORLD,&status);
-			
-			segment_id=sr.IDS[0]+cc->first*count , bidir_id=sr.IDS[3], Complexity=sr.IDS[1], pred_bidirs_in_merged=sr.IDS[2];
-			if (G.find(segment_id) == G.end()  ){
-				G[segment_id] 	= A;
-			}
-			if (G[segment_id].find(bidir_id) == G[segment_id].end() ){
-				G[segment_id][bidir_id] 	= bidir_preds(sr.noise_ll, sr.ps[9]);
-			}
-			G[segment_id][bidir_id].insert_component(Complexity, sr, sr.ll);
-			total_bidir_preds++;
-		}
-	}
-	
-
-	return G;
-}
 
 void send_all_simple_c_fits(vector<simple_c> root_simple_fits ){ //slaves
 	//need to setup MPI derived datatype for simple_c struct
@@ -208,22 +153,33 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 				collections.push_back(B2);
 			}
 		}
-		count 	= int(collections.size()) / nprocs;
+		//count 	= int(collections.size()) / nprocs;
 		for (int j =1; j < nprocs; j++){
-			int start 	= j * count;
-			int stop 	= min(start + count, int(N ));	
-			if (j==nprocs-1){
-				stop 	= N;
-			}
-			if (start >= stop){
-		    	start 	= stop;
-		    }
-		    
-		 	for (int i = 0; i < (stop-start) ; i++){
+		  int start 	= j * count;
+		  int stop 	= min(start + count, int(N ));	
+	     
+		  if (j==nprocs-1){
+		    stop 	= N;
+		  }
+		  if (start >= stop){
+		    start 	= stop;
+		  }
+		 
+		 
+		  
+		  
+		  for (int i = 0; i < (stop-start) ; i++){
 				MPI_Recv(&S, 1, MPI_INT, j, i, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+			     
+				printf("recieved %d from rank %d\n", S, j);
+				
+				//MPI_Barrier(MPI_COMM_WORLD);
 				G[all[ start+i ]->chrom] 	= vector<vector<double> >(S);
 				for (int u = 0; u < S; u++ ){
+				 
 					MPI_Recv(&B, 1, mystruct, j, u, MPI_COMM_WORLD,MPI_STATUS_IGNORE);			
+				       
+					//	MPI_Barrier(MPI_COMM_WORLD);
 					G[all[ start+i ]->chrom][u] 	= {B.lower_upper[0],B.lower_upper[1]};
 					bounds2 B2;
 					B2.D[0]=start+i, B2.D[1]=int(B.lower_upper[0]),B2.D[2]=int(B.lower_upper[1]);
@@ -234,14 +190,22 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 
 
 	}else  {
+	  int IS = segments.size();
+	  
 		for (int i = 0;  i < segments.size();i++ ){
 			int S 	= segments[i]->bidirectional_bounds.size();
-			MPI_Send(&S, 1, MPI_INT, 0,i,MPI_COMM_WORLD );
+			
+			MPI_Ssend(&S, 1, MPI_INT, 0,i,MPI_COMM_WORLD );
+			//MPI_Barrier(MPI_COMM_WORLD);
+			
 			for (int u=0; u < segments[i]->bidirectional_bounds.size(); u++){				
 				bounds B;
 				B.lower_upper[0] 		= segments[i]->bidirectional_bounds[u][0];
 				B.lower_upper[1] 		= segments[i]->bidirectional_bounds[u][1];				
+				
 				MPI_Send(&B, 1, mystruct, 0, u, MPI_COMM_WORLD);
+				//MPI_Barrier(MPI_COMM_WORLD);
+				
 			}
 		}
 	}
@@ -267,10 +231,11 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 		    
 			int S 	= stop-start;
 			MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
-
+			//MPI_Barrier(MPI_COMM_WORLD);
 			//okay now get ready! 
 			for (int i = 0; i < S;i++){
 				MPI_Send(&collections[start+i], 1, mystruct2, j,i,MPI_COMM_WORLD);
+				//	MPI_Barrier(MPI_COMM_WORLD);
 			}
 		}
 		for (int i = 0; i < count;i++){
@@ -279,8 +244,10 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 		
 	}else{
 		MPI_Recv(&S, 1, MPI_INT, 0, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
+		//MPI_Barrier(MPI_COMM_WORLD);
 		for (int i = 0; i < S; i++){
-			MPI_Recv(&B2, 1, mystruct2, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		  	MPI_Recv(&B2, 1, mystruct2, 0,i,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			//	MPI_Barrier(MPI_COMM_WORLD);
 			final_collections.push_back(B2);
 		}
 	}
@@ -342,23 +309,32 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 	}
 		//first want to send the number of bidirs 
 	int S;
+	MPI_Status stat; 
 	if (rank==0){
 		for (int j = 1; j < nprocs; j++){
-			printf("Rank: 0, waiting on rank: %d \n", j );
-			MPI_Recv(&S, 1, MPI_INT, j, 1, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-			printf("Rank: 0 received: %d \n", S );
+		 
+		  printf("root waiting on rank %d\n", j);
+			MPI_Recv(&S, 1, MPI_INT, j, 0, MPI_COMM_WORLD,&stat);
+			printf("root recieved %d from %d\n", S, j);
+			
 			for (int b = 0; b < S; b++){
-				MPI_Recv(&rc, 1, mystruct, j, b, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
-				printf("Rank: 0 received: %d of %d \n", b,S );
-				rsimple_c_fits.push_back(rc);
+			  	MPI_Recv(&rc, 1, mystruct, j, b+1, MPI_COMM_WORLD,&stat);					
+			       	rsimple_c_fits.push_back(rc);
 			}
 		}				
 	}else{	
-		S 	= rsimple_c_fits.size();
-		MPI_Send(&S, 1, MPI_INT, 0,1, MPI_COMM_WORLD);
-		printf("Rank: %d, sending: %d \n", rank , S );
+	        S 	= int(rsimple_c_fits.size());
+		
+		printf("Rank %d sending %d\n", rank, S);
+		MPI_Send(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
+		
 		for (int b = 0; b < S; b++){
-			MPI_Send(&rsimple_c_fits[b], 1, mystruct, 0, b, MPI_COMM_WORLD);			
+		  
+		  
+		  	MPI_Send(&rsimple_c_fits[b], 1, mystruct, 0, b+1, MPI_COMM_WORLD);			
+		  	
+		  
+		 
 		}
 	}
 	map<string, map<int, vector<rsimple_c> > > G;

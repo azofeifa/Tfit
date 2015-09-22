@@ -424,30 +424,12 @@ vector<simple_c> move_elongation_support(vector<segment *> FSI, params * P){
 	int rounds 					= 5;
 	#pragma omp parallel for num_threads(num_proc)
 	for (int i = 0; i < FSI.size(); i++){
-		// double maxll 	= nINF;
-		// classifier arg_clf;
-		// bool SET 		= false;
-		// for (int r = 0; r < rounds; r++){
-		// 	classifier clf(stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
-		// 	stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-		// 	stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) ,FSI[i]->fitted_bidirs ) 	 ;
-		// 	clf.fit_uniform_only(FSI[i] );
-		// 	if (clf.ll > maxll or r ==0){
-		// 		SET 	= true;
-		// 		maxll 	= clf.ll, arg_clf = clf;
-		// 	}
-		// }
 		classifier clf(stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
 			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) ,FSI[i]->fitted_bidirs ,0 ) 	 ;
 		clf.fit_uniform_only2(FSI[i]);
 
-		clfs[i] 	= clf;
-		// clfs[i] 	= classifier( stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
-		// 	stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-		// 	stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]) ,FSI[i]->fitted_bidirs );
-		// clfs[i].fit_uniform_only(FSI[i]);
-
+	
 	}
 	//convert to simple_c
 	fits 	= bidir_components_to_simplec(clfs, FSI);
