@@ -106,7 +106,7 @@ public:
 };
 map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, 
 	vector<segment *> segments , 
-	int rank, int nprocs, string out_file_dir){
+	int rank, int nprocs, string out_file_dir, int job_ID){
 
 	map<string , vector<vector<double> > > G;
 	map<string , vector<vector<double> > > A;
@@ -209,7 +209,7 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 		}
 	}
 	if (rank==0 and not out_file_dir.empty()){
-		write_out_bidirs(G, out_file_dir);
+		write_out_bidirs(G, out_file_dir, job_ID);
 	}
 	if (rank==0){
 		N 	= collections.size();

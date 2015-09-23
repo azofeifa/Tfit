@@ -388,8 +388,10 @@ string final_model_output::write_out_bed(){
 	for (int k = 0; k < components.size(); k++){
 		int center 	= (components[k].ps[2]*scale + start);
 		int std 	= (components[k].ps[3]*scale/2.) + (1. / components[k].ps[4] )*scale;
+		float ll 	= components[k].ps[1];
 		string INFO = to_string(components[k].ps[2]*scale + start) + "_" + to_string(components[k].ps[3]*scale) + "_" + to_string( (1. / components[k].ps[4] )*scale) + "_" + to_string(components[k].ps[5]) + "_" + to_string(components[k].ps[6]);
 		INFO+="_" + to_string(int(components[k].ps[13]*components[k].ps[5])) + "_"+ to_string(int(components[k].ps[14]*scale));
+		INFO+="_" + to_string(ll);
 		line+=chrom + "\t" + to_string(center-std) + "\t" + to_string(center+std) + "\t" + INFO+ "\n";
 	}
 	return line;

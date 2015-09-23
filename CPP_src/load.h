@@ -149,13 +149,13 @@ map<string, interval_tree *> load_bidir_bed_files(string,
 void write_out_bidir_fits( vector<segment*>, 
 	map<int, map<int, bidir_preds> >, params *);
 
-void write_out_bidirs(map<string , vector<vector<double> > >, string);
+void write_out_bidirs(map<string , vector<vector<double> > >, string, int);
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
 	string , string, int, string );
 vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , vector<segment *> );
 
-void write_out_MLE_model_info(vector<final_model_output>, params *);
+void write_out_MLE_model_info(vector<final_model_output>, params *, int);
 
 vector<segment *> load_intervals_of_interest(string,map<int, string>&, int);
 

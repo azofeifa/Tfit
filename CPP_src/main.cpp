@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
 	if (P->module == "BIDIR"){
 		int nprocs		= MPI::COMM_WORLD.Get_size();
 		int rank 		= MPI::COMM_WORLD.Get_rank();
-	        int threads  	= omp_get_max_threads();
+	    int threads  	= omp_get_max_threads();
 		int verbose 	= stoi(P->p4["-v"]);
 
 		int job_ID 		=  get_job_ID(P->p4["-log_out"], rank, nprocs);
@@ -159,10 +159,10 @@ int main(int argc, char* argv[]){
 		FHW<<"(main) gathering all bidir predictions...";
 		if (P->p4["-show_seeds"] == "1"){
 			G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs, out_file_dir);
+				segments , rank, nprocs, out_file_dir, job_ID);
 		}else{
 			G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs, "");
+				segments , rank, nprocs, "", job_ID);
 		}
 		FHW<<"done\n";
 		FHW.flush();
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]){
 				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P, FHW);
 				T.get_time(rank);
 				T.start_time(rank, "writing out bidir model selection:");
-				write_out_MLE_model_info(A, P);
+				write_out_MLE_model_info(A, P, job_ID);
 				T.get_time(rank);
 				
 

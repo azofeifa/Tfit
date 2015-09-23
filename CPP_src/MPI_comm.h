@@ -26,7 +26,7 @@ void send_bidir_size(vector<simple_c>);
 map<int, map<int, bidir_preds> > gather_all_simple_c_fits(vector<simple_c>, map<int,int>, int , int );
 void send_all_simple_c_fits(vector<simple_c>);
 map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> ,
-vector<segment *>, int, int,string );
+vector<segment *>, int, int,string, int );
 map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segment *>, vector<simple_c>, int , int);
 
 map<string, vector<segment *> > send_out_elongation_assignments(vector<segment *> , int, int);

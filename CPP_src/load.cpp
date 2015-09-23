@@ -1268,10 +1268,10 @@ void write_out_bidir_fits( vector<segment*> segments,
 	}
 }
 
-void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir){
+void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir, int job_ID){
 	typedef map<string , vector<vector<double> > >::iterator it_type;
 	ofstream FHW;
-	FHW.open(out_dir+"prelim_bidir_hits.bed");
+	FHW.open(out_dir+ "EMG-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
 	for (it_type c = G.begin(); c!=G.end(); c++){
 		for (int i = 0; i < c->second.size(); i++){
 			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<endl;
@@ -1284,7 +1284,7 @@ string getp4_param_header(params * P){
 	return header;
 }
 
-void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
+void write_out_MLE_model_info(vector<final_model_output> A, params * P, int JOB_ID ){
 	string out_file_dir 	= P->p4["-o"];
 	//so we want to write out two files:
 	//(1) a specific file format with all parameter estimates listed
@@ -1293,7 +1293,7 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P ){
 	ofstream FHW_bed;
 	ofstream FHW_config;
 	
-	FHW_bed.open(out_file_dir+"bidirectional_hits_intervals.bed");
+	FHW_bed.open(out_file_dir+ "EMG-" +to_string(JOB_ID)+ "_bidirectional_hits_intervals.bed");
 	FHW_bed<<P->get_header(4);
 	for (int i = 0; i < A.size(); i++){
 		FHW_bed<<A[i].write_out_bed();
