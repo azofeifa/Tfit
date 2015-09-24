@@ -11,7 +11,7 @@
 #(-b) max number of model components; default set to 1
 #(-r) binning resolution; default set to 10
 #(-s) scaling resolution; default set to 200
-#(-p) pad; default set to 0, asdf
+#(-p) pad; default set to 0
 #================================================================================================
 
 import sys, load, parse_argv, model_across
