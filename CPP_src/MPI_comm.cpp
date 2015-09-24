@@ -8,7 +8,6 @@
 #include "split.h"
 #include <stddef.h>
 #include "read_in_parameters.h"
-
 using namespace std;
 
 vector<segment *> slice_segments(vector<segment *> segments, int rank, int nprocs){
@@ -272,7 +271,7 @@ rsimple_c transform(simple_c sc, vector<segment *> segments ){
 		if (i < chrom.size()){
 			rc.chrom[i] 	= chrom[i];
 		}else{
-			rc.chrom[i] 	= '\0';
+			rc.chrom[i] 	= ' ';
 		}
 	}
 	rc.st_sp[0]=segments[sc.IDS[0]]->start,rc.st_sp[1]=segments[sc.IDS[0]]->stop;
@@ -330,9 +329,7 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 		  
 		  
 		  	MPI_Send(&rsimple_c_fits[b], 1, mystruct, 0, b+1, MPI_COMM_WORLD);			
-		  	
-		  
-		 
+		  			  		 
 		}
 	}
 	map<string, map<int, vector<rsimple_c> > > G;
@@ -343,6 +340,7 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 		for (int i =0; i < rsimple_c_fits.size(); i++)
 		{
 			rc 	= rsimple_c_fits[i];
+			string chrom(rc.chrom);
 			ID 	= string(rc.chrom) + ":" + to_string(rc.st_sp[0]) + "-" + to_string(rc.st_sp[1]);
 			K 	= rc.st_sp[3] ;
 			G[ID][K].push_back(rc);
