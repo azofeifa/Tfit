@@ -724,6 +724,12 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 		prevChrom=chrom;
 
 	}
+	typedef map<string, segment*> ::iterator it_type_10;
+	for (it_type_10 i = G.begin(); i!= G.end(); i++){
+		cout<<i->first<<endl;
+	}
+
+
 	prevChrom="";
 	FOUND=false;
 	while (getline(FH2, line)){
