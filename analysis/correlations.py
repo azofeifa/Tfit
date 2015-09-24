@@ -9,6 +9,7 @@ rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Helvetica']
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from scipy import stats
 
 def match_UP(A_L, B_L):
 	A,B ={}, {}
@@ -51,7 +52,8 @@ def match_UP(A_L, B_L):
 					u+=1
 				if o:
 					o 	= max(o)
-					overlaps[chrom].append((o[1], o[2] ))
+					if abs(o[1][2].mu - o[2][2].mu) < 150:
+						overlaps[chrom].append((o[1], o[2] ))
 	return [(a[2], b[2]) for chrom in overlaps for a,b in overlaps[chrom] ]
 				
 
@@ -111,7 +113,7 @@ def run(overlaps, attr ="si", LOG=False):
 	rect_scatter = [left, bottom, width, height]
 	rect_histx = [left, bottom_h, width, 0.2]
 	rect_histy = [left_h, bottom, 0.2, height]
-	F 			= plt.figure(figsize=(7,3))
+	F 			= plt.figure(figsize=(15,10))
 	
 	axScatter = plt.axes(rect_scatter)
 	axHistx = plt.axes(rect_histx)
@@ -120,8 +122,16 @@ def run(overlaps, attr ="si", LOG=False):
 	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, attr) is not None and  getattr(y, attr) is not None ]
 
 	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, "wEM") >0.5 and  getattr(y, "wEM") > 0.5]
-	print len(overlaps)
-	x,y 		= [math.log(getattr(x, attr) ,10) if LOG else getattr(x, attr) for x,y in overlaps],[math.log(getattr(y, attr) ,10) if LOG else getattr(y, attr) for x,y in overlaps]
+	
+	A,B 			= [(x, math.log(getattr(x, attr) ,10)) if LOG else (x,getattr(x, attr)) for x,y in overlaps],[(y,math.log(getattr(y, attr) ,10)) if LOG else (y,getattr(y, attr)) for x,y in overlaps]
+	
+	x,y 			= [math.log(getattr(x, attr) ,10) if LOG else getattr(x, attr) for x,y in overlaps],[math.log(getattr(y, attr) ,10) if LOG else getattr(y, attr) for x,y in overlaps]
+	
+	var 			= np.mean([abs(a-b) for a,b in zip(x,y) ])
+
+	AB 				= [(A[i][0], B[i][0], A[i][1], B[i][1] )  for i in range(len(A)) if abs(A[i][1] - B[i][1]) > 0*var  ]
+
+
 	xy = np.vstack([x,y])
 	
 	z = gaussian_kde(xy)(xy)
@@ -140,8 +150,23 @@ def run(overlaps, attr ="si", LOG=False):
 	
 	axHistx.set_xticks([])
 	axHisty.set_yticks([])
+	print "----------------------------------------------------------"
+	print "All DMSO to ALL Nutlin" ,stats.ks_2samp(x,y)
+	print "All DMSO to p53 DMSO", stats.ks_2samp(x,[ ab[2]  for ab in AB if ab[0].p53_site ] )
+	print "All DMSO to p53 Nutlin", stats.ks_2samp(x,[ ab[3]  for ab in AB if ab[1].p53_site ] )
+	print "All Nutlin to p53 DMSO", stats.ks_2samp(y, [ ab[2]  for ab in AB if ab[0].p53_site ]  )
+	print "All Nutlin to p53 Nutlin", stats.ks_2samp(y,[ ab[3]  for ab in AB if ab[1].p53_site ] )
+	print "----------------------------------------------------------"
+		
 	
-
+	
+	for i,ab in enumerate(AB):     
+		label 	= AB[i][0].chrom + ":" + str(int(AB[i][0].start)) + "-" + str(int(AB[i][0].stop))                                           # <--
+		xy 		= (AB[i][2], AB[i][3])
+		
+		#axScatter.annotate(label, xy=xy)
+		if AB[i][0].p53_site:
+			axScatter.scatter([xy[0]], [xy[1]], color="black", s=35)
 
 	plt.show()
 

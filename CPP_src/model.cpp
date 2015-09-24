@@ -412,7 +412,7 @@ void component::update_parameters(double N, int K){
 		if (bidir.si > 10){
 			EXIT 	= true;
 		}
-		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + ALPHA_1), 5.);
+		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + BETA_1), 5.);
 		if (bidir.l < 0.05 or bidir.l > 4.5 ){
 			EXIT 	= true;
 		}
@@ -925,6 +925,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 					ll 		= nINF;	
 				}
 			}	
+			
 		
 			converged=true;
 		}
@@ -935,10 +936,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		last_diff=abs(ll-prevll);
 
 		prevll=ll;
-		// for (int c = 0; c<K;c++){
-		// 	components[c].print();
-		// }
-
+		
 		t++;
 	}
 	for (int k = 0; k < K; k++){

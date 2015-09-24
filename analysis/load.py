@@ -52,6 +52,7 @@ class model:
 		self.std 	= self.si + self.lam
 		self.start 	= self.mu-self.std
 		self.stop 	= self.mu+self.std
+		self.chrom 	= None
 		self.check()
 		self.annotated = False
 		self.p53_site 	 = False
@@ -88,10 +89,12 @@ class segment:
 			chrom,start, stop, parameters 	= line.strip("\n").split("\t")
 			self.chrom 				= chrom 
 			self.start, self.stop 	= int(start), int(stop)
-			mu,si,l,w, pi, N, fp 	= parameters.split("_")
+			mu,si,l,w, pi, N, fp,ll 	= parameters.split("_")
 			self.models.append(model(float(mu),float(si),float(l),float(pi),float(w) , 0,0,0,0   )  )
 			self.models[-1].N 		= float(N)
 			self.models[-1].fp 		= float(fp)
+			self.models[-1].chrom 	= self.chrom
+			self.models[-1].density = float(N) / (self.stop - self.start)
 		self.K 				= len(self.models)
 			
 	def add_models(self, line_array):

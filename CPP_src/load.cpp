@@ -1268,15 +1268,18 @@ void write_out_bidir_fits( vector<segment*> segments,
 	}
 }
 
-void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir, int job_ID){
+void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir, 
+	string job_name,int job_ID, params * P){
 	typedef map<string , vector<vector<double> > >::iterator it_type;
 	ofstream FHW;
-	FHW.open(out_dir+ "EMG-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
+	FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
+	FHW<<P->get_header(4);
 	for (it_type c = G.begin(); c!=G.end(); c++){
 		for (int i = 0; i < c->second.size(); i++){
 			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<endl;
 		}
 	}
+	FHW.close();
 }
 
 string getp4_param_header(params * P){
@@ -1284,7 +1287,7 @@ string getp4_param_header(params * P){
 	return header;
 }
 
-void write_out_MLE_model_info(vector<final_model_output> A, params * P, int JOB_ID ){
+void write_out_MLE_model_info(vector<final_model_output> A, params * P, string job_name, int JOB_ID ){
 	string out_file_dir 	= P->p4["-o"];
 	//so we want to write out two files:
 	//(1) a specific file format with all parameter estimates listed
@@ -1293,7 +1296,7 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P, int JOB_
 	ofstream FHW_bed;
 	ofstream FHW_config;
 	
-	FHW_bed.open(out_file_dir+ "EMG-" +to_string(JOB_ID)+ "_bidirectional_hits_intervals.bed");
+	FHW_bed.open(out_file_dir+ job_name+ "-" +to_string(JOB_ID)+ "_bidirectional_hits_intervals.bed");
 	FHW_bed<<P->get_header(4);
 	for (int i = 0; i < A.size(); i++){
 		FHW_bed<<A[i].write_out_bed();
@@ -1681,7 +1684,7 @@ void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> ID
 
 }
 
-void collect_all_tmp_files(string dir, int nprocs, int job_ID){
+void collect_all_tmp_files(string dir, string job_name, int nprocs, int job_ID){
 	int c 	= 0;
 	time_t     now = time(0);
     struct tm  tstruct;
@@ -1691,10 +1694,10 @@ void collect_all_tmp_files(string dir, int nprocs, int job_ID){
     // for more information about date/time format
     strftime(buf, sizeof(buf), "%m_%d_%H_%M", &tstruct);
     string DT 	= buf;
-	string OUT 		= dir+"EMGU-" + to_string(job_ID) +"_" + DT+ ".log";
+	string OUT 		= dir+ job_name + "-" + to_string(job_ID) +"_" + DT+ ".log";
 	ofstream FHW(OUT);
 	for (int rank = 0; rank < nprocs; rank++){
-		string FILE 	= dir+"tmp_EMGU-" +to_string(job_ID) + "_" + to_string(rank) + ".log";
+		string FILE 	= dir+"tmp_" + job_name+ "-" +to_string(job_ID) + "_" + to_string(rank) + ".log";
 		string line;
 		ifstream FH(FILE);
 		if (FH){

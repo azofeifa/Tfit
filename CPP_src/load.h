@@ -149,13 +149,13 @@ map<string, interval_tree *> load_bidir_bed_files(string,
 void write_out_bidir_fits( vector<segment*>, 
 	map<int, map<int, bidir_preds> >, params *);
 
-void write_out_bidirs(map<string , vector<vector<double> > >, string, int);
+void write_out_bidirs(map<string , vector<vector<double> > >, string, string, int ,params *);
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
 	string , string, int, string );
 vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , vector<segment *> );
 
-void write_out_MLE_model_info(vector<final_model_output>, params *, int);
+void write_out_MLE_model_info(vector<final_model_output>, params *, string, int);
 
 vector<segment *> load_intervals_of_interest(string,map<int, string>&, int);
 
@@ -170,7 +170,7 @@ void write_out_single_simple_c(vector<single_simple_c>, map<int, string> , param
 void write_config_file_model_fits(vector<final_model_output> , map<int, string>, params * );
 
 
-void collect_all_tmp_files(string , int, int );
+void collect_all_tmp_files(string , string, int, int );
 
 
 #endif

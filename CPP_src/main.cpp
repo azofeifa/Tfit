@@ -78,10 +78,10 @@ int main(int argc, char* argv[]){
 		int rank 		= MPI::COMM_WORLD.Get_rank();
 	    int threads  	= omp_get_max_threads();
 		int verbose 	= stoi(P->p4["-v"]);
+		string job_name = P->p4["-N"];
+		int job_ID 		=  get_job_ID(P->p4["-log_out"], job_name, rank, nprocs);
 
-		int job_ID 		=  get_job_ID(P->p4["-log_out"], rank, nprocs);
-
-		string log_out 	= P->p4["-log_out"] + "tmp_EMGU-" + to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
+		string log_out 	= P->p4["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
 		ofstream 	FHW;
 		FHW.open(log_out);
 
@@ -159,10 +159,10 @@ int main(int argc, char* argv[]){
 		FHW<<"(main) gathering all bidir predictions...";
 		if (P->p4["-show_seeds"] == "1"){
 			G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs, out_file_dir, job_ID);
+				segments , rank, nprocs, out_file_dir, job_name, job_ID,P);
 		}else{
 			G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs, "", job_ID);
+				segments , rank, nprocs, "", job_name, job_ID,P);
 		}
 		FHW<<"done\n";
 		FHW.flush();
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]){
 				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P, FHW);
 				T.get_time(rank);
 				T.start_time(rank, "writing out bidir model selection:");
-				write_out_MLE_model_info(A, P, job_ID);
+				write_out_MLE_model_info(A, P, job_name, job_ID);
 				T.get_time(rank);
 				
 
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]){
 			}
 		}
 		if (rank==0){
-			collect_all_tmp_files(P->p4["-log_out"], nprocs, job_ID);
+			collect_all_tmp_files(P->p4["-log_out"], job_name, nprocs, job_ID);
 		}
 		
 

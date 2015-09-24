@@ -57,6 +57,7 @@ params::params(){
 
 
 	p4["-v"] 				= "1";
+	p4["-N"] 				= "EMG";
 	p4["-i"] 				= "";
 	p4["-j"] 				= "";
 	p4["-k"] 				= "";
@@ -218,6 +219,7 @@ void params::display(int nodes, int cores){
 			cout<<"----------------------------------------------------------------"<<endl;
 			cout<<"              User Provided EMGU Parameters                     "<<endl;
 			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
+			cout<<"-N           : "<<p4["-N"]<<endl;
 			cout<<"-i           : "<<p4["-i"]<<endl;
 			cout<<"-j           : "<<p4["-j"]<<endl;
 			cout<<"-f           : "<<p4["-f"]<<endl;			

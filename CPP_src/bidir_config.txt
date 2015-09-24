@@ -1,6 +1,7 @@
 #This is a config file for running the BIDIR module
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
 ~BIDIR #do not change this line
+-N     	       	      	= EMG-testing #job name
 -v     	       	      	= 1 #verbose output
 -i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph #FStitch forward strand bedgraph
 -j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph #FStitch reverse strand bedgraph
@@ -20,8 +21,8 @@
 -r_mu 			= 1 #seed EM randomally from the peak finder
 -ALPHA_0 		= 1 #prior for sigma
 -BETA_0 		= 1 #prior for sigma
--ALPHA_1 		= 1 #prior for lambda
--BETA_1 		= 1 #prior for lambda
+-ALPHA_1 		= 500 #prior for lambda
+-BETA_1 		= 1000 #prior for lambda
 -ALPHA_2 		= 1 #prior for weights
 -ALPHA_3 		= 100 #prior for strand probs
 -rounds 		= 5 #number of random EM initializations

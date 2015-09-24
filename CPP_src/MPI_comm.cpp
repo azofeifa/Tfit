@@ -7,6 +7,8 @@
 #include <dirent.h>
 #include "split.h"
 #include <stddef.h>
+#include "read_in_parameters.h"
+
 using namespace std;
 
 vector<segment *> slice_segments(vector<segment *> segments, int rank, int nprocs){
@@ -106,7 +108,7 @@ public:
 };
 map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, 
 	vector<segment *> segments , 
-	int rank, int nprocs, string out_file_dir, int job_ID){
+	int rank, int nprocs, string out_file_dir, string job_name, int job_ID, params * P){
 
 	map<string , vector<vector<double> > > G;
 	map<string , vector<vector<double> > > A;
@@ -209,7 +211,7 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 		}
 	}
 	if (rank==0 and not out_file_dir.empty()){
-		write_out_bidirs(G, out_file_dir, job_ID);
+		write_out_bidirs(G, out_file_dir, job_name, job_ID, P);
 	}
 	if (rank==0){
 		N 	= collections.size();
@@ -660,12 +662,13 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 
 }
 
-int get_job_ID(string path, int rank, int nprocs){
+int get_job_ID(string path, string job_ID, int rank, int nprocs){
 	//string OUT = dir+"EMGU-" + to_string(job_ID) +"_" + DT+ ".log";
 	//tmp_EMGU-0_2.log
 	int current 			= 1;
 	string current_file 	= "";
 	vector<string> line_array;
+	int jN 	= job_ID.size();
 	bool FOUND = false;
 	if (rank==0){
 		DIR * dirFile = opendir( path.c_str() );
@@ -674,8 +677,8 @@ int get_job_ID(string path, int rank, int nprocs){
 			errno = 0;
 			while (( hFile = readdir( dirFile )) != NULL ){
 				current_file 	= hFile->d_name;
-				if (current_file.substr(0,4) == "EMGU"){
-					line_array 	= splitter(current_file, "_");
+				if (current_file.substr(0,jN) == job_ID){
+					line_array 	= splitter(current_file.substr(jN, current_file.size()), "_");
 					if (line_array.size() > 0){
 						line_array 	= splitter(line_array[0], "-");
 						if (line_array.size() > 1){
@@ -684,8 +687,8 @@ int get_job_ID(string path, int rank, int nprocs){
 						}
 					}
 				}
-				if (current_file.substr(0, 8 ) =="tmp_EMGU"){
-					line_array 	= splitter(current_file, "_");
+				if (current_file.substr(0, jN + 4 ) =="tmp_" +job_ID){
+					line_array 	= splitter(current_file.substr(jN+4, current_file.size()), "_");
 					if (line_array.size() > 1){
 						line_array 	= splitter(line_array[1], "-");
 						if (line_array.size() > 1){
