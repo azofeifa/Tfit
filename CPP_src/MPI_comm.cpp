@@ -257,21 +257,24 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 	for (int i = 0 ; i < final_collections.size(); i++){
 		vector <double> BB(2);
 		BB[0] = final_collections[i].D[1], BB[1]= final_collections[i].D[2];
-		A[all[final_collections[i].D[0]]->chrom ].push_back(BB);
+		string current_chrom(all[final_collections[i].D[0]]->chrom);
+		A[current_chrom ].push_back(BB);
 	}
 	return A;
 }
 
 
-rsimple_c::rsimple_c(){};
+rsimple_c::rsimple_c(){
+};
 rsimple_c transform(simple_c sc, vector<segment *> segments ){
-	string chrom 	= segments[sc.IDS[0]]->chrom;
+	string chrom(segments[sc.IDS[0]]->chrom);
 	rsimple_c rc;
-	for (int i = 0; i < 5; i++){
+	for (int i = 0; i < 6; i++){
+
 		if (i < chrom.size()){
 			rc.chrom[i] 	= chrom[i];
 		}else{
-			rc.chrom[i] 	= ' ';
+			rc.chrom[i] 	= '\0';
 		}
 	}
 	rc.st_sp[0]=segments[sc.IDS[0]]->start,rc.st_sp[1]=segments[sc.IDS[0]]->stop;
@@ -292,7 +295,7 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 	rsimple_c rc;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={5,5,15};
+	int blocklens[3]={6,5,15};
 	MPI_Datatype old_types[3] = {MPI_INT, MPI_CHAR, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(rsimple_c, st_sp);
@@ -619,7 +622,7 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 	single_simple_c sc;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={5,3, 9};
+	int blocklens[3]={6,3, 9};
 	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(single_simple_c, chrom);

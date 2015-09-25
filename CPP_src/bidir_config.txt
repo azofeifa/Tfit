@@ -3,8 +3,8 @@
 ~BIDIR #do not change this line
 -N     	       	      	= EMG-testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/gro_seq_files/Core2014/bedgraph_files/GSM1480325_K562_GROseq_plus.bigWig.bedGraph.mod.bedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/Core2014/bedgraph_files/GSM1480325_K562_GROseq_minus.bigWig.bedGraph.mod.bedGraph
+-i			= /Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_forward.bedGraph
+-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_reverse.bedGraph
 -k 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/optimize_bidir_directory/ #directory of bed files to optimize to
 -f 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/Core2014/EMG_out_files/ #output file directory

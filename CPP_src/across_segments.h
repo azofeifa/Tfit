@@ -26,7 +26,7 @@ struct simple_c{
 
 };
 struct single_simple_c{
-	char chrom[5];
+	char chrom[6];
 	int st_sp[3];
 	double ps[9];
 };

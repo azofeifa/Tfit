@@ -8,7 +8,7 @@
 struct rsimple_c{
 public:
 	int st_sp[5]; //start and stop of the bidir segment
-	char chrom[5];
+	char chrom[6];
 	//need some important IDS
 	//1: the segment from all_segments that this bidir segment came from, mainly for the chromosome ID
 	//2: we need to know what bidir this component refers
