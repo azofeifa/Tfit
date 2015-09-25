@@ -3,21 +3,21 @@
 ~BIDIR #do not change this line
 -N     	       	      	= EMG-testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_forward.bedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_reverse.bedGraph
+-i			=  /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
 -k 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/optimize_bidir_directory/ #directory of bed files to optimize to
 -f 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/FStitch/DMSO2_3_Nutlin2_3_merged_FStitch.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/Core2014/EMG_out_files/ #output file directory
--chr 			= chr10 #specific chromosome
+-chr 			= chr1 #specific chromosome
 -br 			= 100 #binning resolution do not consider changing
 -window_res 		= 2 #window
 -pad 			= 3000
--MLE			= 0 #get Maximum likelihood estimates
+-MLE			= 1 #get Maximum likelihood estimates
 -elon 			= 0
 -bct 			= 1.0 #confidence threshold
+-window_res 		= 10
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -opt_res 		= 5 #grid search resolution
--np 			= 4 #number of CPU cores/processors
 -r_mu 			= 1 #seed EM randomally from the peak finder
 -ALPHA_0 		= 1 #prior for sigma
 -BETA_0 		= 1 #prior for sigma

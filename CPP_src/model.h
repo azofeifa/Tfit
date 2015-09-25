@@ -107,6 +107,7 @@ public:
 	double p;
 	double foot_print;
 	int fit(segment *,vector<double>);
+	int fit2(segment *,vector<double>, int, int);
 	classifier(int, double, int, double, double, double, double
 		, double, double, double, double, double);
 	classifier(int, double, int, double, double, double, double

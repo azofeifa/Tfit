@@ -328,13 +328,76 @@ int main(int argc, char* argv[]){
 			write_out_single_simple_c(all_fits, IDS , P );
 		}
 
+	}else if (P->module=="MODEL"){
+		int nprocs = MPI::COMM_WORLD.Get_size();
+		int rank = MPI::COMM_WORLD.Get_rank();
+		int verbose 	= stoi(P->p["-v"]);
+	   	int threads  	= omp_get_max_threads();
+		char processor_name[MPI_MAX_PROCESSOR_NAME];
+		int namelen;  
+		MPI_Get_processor_name(processor_name, &namelen); 
+		string job_name = P->p["-N"];
+		int job_ID 		=  get_job_ID(P->p["-log_out"], job_name, rank, nprocs);
 
+		string log_out 	= P->p["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
+		ofstream 	FHW;
+		FHW.open(log_out);
+		timer TF(80);
+		
+		TF.start_time(rank, "Final Time:");
+		
+		
+		if (verbose and rank==0){//show current user parameters...
+			P->display(nprocs, threads);
+		}	
+		if (rank==0){
+			FHW<<P->get_header(0);
+		}
+		string forward_bed_graph_file 	= P->p["-i"];
+		string reverse_bed_graph_file 	= P->p["-j"];
 
-					
+		string interval_file 			= P->p["-k"];
+		string out_file_dir 			= P->p["-o"];
+		string spec_chrom 			= P->p["-chr"];
+		bool run_template 			= bool(stoi(P->p5["-template"]));
+		vector<segment *> FSI;
+		map<string , vector<vector<double> > > G;
+		map<string, vector<segment *> > GG;
+		timer T(50);
+		
 
+		map<int, string> IDS;
+		if (rank==0){
+			FHW<<"(main) Loading/Converting intervals of interest"<<endl;
+			T.start_time(rank, "Loading/Converting intervals of interest:");
+			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]) );
+			T.get_time(rank);					
+			FHW.flush();
+		}
+		T.start_time(rank, "(MPI) sending out segment assignments:");
+		GG 	= send_out_single_fit_assignments(FSI, rank, nprocs);
+		vector<segment*> integrated_segments;
 
-
-
+		T.get_time(rank);
+		integrated_segments= insert_bedgraph_to_segment_joint(GG, 
+			forward_bed_graph_file, reverse_bed_graph_file, rank);
+		BIN(integrated_segments, stod(P->p["-br"]), stod(P->p["-ns"]),true);
+			
+		double window 				= stod(P->p["-window_res"]);
+		double ct 					= stod(P->p["-bct"]);
+		double scale 				= stod(P->p["-ns"]);
+		
+		T.start_time(rank, "Running Template Matching on individual segments:");
+		run_global_template_matching(integrated_segments, out_file_dir, window, 
+				0.1,scale,ct, 64,0. ,0, FHW );	
+		T.get_time(rank);
+		run_model_across_free_mode(integrated_segments, P);
+		if (rank==0){
+			collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
+		}
+		TF.get_time(rank);
+		
+			
 		
 	}
 	else {

@@ -38,5 +38,5 @@ string get_header(params *);
 
 vector<simple_c> move_elongation_support(vector<segment *>, params *);
 vector<single_simple_c> run_single_model_across_segments(vector<segment *> , params * );
-
+vector<map<int, vector<simple_c> >> run_model_across_free_mode(vector<segment *> , params * );
 #endif

@@ -180,8 +180,7 @@ void segment::bin(double delta, double scale, bool erase){
 		X[1][i] 	= 0;
 		X[2][i] 	= 0;
 	}
-
-	//===================
+	// ===================
 	//insert forward strand
 	int j 	=0;
 	//printf("start: %d , stop: %d , bins: %d ,delta: %f, forward: %d, reverse: %d\n", start, stop, BINS, delta, forward.size(), reverse.size() );
@@ -1578,6 +1577,7 @@ vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *
 				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
 					vector<double> curr(2);
 					curr[0] 	= FOUND.forward_x[u], curr[1] 	= FOUND.forward_y[u];
+					
 					S->forward.push_back(curr);
 				}
 				segments.push_back(S);
@@ -1589,6 +1589,87 @@ vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *
 	return segments;
 }
 
+vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> > A , string forward, string reverse, int rank){
+	
+	//want instead to make this interval tree
+	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
+	map<string, interval_tree *> AT;
+	typedef map<string, vector<merged_interval*>>::iterator it_type_4;
+	for(it_type_4 c = merged_FSI.begin(); c != merged_FSI.end(); c++) {
+		AT[c->first] 	= new interval_tree();
+		AT[c->first]->construct(c->second);
+	}
+	
+
+	int start, stop, N, j;
+	double coverage;
+	N 	= 0,j 	= 0;
+	int strand;
+	int o_st, o_sp;
+	vector<string> lineArray;
+	string chrom, prevchrom, line;
+	vector<segment *> segments;
+	double center;
+	vector<string> FILES(2);
+	FILES[0]=forward, FILES[1]=reverse;
+	string FILE;
+	for (int i =0; i < 2; i++){
+		if (i==0){
+			strand=1;
+		}else{
+			strand=-1;
+		}
+		FILE=FILES[i];
+		ifstream FH(FILE);
+
+		if (FH){
+			prevchrom="";
+			while (getline(FH, line)){
+				lineArray 	= splitter(line, "\t");
+				chrom 		= lineArray[0];
+				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+				center 	= (stop + start) /2.;
+				if (AT.find(chrom)!=AT.end()){
+					AT[chrom]->insert(center, coverage, strand);
+				}			
+			}
+			FH.close();
+			
+		}else{
+			cout<<"could not open forward bedgraph file: "<<FILE<<endl;
+			segments.clear();
+			return segments;
+		}
+	}
+
+	//now we want to get all the intervals and make a vector<segment *> again...
+	typedef 	map<string, vector<segment *> >::iterator it_type_5;
+	for(it_type_5 c = A.begin(); c != A.end(); c++) {
+		for (int i = 0; i < c->second.size(); i++){
+			center 	= (c->second[i]->stop + c->second[i]->start) /2.;
+			interval FOUND 	= AT[c->first]->get_interval(c->second[i]->start, c->second[i]->stop );
+			if (not FOUND.EMPTY and FOUND.forward_x.size()){
+				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID);
+				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
+					vector<double> curr(2);
+					curr[0] 	= FOUND.forward_x[u], curr[1] 	= FOUND.forward_y[u];
+					
+					S->forward.push_back(curr);
+				}
+				for (int u = 0; u < FOUND.reverse_x.size(); u++){
+					vector<double> curr(2);
+					curr[0] 	= FOUND.reverse_x[u], curr[1] 	= FOUND.reverse_y[u];
+					S->reverse.push_back(curr);
+					
+				}
+				segments.push_back(S);
+
+			}
+
+		}
+	}
+	return segments;
+}
 
 void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> IDS , params * P ){
 	string out_dir 	= P->p5["-o"];

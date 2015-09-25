@@ -187,19 +187,16 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 	}else{
 		delta 	= (upper-lower) / float(res);
 	}
-	vector<classifier> clfs(stoi(P->p4["-rounds"])*(res+1)  );
+	vector<classifier> clfs(stoi(P->p4["-rounds"])   );
 	double foot_print;
 	int i 	= 0;
 	double scale 	= stod(P->p4["-ns"]);
 	while (i < clfs.size()){
-		for (int j = 0; j < res+1; j++){
-			foot_print = lower+delta*j;
-			foot_print/=scale;
-			clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
-				stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-				stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,foot_print );
-			i++;
-		}
+		clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
+			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
+			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,0 );
+		i++;
+	
 	}
 	return clfs;
 }
@@ -266,7 +263,7 @@ vector<simple_c> get_max(vector<classifier> clfs,
 			scc.ps[10] 	= argmax.components[c].reverse.pi;
 			
 			scc.ps[11] 	= NN;
-			scc.ps[12] 	= argmax.foot_print;
+			scc.ps[12] 	= argmax.components[c].bidir.foot_print;
 			scc.ll 	= max, scc.noise_ll 	= noise_ll;		
 
 			scs.push_back(scc);
@@ -401,7 +398,7 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 	double percent 	= 0;
 	double N 		= segments.size();
 	for (int i = 0; i < segments.size(); i++){
-		if ((i / N) > (percent+0.25)){
+		if ((i / N) > (percent+0.10)){
 			log_file<<to_string(int((i / N)*100))+"%,";
 			log_file.flush();
 			percent 	= (i / N);
@@ -550,9 +547,45 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 
 	}
 	return fits;
+}
+
+map<int, vector<classifier> > make_classifier_struct_free_model(params * P){
+
+	int min_k 	= stoi(P->p["-minK"]);
+	int max_k 	= stoi(P->p["-maxK"]);
+	int rounds 	= stoi(P->p["-rounds"]);
+	map<int, vector<classifier> > A;
+	for (int k = min_k; k <= max_k;k++ ){
+		for (int r = 0; r < rounds; r++){
+			A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
+			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
+			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 ));
+		}
+	}
+	return A;
+
+
+
 
 }
 
+
+vector<map<int, vector<simple_c> >> run_model_across_free_mode(vector<segment *> FSI, params * P){
+	vector<map<int, vector<simple_c> >> D;
+	typedef map<int, vector<classifier> > ::iterator it_type;
+	for (int i = 0 ; i < FSI.size(); i++){
+		segment * data 	= FSI[i];
+		map<int, vector<classifier> > A 	= make_classifier_struct_free_model(P);
+		for (it_type k = A.begin(); k!= A.end(); k++){
+			int N 	=  k->second.size();
+			for (int r = 0; r < N; r++ ){
+				A[k->first][r].fit2(data, data->centers,1,1);
+			}
+		}
+	
+	}
+	return D;
+}
 
 
 

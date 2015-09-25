@@ -13,8 +13,12 @@
 using namespace std;
 
 params::params(){
+	p["-N"] 		= "EMG";
 	p["-v"] 		= "1";
 	p["-i"] 		= "";
+	p["-j"] 		= "";
+	p["-k"] 		= "";
+	
 	p["-o"] 		= "";
 	p["-br"] 		= "300";
 	p["-ns"] 		= "100";
@@ -23,9 +27,8 @@ params::params(){
 	p["-rounds"] 	= "10";
 	p["-ct"] 		= "0.0001";
 	p["-max_noise"] = "0.05";
-	p["-np"] 		= "4";
 	p["-chr"] 		= "all";
-	p["-v"] 		= "0";
+	p["-elon"] 		= "0";
 	p["-mi"] 		= "300";
 	p["-r_mu"] 		= "0";
 	p["-ALPHA_0"] 	= "1";
@@ -35,11 +38,9 @@ params::params(){
 	p["-ALPHA_2"] 	= "1";
 	p["-ALPHA_3"] 	= "1";
 	p["-template"] 	= "1";
-	p["-density"] 	= "1000";
-	p["-window"] 	= "1000";
-	p["-ct"] 		= "0.95";
-	p["-pad"] 		= "5000";
- 	
+	p["-bct"] 		= "0.95";
+	p["-window_res"]= "10";
+	p["-log_out"] 	= "";
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
@@ -176,16 +177,19 @@ void params::display(int nodes, int cores){
 			cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
 			cout<<"            ...coupled to template matching...                  "<<endl;	
 			cout<<"-i         : "<<p["-i"]<<endl;
+			cout<<"-j         : "<<p["-j"]<<endl;
+			cout<<"-k         : "<<p["-k"]<<endl;
 			cout<<"-o         : "<<p["-o"]<<endl;
+			cout<<"-log_out   : "<<p["-log_out"]<<endl;
 			cout<<"-chr       : "<<p["-chr"]<<endl;
 			cout<<"-br        : "<<p["-br"]<<endl;
 			cout<<"-ns        : "<<p["-ns"]<<endl;
 			cout<<"-rounds    : "<<p["-rounds"]<<endl;
 			cout<<"-ct        : "<<p["-ct"]<<endl;
 			cout<<"-mi        : "<<p["-mi"]<<endl;
-			cout<<"-density   : "<<p["-density"]<<endl;
-			cout<<"-ct        : "<<p["-ct"]<<endl;
-			cout<<"-pad       : "<<p["-pad"]<<endl;
+			cout<<"-bct       : "<<p["-bct"]<<endl;
+			cout<<"-window_res: "<<p["-window_res"]<<endl;
+			
 			cout<<"-threads   : "<<cores<<endl;
 			cout<<"-MPI_nodes : "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
@@ -224,6 +228,7 @@ void params::display(int nodes, int cores){
 			cout<<"-j           : "<<p4["-j"]<<endl;
 			cout<<"-f           : "<<p4["-f"]<<endl;			
 			cout<<"-o           : "<<p4["-o"]<<endl;
+			cout<<"-log_out     : "<<p["-log_out"]<<endl;
 			cout<<"-chr         : "<<p4["-chr"]<<endl;
 			cout<<"-window_res  : "<<p4["-window_res"]<<endl;
 			cout<<"-bct         : "<<p4["-bct"]<<endl;
@@ -320,6 +325,27 @@ string params::get_header(int ID){
 		header+="#-ALPHA_3     : "+p4["-ALPHA_3"]+"\n";	
 
 		header+="#----------------------------------------------------\n";
+	}else if(ID==0){
+		header+="#----------------------------------------------------\n";
+		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-i           : "+p["-i"]+"\n";
+		header+="#-j           : "+p["-j"]+"\n";
+		header+="#-k           : "+p["-k"]+"\n";
+		header+="#-o           : "+p["-o"]+"\n";
+		header+="#-ns          : "+p["-ns"]+"\n";
+		header+="#-br          : "+p["-br"]+"\n";
+		header+="#-bct         : "+p["-bct"]+"\n";
+		header+="#-window_res  : "+p["-window_res"]+"\n";
+		header+="#-mi          : "+p["-mi"]+"\n";
+		header+="#-ct          : "+p["-ct"]+"\n";
+		header+="#-rounds      : "+p["-rounds"]+"\n";
+		header+="#-ALPHA_0     : "+p["-ALPHA_0"]+"\n";	
+		header+="#-BETA_0      : "+p["-BETA_0"]+"\n";	
+		header+="#-BETA_1      : "+p["-BETA_1"]+"\n";	
+		header+="#-ALPHA_2     : "+p["-ALPHA_2"]+"\n";	
+		header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
+		header+="#----------------------------------------------------\n";
+	
 	}
 
 	return header;
