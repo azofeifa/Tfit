@@ -93,19 +93,15 @@ int main(int argc, char* argv[]){
 
 
 		//load bed graph files into map<string, double **>;
-		string forward_bedgraph 	= P->p4["-i"] ;
-		string reverse_bedgraph 	= P->p4["-j"] ;
-		string optimize_directory 	= P->p4["-k"];
-		if (P->p4["-optimize"]=="0"){
-			optimize_directory 		= "";
-		}
-
+		string forward_bedgraph 	= P->p4["-i"];
+		string reverse_bedgraph 	= P->p4["-j"];
+		string noise_bed_file 		= P->p4["-nf"];
 		string out_file_dir 		= P->p4["-o"] ;
+		
 		int BINS 					= stoi(P->p4["-br"]);
 		double scale 				= stod(P->p4["-ns"]);
 		double window 				= stod(P->p4["-window_res"]);
 		double ct 					= stod(P->p4["-bct"]);
-		double density 				= stod(P->p4["-density"]) / scale;
 		int opt_res 				= stod(P->p4["-opt_res"]);
 		int np 						= stoi(P->p4["-np"]);
 		char processor_name[MPI_MAX_PROCESSOR_NAME];
@@ -116,6 +112,18 @@ int main(int argc, char* argv[]){
 		timer T(80);
 		timer TF(80);
 		
+		double mean = 0;
+		double var 	= 0;
+
+		if (rank==0){
+			get_noise_mean_var(noise_bed_file, forward_bedgraph, &mean, &var);
+		}
+		double density 		= send_density_val((mean  )*scale , rank, nprocs );
+		string NOISE_OUT 	= "(main) estimated noise density: " + to_string(density/scale);
+		if (rank==0){
+			printf("%s\n", NOISE_OUT.c_str() );
+			FHW<<NOISE_OUT<<endl;
+		}
 		TF.start_time(rank, "Final Time:");
 		
 		T.start_time(rank, "loading BG files:");
@@ -134,19 +142,7 @@ int main(int argc, char* argv[]){
 		segments 						= slice_segments(segments, rank, nprocs);
 		FHW<<"(main) sliced segments: " + to_string(int(segments.size()))+ " on this process\n";
 		FHW.flush();
-		if (not optimize_directory.empty() and rank==0 and not segments.empty() ){
-			map<string, interval_tree *> I = load_bidir_bed_files(optimize_directory, 
-				spec_chrom);
-
-			if (I.empty()){
-				printf("exiting...\n");
-				MPI::Finalize();
-				return 1;
-			}
-			free_segments(segments);
-			MPI::Finalize();
-			return 0;			
-		}else if(optimize_directory.empty() and not segments.empty() ){
+		if(  not segments.empty() ){
 			T.start_time(rank, "running template matching:");	
 			run_global_template_matching(segments, out_file_dir, window, 
 				density,scale,ct, np,0. ,0, FHW );	
@@ -159,10 +155,10 @@ int main(int argc, char* argv[]){
 		FHW<<"(main) gathering all bidir predictions...";
 		if (P->p4["-show_seeds"] == "1"){
 			G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs, out_file_dir, job_name, job_ID,P);
+				segments , rank, nprocs, out_file_dir, job_name, job_ID,P,FHW);
 		}else{
 			G = gather_all_bidir_predicitions(all_segments, 
-				segments , rank, nprocs, "", job_name, job_ID,P);
+				segments , rank, nprocs, "", job_name, job_ID,P,FHW);
 		}
 		FHW<<"done\n";
 		FHW.flush();
@@ -214,47 +210,9 @@ int main(int argc, char* argv[]){
 				T.get_time(rank);
 				
 
-				if (P->p4["-elon"] == "1" and rank==0){
-					//want load the intervals of "interest"
-					T.start_time(rank, "combinding FSI and bidir intervals:");
-					FSI 		= load_intervals_of_interest(P->p4["-f"], IDS ,0 );
-					//now we want to insert final_model_output data into FSI...	
-					FSI 		= combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
-					T.get_time(rank);			
-				}
 			}
 			fits.clear();
-			if (P->p4["-elon"] == "1"){
-				FHW<<"(main) (MPI) sending out elongation assignments...";
-				T.start_time(rank, "(MPI) sending out elongation assignments:");
-				map<string, vector<segment *> > GG 	= send_out_elongation_assignments(FSI, rank, nprocs);
-				T.get_time(rank);
-				FHW<<"done\n";
-				FHW.flush();
-				vector<segment*> integrated_segments;
-				if (not GG.empty()){
-					T.start_time(rank, "loading BG and integrating segments:");
-					integrated_segments= insert_bedgraph_to_segment(GG, forward_bedgraph ,reverse_bedgraph,rank);
-					printf("Rank: %d, going to move elongation support on %d \n",rank, int(integrated_segments.size() )  );
-					BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
-					T.get_time(rank);
-					T.start_time(0, "shift elon. rank " + to_string(rank) + ",on " + to_string(int(integrated_segments.size())) + " segments:");
-					fits 	= move_elongation_support(integrated_segments, P);
-					T.get_time(0);
-				}
-				T.start_time(rank, "(MPI) gathering elongation results:");
-				map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(integrated_segments, fits, rank, nprocs);
-				vector<final_model_output> A 					= convert_to_final_model_output(rcG, P);
-				//convert to final_model_output
-				if (rank==0){
-					T.get_time(rank);
-					T.start_time(rank, "Writing Out Model Fits:");
-					write_gtf_file_model_fits(A, P);
-					write_config_file_model_fits(A, IDS, P);
-					T.get_time(rank);
-				}
-				
-			}
+			
 		}
 		if (rank==0){
 			collect_all_tmp_files(P->p4["-log_out"], job_name, nprocs, job_ID);

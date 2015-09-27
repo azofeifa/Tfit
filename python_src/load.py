@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import simulate,re
 import time
 import model_across
+
 class info:
 	def __init__(self, st, sp, unit, chrom=""):
 		self.tot_st, self.tot_sp	= st, sp

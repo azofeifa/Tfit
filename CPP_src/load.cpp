@@ -14,6 +14,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <time.h>
+#include <math.h> 
 
 using namespace std;
 //========================
@@ -1800,6 +1801,101 @@ void collect_all_tmp_files(string dir, string job_name, int nprocs, int job_ID){
 			printf("HERE?????");
 		}
 	}
+}
+
+
+void get_noise_mean_var(string noise_file, string bedgraph, double * mean, double * var){
+
+	map<string, vector<vector<double> >> G;
+	ifstream FH(noise_file);
+	if (FH){
+		string line, chrom, start, stop;
+		vector<string> lineArray;
+
+		while (getline(FH, line)){
+			lineArray 	= splitter(line, "\t");
+			chrom=lineArray[0], start=lineArray[1], stop=lineArray[2];
+			vector<double> current(3);
+			current[0]=stof(start), current[1]=stof(stop), current[2]=0;
+
+			G[chrom].push_back(current);
+		
+		
+		}
+	}else{
+		cout<<"Coudn't open: "<<noise_file<<endl;
+	}
+
+	FH.close();
+	ifstream BED(bedgraph);
+	if (BED){
+		string line, chrom;
+		int start, stop;
+		double cov;
+		vector<string> lineArray;
+		string prevchrom="";
+		int j,N;
+		int t = 0;
+		while (getline(BED, line)){
+			lineArray 	= splitter(line, "\t");
+			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), cov=stof(lineArray[3]);
+			if (chrom!=prevchrom){
+				if (G.find(chrom)!=G.end()){
+					j= 0,N=G[chrom].size();
+					if (t > 5){
+						break;
+					}
+					t++;
+
+				}else{
+					j=0,N=0;
+				}
+
+			}
+			while (j < N and G[chrom][j][1]<start){
+				j++;
+			}
+			if (j < N and G[chrom][j][0]<stop){
+				G[chrom][j][2]+=(stop-start)*cov;
+			}
+			prevchrom=chrom;
+		}
+		
+	}else{
+		cout<<"Coudn't open: "<<bedgraph<<endl;
+
+	}
+	BED.close();
+	typedef map<string, vector<vector<double>> >::iterator it_type;
+	double SUM=0, N=0;
+	for (it_type g=G.begin(); g!=G.end(); g++){
+		for (int i = 0; i < g->second.size(); i++){
+			if (g->second[i][2] > 0){
+				SUM+=(g->second[i][2]/(g->second[i][1]-g->second[i][0]));
+				N+=1;
+			}
+
+		}
+	}
+	*(mean) 	= SUM/N;
+	double VAR=0;
+	for (it_type g=G.begin(); g!=G.end(); g++){
+		for (int i = 0; i < g->second.size(); i++){
+			if (g->second[i][2] > 0){
+				VAR+=pow((g->second[i][2]/(g->second[i][1]-g->second[i][0] ))   -(*mean), 2);
+			}
+
+		}
+	}
+	
+	*(var) 	= VAR/N;
+
+
+
+
+	
+
+
 }
 
 

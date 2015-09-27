@@ -56,6 +56,22 @@ map<int,int> get_all_bidir_sizes(vector<simple_c> fits, int nprocs ){
 	return table;
 }
 
+double send_density_val(double density, int rank, int nprocs){
+	double D;
+	MPI_Status status;
+	if (rank==0){
+		D 	= density;
+		for (int j = 1; j < nprocs; j++){
+			MPI_Send(&D, 1, MPI_DOUBLE,j,0, MPI_COMM_WORLD);
+		}
+	}else{
+		MPI_Recv(&D, 1, MPI_DOUBLE,0,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE )	;
+	}
+	return D;
+
+
+}
+
 void send_bidir_size(vector<simple_c> fits){
 	int SUM 	= fits.size();
 	MPI_Send(&SUM, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);	
@@ -107,7 +123,7 @@ public:
 };
 map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segment *> all, 
 	vector<segment *> segments , 
-	int rank, int nprocs, string out_file_dir, string job_name, int job_ID, params * P){
+	int rank, int nprocs, string out_file_dir, string job_name, int job_ID, params * P, ofstream& log_file){
 
 	map<string , vector<vector<double> > > G;
 	map<string , vector<vector<double> > > A;
@@ -187,6 +203,9 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 				}
 			}
 		}
+		string OUT_ID 	= "Total Number of moment estimator predictions: "+ to_string(int(collections.size()));
+		printf("%s\n", OUT_ID.c_str());
+		log_file<<OUT_ID<<endl;
 
 
 	}else  {
@@ -679,23 +698,18 @@ int get_job_ID(string path, string job_ID, int rank, int nprocs){
 			while (( hFile = readdir( dirFile )) != NULL ){
 				current_file 	= hFile->d_name;
 				if (current_file.substr(0,jN) == job_ID){
-					line_array 	= splitter(current_file.substr(jN, current_file.size()), "_");
-					if (line_array.size() > 0){
-						line_array 	= splitter(line_array[0], "-");
-						if (line_array.size() > 1){
-							current 	= max(current, stoi(line_array[1] ));
-							FOUND 		= true;
-						}
+					if (current_file.substr(jN, 1) =="-"){
+						current 	= max(current, stoi( current_file.substr(jN+1,1) ) );
+						FOUND 		= true;
 					}
 				}
+				//P->p4["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
+
 				if (current_file.substr(0, jN + 4 ) =="tmp_" +job_ID){
-					line_array 	= splitter(current_file.substr(jN+4, current_file.size()), "_");
-					if (line_array.size() > 1){
-						line_array 	= splitter(line_array[1], "-");
-						if (line_array.size() > 1){
-							current 	= max(current, stoi(line_array[1] ));
-							FOUND 		= true;
-						}	
+
+					if (current_file.substr(jN+4,1) =="-"){
+						current 	= max(current, stoi( current_file.substr(jN+5,1) ) );
+						FOUND 		= true;
 					}
 					
 				}

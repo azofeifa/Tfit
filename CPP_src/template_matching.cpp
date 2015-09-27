@@ -313,7 +313,7 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 				}	
 			}
 		}
-		if (arg_l==0 or arg_si==0 or arg_ll==nINF){
+		if (arg_l<=0 or arg_si<=0 or arg_ll==nINF){
 
 			return 0;
 		}
@@ -400,7 +400,7 @@ void run_global_template_matching(vector<segment*> segments,
 	double window_a;
 	double window_b;
 	if (not single){
-		window_a 	= 500;
+		window_a 	= 1000;
 		window_b 	= 3000;
 	}else{
 		window_a 	= 2000;
@@ -462,14 +462,9 @@ void run_global_template_matching(vector<segment*> segments,
 			//write out contigous regions of up?
 			for (int j = 1; j<segments[i]->XN-1; j++){
 				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
-					if (BIC_values[j] >=ct  and densities[j]>window*0.35  and densities_r[j]>window*0.35 and skews[j][0] >= 0 and skews[j][1] <= 0){
-						if (lambdas[j]>0){
-							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-						}else{
-							start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - (variances[j]/2.)*scale);
-							stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + (variances[j]/2.)*scale);	
-						}
+					if (BIC_values[j] >=ct and densities[j] > density and densities_r[j]>density   ){
+						start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+						stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 						current[0] 	= double(start), current[1]=double(stop), current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
 						
 						merged M(current);

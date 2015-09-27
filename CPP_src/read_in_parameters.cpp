@@ -92,6 +92,7 @@ params::params(){
 	p4["-show_seeds"] 		= "0";
 	p4["-foot_res"] 		= "5";
 	p4["-log_out"] 			= "";
+	p4["-nf"] 				= "";
 
 
 	p5["-v"] 			= "1";
@@ -226,9 +227,10 @@ void params::display(int nodes, int cores){
 			cout<<"-N           : "<<p4["-N"]<<endl;
 			cout<<"-i           : "<<p4["-i"]<<endl;
 			cout<<"-j           : "<<p4["-j"]<<endl;
-			cout<<"-f           : "<<p4["-f"]<<endl;			
+			cout<<"-nf          : "<<p4["-nf"]<<endl;
+
 			cout<<"-o           : "<<p4["-o"]<<endl;
-			cout<<"-log_out     : "<<p["-log_out"]<<endl;
+			cout<<"-log_out     : "<<p4["-log_out"]<<endl;
 			cout<<"-chr         : "<<p4["-chr"]<<endl;
 			cout<<"-window_res  : "<<p4["-window_res"]<<endl;
 			cout<<"-bct         : "<<p4["-bct"]<<endl;
@@ -236,7 +238,6 @@ void params::display(int nodes, int cores){
 			cout<<"-mi          : "<<p4["-mi"]<<endl;
 			cout<<"-ct          : "<<p4["-ct"]<<endl;
 			cout<<"-foot_res    : "<<p4["-foot_res"]<<endl;
-			cout<<"-elon        : "<<p4["-elon"]<<endl;			
 			cout<<"-pad         : "<<p4["-pad"]<<endl;
 			cout<<"-ns          : "<<p4["-ns"]<<endl;
 			cout<<"-br          : "<<p4["-br"]<<endl;

@@ -173,5 +173,6 @@ void write_config_file_model_fits(vector<final_model_output> , map<int, string>,
 void collect_all_tmp_files(string , string, int, int );
 vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> >  , string , string , int);
 
+void get_noise_mean_var(string, string, double *, double *);
 
 #endif
