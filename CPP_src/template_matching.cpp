@@ -462,7 +462,7 @@ void run_global_template_matching(vector<segment*> segments,
 			//write out contigous regions of up?
 			for (int j = 1; j<segments[i]->XN-1; j++){
 				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
-					if (BIC_values[j] >=ct and densities[j] > density and densities_r[j]>density   ){
+					if (BIC_values[j] >=ct and densities[j] > (density/2.) and densities_r[j]>(density/2.)   ){
 						start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 						stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 						current[0] 	= double(start), current[1]=double(stop), current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;

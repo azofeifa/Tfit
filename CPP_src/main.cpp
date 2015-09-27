@@ -112,11 +112,11 @@ int main(int argc, char* argv[]){
 		timer T(80);
 		timer TF(80);
 		
-		double mean = 0;
+		double mean = 0.;
 		double var 	= 0;
 
 		if (rank==0){
-			get_noise_mean_var(noise_bed_file, forward_bedgraph, &mean, &var);
+		  	get_noise_mean_var(noise_bed_file, forward_bedgraph, &mean, &var);
 		}
 		double density 		= send_density_val((mean  )*scale , rank, nprocs );
 		string NOISE_OUT 	= "(main) estimated noise density: " + to_string(density/scale);

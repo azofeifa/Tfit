@@ -65,7 +65,7 @@ def get_distributions(FILE,NONE):
 				j,N 	= 0,len(NONE[chrom])
 			else:
 				j,N 	= 0,0
-			if t > 5:
+			if t > 1:
 				break
 			t+=1
 		while j < N and  NONE[chrom][j][1] < float(start):
@@ -80,14 +80,16 @@ def get_distributions(FILE,NONE):
 		prevChrom=chrom
 	FH.close()
 	return D
-def compare(HCT, DANK, PUC):
+def compare(HCT, DANK, PUC, LI):
 	HCT 	= [float(HCT[chrom][start][1])/float( HCT[chrom][start][0]-start)  for chrom in HCT for start in HCT[chrom]  ]
 	DANK 	= [float(DANK[chrom][start][1])/float(DANK[chrom][start][0]-start)  for chrom in DANK for start in DANK[chrom] ]
 	PUC 	= [float(PUC[chrom][start][1])/float(PUC[chrom][start][0]-start)  for chrom in PUC for start in PUC[chrom] ]
+	LI 		= [float(LI[chrom][start][1])/float(LI[chrom][start][0]-start)  for chrom in LI for start in LI[chrom] ]
 	
-	plt.hist([math.log(h) for h in HCT if h], alpha=0.5,label ="ALLEN, " + str(np.mean(HCT)), bins=50)
-	plt.hist([math.log(h) for h in DANK if h], alpha=0.5, label="DANKO, "+ str(np.mean(DANK)) ,bins=50)
-	plt.hist([math.log(h) for h in PUC if h], alpha=0.5, label="PUC, "+ str(np.mean(PUC)) ,bins=50)
+	plt.hist([math.log(h) for h in HCT if h], alpha=0.5,label ="ALLEN, " + str(np.mean(HCT)) + "," + str(np.var(HCT)) , bins=50)
+	plt.hist([math.log(h) for h in DANK if h], alpha=0.5, label="DANKO, "+ str(np.mean(DANK))+ "," + str(np.var(DANK)) ,bins=50)
+	plt.hist([math.log(h) for h in PUC if h], alpha=0.5, label="PUC, "+ str(np.mean(PUC)) + "," + str(np.var(PUC)),bins=50)
+	plt.hist([math.log(h) for h in LI if h], alpha=0.5, label="LI, "+ str(np.mean(LI))+ "," + str(np.var(LI)) ,bins=50)
 	plt.legend()
 	plt.show()
 
@@ -103,11 +105,12 @@ if __name__ == "__main__":
 	HCT_F 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
 	DANK_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Danko_2014/GSE66031_ac16.unt.all_plus.bw.bedGraph.mod.bedGraph"
 	PUC_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_forward.bedGraph"
+	Li_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/bedgraph_files/GSM1115996_Groseq-MCF7-E2-rep1_2.forward.bedGraph"
 	NONE 	= getNONE(NONE)
 	HCT 	= get_distributions(HCT_F, NONE)
 	DANK 	= get_distributions(DANK_F,NONE)
 	NONE 	= getNONE(NONE2)
 	PUC 	= get_distributions(PUC_F,NONE)
-	
-	compare(HCT,DANK,PUC)
+	LI 		= get_distributions(Li_F, NONE)
+	compare(HCT,DANK,PUC,LI)
 	
