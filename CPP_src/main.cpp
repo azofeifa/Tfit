@@ -226,7 +226,6 @@ int main(int argc, char* argv[]){
 		TF.get_time(rank);
 
 		return 0;
-    
 	}else if (P->module=="SINGLE"){
 		int nprocs = MPI::COMM_WORLD.Get_size();
 		int rank = MPI::COMM_WORLD.Get_rank();
@@ -255,7 +254,7 @@ int main(int argc, char* argv[]){
 		map<int, string> IDS;
 		if (rank==0){
 			T.start_time(rank, "Loading/Converting intervals of interest:");
-			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]) );
+			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]), spec_chrom );
 			if (not G.empty()){
 				vector<final_model_output> 	A 	= convert_bidir_segs_to_final_model(G);
 				combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
@@ -285,7 +284,6 @@ int main(int argc, char* argv[]){
 		if (rank == 0 and not all_fits.empty()){
 			write_out_single_simple_c(all_fits, IDS , P );
 		}
-
 	}else if (P->module=="MODEL"){
 		int nprocs = MPI::COMM_WORLD.Get_size();
 		int rank = MPI::COMM_WORLD.Get_rank();
@@ -295,12 +293,13 @@ int main(int argc, char* argv[]){
 		int namelen;  
 		MPI_Get_processor_name(processor_name, &namelen); 
 		string job_name = P->p["-N"];
+
 		int job_ID 		=  get_job_ID(P->p["-log_out"], job_name, rank, nprocs);
 
 		string log_out 	= P->p["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
 		ofstream 	FHW;
 		FHW.open(log_out);
-		timer TF(80);
+		timer TF(50);
 		
 		TF.start_time(rank, "Final Time:");
 		
@@ -328,7 +327,7 @@ int main(int argc, char* argv[]){
 		if (rank==0){
 			FHW<<"(main) Loading/Converting intervals of interest"<<endl;
 			T.start_time(rank, "Loading/Converting intervals of interest:");
-			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]) );
+			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]), spec_chrom );
 			T.get_time(rank);					
 			FHW.flush();
 		}
@@ -347,16 +346,18 @@ int main(int argc, char* argv[]){
 		
 		T.start_time(rank, "Running Template Matching on individual segments:");
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
-				0.1,scale,ct, 64,0. ,0, FHW );	
+				0.8,scale,ct, 64,0. ,0, FHW );	
 		T.get_time(rank);
-		run_model_across_free_mode(integrated_segments, P);
+		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments, P,FHW);
+		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
+		if (rank==0){//write_out_to_MLE
+			write_out_models_from_free_mode(GGG, P, job_ID, IDS);
+		}
+		
 		if (rank==0){
 			collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
 		}
-		TF.get_time(rank);
-		
-			
-		
+		TF.get_time(rank);		
 	}
 	else {
 		printf("Could not understand module or not provided...\n");

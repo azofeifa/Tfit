@@ -564,28 +564,120 @@ map<int, vector<classifier> > make_classifier_struct_free_model(params * P){
 	}
 	return A;
 
-
-
-
 }
 
 
-vector<map<int, vector<simple_c> >> run_model_across_free_mode(vector<segment *> FSI, params * P){
-	vector<map<int, vector<simple_c> >> D;
+simple_c_free_mode::simple_c_free_mode(bool FOUND, double ll, 
+	component C, int K, segment * data, int i, double forward_N, double reverse_N){
+	SS[0]=ll, SS[1]=forward_N, SS[2]=reverse_N;
+	ID[0]=data->ID, ID[1]=data->start, ID[2]=data->stop, ID[3]=K;
+	if (FOUND){
+		ID[4]=1; 
+	}else{
+		ID[4]=0;//didnt converge
+	}
+	for (int c =0 ; c < 5; c++){
+		if (c < data->chrom.size()){
+			chrom[c]=data->chrom[c];
+		}else{
+			chrom[c]='\0';
+		}
+	}
+	chrom[5]='\0';
+	if (not FOUND){
+		for (int i = 0; i < 11; i++ ){
+			ps[i] 	= 0;
+		}
+	}else{
+		ps[0]=C.bidir.mu,ps[1]=C.bidir.si,ps[2]=C.bidir.l, ps[3]=C.bidir.w, ps[4]=C.bidir.pi;
+		ps[5]=C.forward.b, ps[6]=C.forward.w, ps[7]=C.forward.pi;
+		ps[8]=C.reverse.a, ps[9]=C.reverse.w, ps[10]=C.reverse.pi;
+	}
+}
+simple_c_free_mode::simple_c_free_mode(){}
+
+vector<simple_c_free_mode> transform_free_mode(bool FOUND, double ll, component * components, 
+	int K, segment * data, int i, double forward_N, double reverse_N) {
+	vector<simple_c_free_mode> SC(K);
+	
+	for (int k = 0 ; k < K; k++){
+		SC[k]=simple_c_free_mode(FOUND, ll, components[k], K, data, i,forward_N, reverse_N);
+	}
+	return SC;
+
+	
+}
+
+map<int, vector<simple_c_free_mode> > get_max_from_free_mode(map<int, vector<classifier> > A, segment * data, int i){
+	map<int, vector<simple_c_free_mode> > BEST;
+	typedef map<int, vector<classifier> >::iterator it_type_A;
+	//get forward and reverse N
+	double forward_N =0, reverse_N=0;
+	for (int i  = 0 ; i < data->XN;i++){
+		forward_N+=data->X[1][i];
+		reverse_N+=data->X[2][i];
+	}
+
+
+	for (it_type_A a = A.begin(); a!=A.end(); a++){
+		component * best_components;
+		double best_ll 	= nINF;
+		bool FOUND 		= false;
+		for (int r = 0; r < a->second.size(); r++){
+			if (A[a->first][r].ll > best_ll){
+				best_ll 			= A[a->first][r].ll;
+				best_components 	= A[a->first][r].components;
+				FOUND 				= true;
+			}
+		}
+		BEST[a->first] 	= transform_free_mode(FOUND, best_ll, best_components, a->first, data, i, forward_N, reverse_N);
+
+	}
+
+	return BEST;
+}
+
+
+vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<segment *> FSI, params * P, ofstream& log_file){
+	vector<map<int, vector<simple_c_free_mode> >> D;
 	typedef map<int, vector<classifier> > ::iterator it_type;
+	double scale 	= stof(P->p["-ns"]);
+	int num_proc 				= omp_get_max_threads();
+	log_file<<"(across_segments) running model on bidirectional possibilities...";
+	log_file.flush();
+	double N 		= FSI.size();
+	double percent 	= 0;
 	for (int i = 0 ; i < FSI.size(); i++){
+		if ((i / N) > (percent+0.5)){
+			log_file<<to_string(int((i / N)*100))+"%,";
+			log_file.flush();
+			percent 	= (i / N);
+		}
+
+		//first need to populate data->centers
+		for (int b = 0 ; b < FSI[i]->bidirectional_bounds.size(); b++){
+			double center = FSI[i]->bidirectional_bounds[b][0] +  FSI[i]->bidirectional_bounds[b][1] ;
+			center/=2.;
+			center-=FSI[i]->start;
+			center/=scale;
+			 FSI[i]->centers.push_back(center);
+		}
 		segment * data 	= FSI[i];
 		map<int, vector<classifier> > A 	= make_classifier_struct_free_model(P);
 		for (it_type k = A.begin(); k!= A.end(); k++){
 			int N 	=  k->second.size();
+			#pragma omp parallel for num_threads(num_proc)	
 			for (int r = 0; r < N; r++ ){
 				A[k->first][r].fit2(data, data->centers,1,1);
 			}
 		}
-	
+		D.push_back(get_max_from_free_mode(A, FSI[i], i));
 	}
+	log_file<<"100%";
+	log_file.flush();
 	return D;
 }
+
 
 
 

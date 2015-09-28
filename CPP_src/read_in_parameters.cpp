@@ -329,6 +329,7 @@ string params::get_header(int ID){
 	}else if(ID==0){
 		header+="#----------------------------------------------------\n";
 		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-N           : "+p["-N"]+"\n";
 		header+="#-i           : "+p["-i"]+"\n";
 		header+="#-j           : "+p["-j"]+"\n";
 		header+="#-k           : "+p["-k"]+"\n";
@@ -337,6 +338,9 @@ string params::get_header(int ID){
 		header+="#-br          : "+p["-br"]+"\n";
 		header+="#-bct         : "+p["-bct"]+"\n";
 		header+="#-window_res  : "+p["-window_res"]+"\n";
+		header+="#-minK        : "+p["-minK"]+"\n";
+		header+="#-maxK        : "+p["-maxK"]+"\n";
+		
 		header+="#-mi          : "+p["-mi"]+"\n";
 		header+="#-ct          : "+p["-ct"]+"\n";
 		header+="#-rounds      : "+p["-rounds"]+"\n";

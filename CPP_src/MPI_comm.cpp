@@ -414,7 +414,7 @@ seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
 
 
 struct simple_seg_struct{
-	char chrom[5];
+	char chrom[6];
 	int st_sp[3]; //first->start, second->stop
 };
 
@@ -566,7 +566,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 	simple_seg_struct sss;
 	MPI_Datatype mystruct;
 	
-	int blocklens[2]={5,3};
+	int blocklens[2]={6,3};
 	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(simple_seg_struct, chrom);
@@ -584,13 +584,14 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 		for (int j =0; j < nprocs; j++){
 			start 	= j*count;
 			stop 	= (j+1)*count;
+			stop 		= min(stop, N);
 			if (j == nprocs-1){
 				stop 	= N;
 			}
 			if (start > stop){
 				stop 	= start; //in this case there are more nodes than segments...so
 			}
-			S 	= stop-start;
+			S 		= stop-start;
 			if (j > 0){
 				MPI_Send(&S, 1, MPI_INT, j,1, MPI_COMM_WORLD);
 			}
@@ -598,13 +599,14 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 			int u 	= 0;
 			for (int i =start; i<stop; i++){
 				simple_seg_struct SSS;
-				for (int c = 0; c < 5; c++){
+				for (int c = 0; c < 6; c++){
 					if (c <FSI[i]->chrom.size() ){
 						SSS.chrom[c] 	= FSI[i]->chrom[c];
 					}else{
 						SSS.chrom[c] 	= '\0';
 					}
 				}
+				SSS.chrom[5]	= '\0';
 				SSS.st_sp[0] 	= FSI[i]->start;
 				SSS.st_sp[1] 	= FSI[i]->stop;
 				SSS.st_sp[2] 	= FSI[i]->ID;
@@ -699,16 +701,32 @@ int get_job_ID(string path, string job_ID, int rank, int nprocs){
 				current_file 	= hFile->d_name;
 				if (current_file.substr(0,jN) == job_ID){
 					if (current_file.substr(jN, 1) =="-"){
-						current 	= max(current, stoi( current_file.substr(jN+1,1) ) );
+						int t 		= 1;
+						while (current_file.substr(jN+t,1) != "_" and t < current_file.size() ){
+							t++;
+						}
+						if (t < current_file.size()){
+							current 	= max(current, stoi( current_file.substr(jN+1,t) ) );	
+						}else{
+							printf("WHOOOO, MPI_comm getting job_ID\n");
+
+						}
 						FOUND 		= true;
 					}
 				}
-				//P->p4["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
-
+				
 				if (current_file.substr(0, jN + 4 ) =="tmp_" +job_ID){
 
 					if (current_file.substr(jN+4,1) =="-"){
-						current 	= max(current, stoi( current_file.substr(jN+5,1) ) );
+						int t 		= 1;
+						while (current_file.substr(jN+4+t,1)   != "_" and t < current_file.size() ){
+							t++;
+						}
+						if (t < current_file.size()){
+							current 	= max(current, stoi( current_file.substr(jN+5,t) ) );
+						}else{
+							printf("WHOOOO, MPI_comm getting job_ID\n");
+						}
 						FOUND 		= true;
 					}
 					
@@ -732,9 +750,96 @@ int get_job_ID(string path, string job_ID, int rank, int nprocs){
 		
 	}
 	return current;
+}
+
+	
+map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >> FITS, int rank, int nprocs){
+	
+
+	simple_c_free_mode sc_fm;
+	MPI_Datatype mystruct;
+	
+	int blocklens[4]={3,5, 6, 11};
+	MPI_Datatype old_types[4] = {MPI_DOUBLE, MPI_INT, MPI_CHAR, MPI_DOUBLE}; 
+	MPI_Aint displacements[4];
+	displacements[0] 	= offsetof(simple_c_free_mode, SS);
+	displacements[1] 	= offsetof(simple_c_free_mode, ID);
+	displacements[2] 	= offsetof(simple_c_free_mode, chrom);
+	displacements[3] 	= offsetof(simple_c_free_mode, ps);
+	
+	
+	MPI_Type_create_struct( 4, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+
+
+	vector<simple_c_free_mode> recieved;
+
+	typedef map<int, vector<simple_c_free_mode> >::iterator model_it;
+	if (rank==0){
+		//first want to recieve the number of segments each child processes ran
+		for (int j = 0; j < nprocs; j++){
+			int S =0;
+			if (j > 0){
+				MPI_Recv(&S, 1, MPI_INT, j, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+				for (int s = 0; s < S; s++){
+					MPI_Recv(&sc_fm, 1, mystruct,j,s+1,  MPI_COMM_WORLD,MPI_STATUS_IGNORE );
+					recieved.push_back(sc_fm);
+				}
+				
+			}else{
+				for (int s = 0; s < FITS.size(); s++){
+					for (model_it k = FITS[s].begin(); k!=FITS[s].end(); k++){
+						for (int sc= 0; sc < k->second.size();sc++ ){
+							recieved.push_back( k->second[sc] );
+						}
+					}
+				}					
+			}
+		}
+
+	}else{
+
+		int S 	= 0;
+		for (int s = 0; s < FITS.size(); s++){
+			for (model_it k = FITS[s].begin(); k!=FITS[s].end(); k++){
+				for (int sc= 0; sc < k->second.size();sc++ ){
+					S++;
+				}
+			}
+		}
+		MPI_Send(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
+		S=0;
+		for (int s = 0; s < FITS.size(); s++){
+			for (model_it k = FITS[s].begin(); k!=FITS[s].end(); k++){
+				for (int sc= 0; sc < k->second.size();sc++ ){
+					MPI_Send(&k->second[sc], 1, mystruct, 0, S+1, MPI_COMM_WORLD);	
+					S++;
+				}
+			}
+		}
+		
+	}
+	//printf("Rank: %d,%d\n",rank, recieved.size());
+	map<int, map<int, vector<simple_c_free_mode>  > > G;
+	typedef vector<simple_c_free_mode>::iterator it_type_fm;
+	for (it_type_fm sc = recieved.begin(); sc!=recieved.end(); sc++){
+		G[(*sc).ID[0]][(*sc).ID[3]].push_back(*sc);
+	}
+	// typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
+	// typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
+	// for (it_type_1 i = G.begin(); i!=G.end();i++){
+	// 	printf("Segment %d\n", i->first );
+	// 	for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
+	// 		printf("K: %d, %d\n", j->first, int(j->second.size() ));
+	// 	}
+	// }
+
+	return G;
+
 
 
 }
+
 
 
 

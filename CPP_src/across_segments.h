@@ -25,6 +25,17 @@ struct simple_c{
 //	string write_out();
 
 };
+
+
+struct simple_c_free_mode{
+	double SS[3];	//log-likelihood, N_forward, N_reverse
+	int ID[5] ;  //index of the segment that this belongs,start, stop, converged?
+	char chrom[6];
+	double ps[11]; //parameters for the component
+	simple_c_free_mode(bool , double, component ,
+		int, segment *, int, double, double);
+	simple_c_free_mode();
+};
 struct single_simple_c{
 	char chrom[6];
 	int st_sp[3];
@@ -38,5 +49,5 @@ string get_header(params *);
 
 vector<simple_c> move_elongation_support(vector<segment *>, params *);
 vector<single_simple_c> run_single_model_across_segments(vector<segment *> , params * );
-vector<map<int, vector<simple_c> >> run_model_across_free_mode(vector<segment *> , params * );
+vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<segment *> , params *, ofstream& );
 #endif

@@ -21,10 +21,10 @@
 -chr 		= all #specific chromosome to process on?
 -r_mu 		= 1 #seed EM randomally from the peak finder
 -elon 		= 1 #move elongation support at every iteration
--ALPHA_0 	= 1 #prior for sigma
--BETA_0 	= 1 #prior for sigma
--ALPHA_1 	= 1 #prior for lambda
--BETA_1 	= 1 #prior for lambda
+-ALPHA_0 	= 100 #prior for sigma
+-BETA_0 	= 100 #prior for sigma
+-ALPHA_1 	= 50 #prior for lambda
+-BETA_1 	= 100 #prior for lambda
 -ALPHA_2 	= 1 #prior for weights
 -ALPHA_3 	= 10000 #prior for strand probs
 

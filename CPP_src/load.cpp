@@ -1312,7 +1312,7 @@ void write_out_MLE_model_info(vector<final_model_output> A, params * P, string j
 
 
 
-vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS, int pad){
+vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS, int pad,string spec_chrom){
 	ifstream FH(FILE);
 	vector<segment *> G;
 	int ct 	= 1;
@@ -1327,8 +1327,10 @@ vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS,
 				IDS[i] 		= lineArray[3];
 			}
 			chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]);
-			segment * S 	= new segment(chrom, start, stop,i);
-			G.push_back(S);
+			if (spec_chrom=="all" or spec_chrom==chrom){
+				segment * S 	= new segment(chrom, start, stop,i);
+				G.push_back(S);
+			}
 			i++;
 		}
 	}else{
@@ -1891,14 +1893,91 @@ void get_noise_mean_var(string noise_file, string bedgraph, double * mean, doubl
 	*(var) 	= VAR/N;
 
 
-
-
-	
-
-
 }
 
 
+void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > > G, 
+	params * P, int job_ID,map<int, string> IDS){
+	double scale 	= stof(P->p["-ns"]);
+	string out_dir 	= P->p["-o"];
+	ofstream FHW;
+	FHW.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv");
+
+	FHW<<P->get_header(0);
+	FHW<<"#Interval Number\tName from Interval File\tchromosome\tstart\tstop\tmodel complexity\tconverged\t";
+	FHW<<"forward strand data points,reverse strand data points,log-likelihood\tloading position\t";
+	FHW<<"loading variance\tloading initiation length\tloading probability\tforward strand probability";
+	FHW<<"\tforward elongation bound\tforward elognation probability\tforward elognation strand probability";
+	FHW<<"\treverse elongation bound\treverse elognation probability\treverse elognation strand probability\n";
+
+	
+	typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
+	typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
+	typedef map<int, string>::iterator it_type_IDS;
+	int IN=0;
+	for (it_type_1 i = G.begin(); i!=G.end();i++){
+		string name 	= IDS[i->first];
+		string chrom;
+		int start, stop, converged;
+		double N_forward, N_reverse, ll;
+		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
+			for (int sc = 0; sc < j->second.size(); sc++){
+				chrom 		= j->second[sc].chrom;
+				start 		= j->second[sc].ID[1],stop=j->second[sc].ID[2];
+				N_forward  	= j->second[sc].SS[1], N_reverse=j->second[sc].SS[2];
+			}
+		}
+		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
+			string mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
+			for (int sc = 0; sc < j->second.size(); sc++){
+				ll 			= j->second[sc].SS[0];
+				converged 	= j->second[sc].ID[4];
+ 				mus+=to_string(j->second[sc].ps[0]*scale + start);
+				sis+=to_string(j->second[sc].ps[1]*scale);
+				ls+=to_string((1.0/j->second[sc].ps[2])*scale);
+				wEMs+=to_string(j->second[sc].ps[3]);
+				wPIs+=to_string(j->second[sc].ps[4]);
+				forward_bs+=to_string(j->second[sc].ps[5]*scale + start);
+				forward_ws+=to_string(j->second[sc].ps[6]);
+				forward_PIs+=to_string(j->second[sc].ps[7]);
+				reverse_as+=to_string(j->second[sc].ps[8]*scale + start);
+				reverse_ws+=to_string(j->second[sc].ps[9]);
+				reverse_PIs+=to_string(j->second[sc].ps[10]);
+				if (sc < j->second.size()-1){
+					mus+=",";
+					sis+=",";
+					ls+=",";
+					wEMs+=",";
+					wPIs+=",";
+					forward_bs+=",";
+					forward_ws+=",";
+					forward_PIs+=",";
+					reverse_as+=",";
+					reverse_ws+=",";
+					reverse_PIs+=",";
+				}								
+			}
+			FHW<<to_string(IN)+"\t"+name+"\t"+chrom +"\t"+to_string(start)+"\t";
+			FHW<<to_string(stop)+"\t"+to_string(j->first)+"\t"+to_string(converged)+"\t";
+			FHW<<to_string(int(N_forward))+","+to_string(int(N_reverse))+","+to_string(ll)+"\t";
+			FHW<<mus+"\t"+sis+"\t"+ls+"\t"+wEMs+"\t"+wPIs+"\t";
+			FHW<<forward_bs+"\t"+forward_ws+"\t"+forward_PIs;
+			FHW<<reverse_as+"\t"+reverse_ws+"\t"+reverse_PIs;
+			FHW<<endl;
+
+
+		}
+
+
+
+		IN++;
+	}
+
+
+
+
+
+}
 
 
 

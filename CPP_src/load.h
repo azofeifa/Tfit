@@ -6,6 +6,7 @@
 #include "read_in_parameters.h"
 using namespace std;
 class simple_c;
+class simple_c_free_mode;
 class final_model_output;
 struct single_simple_c;
 class model_component{
@@ -157,7 +158,7 @@ vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_mo
 
 void write_out_MLE_model_info(vector<final_model_output>, params *, string, int);
 
-vector<segment *> load_intervals_of_interest(string,map<int, string>&, int);
+vector<segment *> load_intervals_of_interest(string,map<int, string>&, int, string);
 
 vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > , string, string, int);
 
@@ -174,5 +175,9 @@ void collect_all_tmp_files(string , string, int, int );
 vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> >  , string , string , int);
 
 void get_noise_mean_var(string, string, double *, double *);
+
+void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > >,params *,int,map<int, string>);
+
+
 
 #endif

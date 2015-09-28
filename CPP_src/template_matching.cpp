@@ -89,6 +89,24 @@ vector<vector<double>> bubble_sort2(vector<vector<double>> X){ //sort vector of 
 	}
 	return X;
 }
+vector<vector<double>> bubble_sort3(vector<vector<double>> X){ //sort vector of vectors by second
+	bool changed=true;
+	if (X.size()<2){
+		return X;
+	}
+	while (changed){
+		changed=false;
+		for (int i = 0; i < X.size()-1; i++  )	{
+			if (X[i][2] < X[i+1][2]){
+				vector<double> copy 	= X[i];
+				X[i] 					= X[i+1];
+				X[i+1] 					= copy;
+				changed=true;
+			}
+		}
+	}
+	return X;
+}
 
 
 vector<double> window_search(segment * data, double si, double l, bool kind){
@@ -495,10 +513,14 @@ void run_global_template_matching(vector<segment*> segments,
 
 			center 		= int((scores[j][1]+scores[j][0]) / 2.);
 			//want to insert into
-			vector<double> bounds(2);
-			bounds[0] 	= scores[j][0], bounds[1]=scores[j][1];
+			vector<double> bounds(3);
+			bounds[0] 	= scores[j][0], bounds[1]=scores[j][1], bounds[2]=scores[j][2];
 			segments[i]->bidirectional_bounds.push_back(bounds);	
 		}
+		//sort
+		segments[i]->bidirectional_bounds 	= bubble_sort3(segments[i]->bidirectional_bounds);
+
+
 		scores.clear();
 	}
 	log_file<<"done, found: " + to_string(all) + " potential sites of bidirectional transcription\n";

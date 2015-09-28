@@ -93,24 +93,71 @@ def compare(HCT, DANK, PUC, LI):
 	plt.legend()
 	plt.show()
 
+def to_name(chromosome):
+	try:
+		i  	= int(chrom[3:])
+	except:
+		i 	= 24
+	return i
 
+def make_gene_bed(FILE,OUT):
+	G 	= {}
+	FHW = open(OUT, "w")
+	header 	= True
+	with open(FILE) as FH :
+		for line in FH:
+			if not header:
+				start, stop 	= line.split("\t")[4:6]
+				start, stop 	= int(start), int(stop)
+				chrom 			= line.split("\t")[2]
+				if "random" not in chrom:
+					name 			= line.split("\t")[1]
+					if chrom not in G:
+						G[chrom] 	= {}
+					if start not in G[chrom]:
+						G[chrom][start]={}
+					if stop not in G[chrom][start]:
+						G[chrom][start][stop] 	= name
+			else:
+				header = False
+	chromosomes 	= [( to_name(chrom), chrom)  for chrom in G]
+	chromosomes.sort()
+	chromosomes 	= [CHR for i, CHR in chromosomes]
+	LS 				= list()
+	for chrom in chromosomes:
+		A 	= [(start, stop,G[chrom][start][stop] ) for start in G[chrom] for stop in G[chrom][start] if 1000<(stop -start) < 200000 ]
+		LS+=[ stop-start for start, stop, chrom in A]
+		A.sort()
+		for start, stop, name in A:
+			FHW.write(chrom + "\t" + str(start) + "\t" + str(stop) + "\t" + name+ "\n" )
 
+	
 
 if __name__ == "__main__":
-	# FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.txt"
-	# refseq(FILE)
-	NONE 	= "/Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed"
-	NONE2 	= "/Users/joazofeifa/Lab/genome_files/hg18_no_anntation.bed"
 
-	HCT_F 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
-	DANK_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Danko_2014/GSE66031_ac16.unt.all_plus.bw.bedGraph.mod.bedGraph"
-	PUC_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_forward.bedGraph"
-	Li_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/bedgraph_files/GSM1115996_Groseq-MCF7-E2-rep1_2.forward.bedGraph"
-	NONE 	= getNONE(NONE)
-	HCT 	= get_distributions(HCT_F, NONE)
-	DANK 	= get_distributions(DANK_F,NONE)
-	NONE 	= getNONE(NONE2)
-	PUC 	= get_distributions(PUC_F,NONE)
-	LI 		= get_distributions(Li_F, NONE)
-	compare(HCT,DANK,PUC,LI)
+	GENE_BED 	= True
+	NOISE_BED 	= False
+	if GENE_BED:
+		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
+		OUT  =  "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.bed"
+		make_gene_bed(FILE,OUT)
+
+	if NOISE_BED:
+
+		# FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.txt"
+		# refseq(FILE)
+		NONE 	= "/Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed"
+		NONE2 	= "/Users/joazofeifa/Lab/genome_files/hg18_no_anntation.bed"
+
+		HCT_F 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
+		DANK_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Danko_2014/GSE66031_ac16.unt.all_plus.bw.bedGraph.mod.bedGraph"
+		PUC_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_forward.bedGraph"
+		Li_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/bedgraph_files/GSM1115996_Groseq-MCF7-E2-rep1_2.forward.bedGraph"
+		NONE 	= getNONE(NONE)
+		HCT 	= get_distributions(HCT_F, NONE)
+		DANK 	= get_distributions(DANK_F,NONE)
+		NONE 	= getNONE(NONE2)
+		PUC 	= get_distributions(PUC_F,NONE)
+		LI 		= get_distributions(Li_F, NONE)
+		compare(HCT,DANK,PUC,LI)
 	

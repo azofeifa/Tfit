@@ -366,13 +366,14 @@ void component::add_stats(double x, double y, int st, double normalize){
 			forward.r_reverse+=(vl3*y);
 		}
 		//now adding all the conditional expections for the convolution
-
-		double current_EY 	= bidir.EY(x, st);
-		double current_EY2 	= bidir.EY2(x, st);
-		double current_EX 	= x-(st*current_EY)-foot_print*st;
-		bidir.ey+=current_EY*vl*y;
-		bidir.ex+=current_EX*vl*y;
-		bidir.ex2+=(pow(current_EX,2) + current_EY2 - pow(current_EY,2))*vl*y;	
+		if (vl > 0 and y > 0){
+			double current_EY 	= bidir.EY(x, st);
+			double current_EY2 	= bidir.EY2(x, st);
+			double current_EX 	= x-(st*current_EY)-foot_print*st;
+			bidir.ey+=current_EY*vl*y;
+			bidir.ex+=current_EX*vl*y;
+			bidir.ex2+=(pow(current_EX,2) + current_EY2 - pow(current_EY,2))*vl*y;	
+		}
 	}
 	
 }
@@ -411,17 +412,17 @@ void component::update_parameters(double N, int K){
 		
 		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
-		if (bidir.si > 10){
+		if (bidir.si > 50){
 			EXIT 	= true;
 		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + BETA_1), 5.);
-		if (bidir.l < 0.05 or bidir.l > 4.5 ){
+		if (bidir.l < 0.01  ){
 			EXIT 	= true;
 		}
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
-		forward.a 	= bidir.mu + (1.0 /bidir.l), reverse.b=bidir.mu - (1.0 / bidir.l);
+		forward.a 	= bidir.mu + (2.0 /bidir.l), reverse.b=bidir.mu - (2.0 / bidir.l);
 		//update PIS, this is obviously overwritten if we start the EM seeder with 0/1
 		forward.pi 	= (forward.r_forward + 1) / (forward.r_forward + forward.r_reverse+2);
 		reverse.pi 	= (reverse.r_forward + 1)/ (reverse.r_forward + reverse.r_reverse+2);
@@ -730,7 +731,7 @@ double move_uniforom_support2(component * components, int K, int add,
 double move_foot_print(segment * data, component * components, double base_ll, int K, int add, double max_foot){
 	random_device rd;
 	mt19937 mt(rd());
-	uniform_real_distribution<double> step(0,max_foot);
+	uniform_real_distribution<double> step(-max_foot,max_foot);
 	double current_ll;
 	for (int c = 0; c < K; c++){
 		double old_print 	= components[c].bidir.foot_print;
@@ -1083,7 +1084,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 	random_device rd;
 	mt19937 mt(rd());
 	uniform_real_distribution<double> dist_uni(data->minX,data->maxX);
-	
+	uniform_real_distribution<double> dist_sample_temp(0,1);
 	
 	int add 	= noise_max>0;
 	components 	= new component[K+add];
@@ -1099,7 +1100,8 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 	double mu;
 	
 	for (int k = 0; k < K; k++){
-		if (mu_seeds.size()>0){
+		double U 	= dist_sample_temp(mt);
+		if (mu_seeds.size()>0 and U < 0.5  ){
 			i 	= sample_centers(mu_seeds ,  p);
 			mu 	= mu_seeds[i];
 			if (r_mu > 0){
@@ -1110,7 +1112,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 			mu 			= dist_uni(mt);
 		}
 		components[k].initialize(mu, data, K, data->SCALE , 0., 0.,0);
-		if (mu_seeds.size() > 0){
+		if (mu_seeds.size() > 0 and U < 0.5){
 			mu_seeds.erase (mu_seeds.begin()+i);	
 		}
 	}
@@ -1193,6 +1195,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 		
 
 		ll 	= calc_log_likelihood(components, K+add, data);
+		//printf("%f\n",ll );
 		//******
 		//Move Uniform support		
 		if (elon_move){
@@ -1204,6 +1207,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 				ll, K, add, 2);
 		}
 		if (abs(ll-prevll)<convergence_threshold){
+		//	printf("converged\n");
 			converged=true;
 		}
 		if (not isfinite(ll)){

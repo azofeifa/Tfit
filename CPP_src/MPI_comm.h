@@ -42,4 +42,8 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> , int, int  
 int get_job_ID(string,string,int, int);
 
 double send_density_val(double ,int, int );
+
+map<int, map<int, vector<simple_c_free_mode>  > >  gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >>  , int  , int  );
+
+
 #endif
