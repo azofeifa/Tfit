@@ -3,12 +3,12 @@
 ~MODEL #do not change this line
 -N     	        = EMG-model_testing
 -v 		= 1
--i 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
--j 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
--k 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_DMSO2_3_intervals.bed
+-i 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/chr1_6229860_6303055_DMSO2_3.pos.BedGraph
+-j 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/chr1_6229860_6303055_DMSO2_3.neg.BedGraph
+-k 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/chr1_6229860_6303055_DMSO2_3_intervals.bed
 -o 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -log_out	= /Users/joazofeifa/Lab/EMG_logs/
--br 		= 10 #binning resolution
+-br 		= 100 #binning resolution
 -ns 		= 100 #normalizing scale
 -minK 		= 1  #min number of models to consider
 -maxK		= 2 #max number of models to consider
@@ -27,4 +27,5 @@
 -BETA_1 	= 100 #prior for lambda
 -ALPHA_2 	= 1 #prior for weights
 -ALPHA_3 	= 10000 #prior for strand probs
+-ms_pen 	= 1 #penality for model selection
 

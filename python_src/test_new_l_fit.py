@@ -83,7 +83,7 @@ def move_l(X, parameters,penality=2):
 		for l in range(i,j):
 			N_left , N_right 	= sum(X[i:l, 2]),sum(X[l:j, 2])
 			w_left 				= N_left / (N_right + N_left)
-			vl_left 			= LOG(w_left/(X[l,0] - X[i,0]))
+			vl_left 			= LOG(w_left/(X[-1,0] - X[0,0]))
 			vl_right 			= LOG((1.0-w_left)/(X[j,0] - X[l,0]))
 			ll 					= vl_left*N_left + vl_right*N_right
 			BIC 				= -2*ll + penality*LOG(N)

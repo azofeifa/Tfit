@@ -483,7 +483,7 @@ void run_global_template_matching(vector<segment*> segments,
 					if (BIC_values[j] >=ct and densities[j] > (density/4.) and densities_r[j]>(density/4.)   ){
 						start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 						stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-						current[0] 	= double(start), current[1]=double(stop), current[2]=avgLL[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
+						current[0] 	= double(start), current[1]=double(stop), current[2]=BIC_values[j], current[3]=(variances[j]/4.)*scale, current[4]=(2/lambdas[j])*scale;
 						
 						merged M(current);
 						int N 		= mergees.size();

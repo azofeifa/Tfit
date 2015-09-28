@@ -6,7 +6,8 @@ using namespace std;
 class UNI{
 public:
 	double a,b,w,pi;
-	
+	int j,k,l; //so j and k are the bounds the uniform can move through, l is the current one
+	double left_SUM, right_SUM;
 	int st;
 	int pos;
 	//sufficient stats
@@ -55,7 +56,9 @@ public:
 	UNI forward;
 	UNI reverse;
 	NOISE noise; 
-
+	component * forward_neighbor;
+	component * reverse_neighbor;
+	
 	bool type;
 
 	bool EXIT;
@@ -81,6 +84,7 @@ public:
 	void initialize(double, segment *, int , double , double, double, double);
 	void initialize_with_parameters(vector<double>, segment *, int, double, double, double);
 	void initialize_with_parameters2(vector<double>, segment *, int, double, double, double);
+	void initialize_bounds(double,  segment *, int , double , double, double, double, double, double);
 	double evaluate(double, int);
 	void add_stats(double, double , int, double);
 	double pdf(double , int);

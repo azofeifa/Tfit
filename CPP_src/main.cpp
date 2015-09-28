@@ -316,7 +316,7 @@ int main(int argc, char* argv[]){
 		string interval_file 			= P->p["-k"];
 		string out_file_dir 			= P->p["-o"];
 		string spec_chrom 			= P->p["-chr"];
-		bool run_template 			= bool(stoi(P->p5["-template"]));
+		bool run_template 			= bool(stoi(P->p["-template"]));
 		vector<segment *> FSI;
 		map<string , vector<vector<double> > > G;
 		map<string, vector<segment *> > GG;
@@ -336,8 +336,11 @@ int main(int argc, char* argv[]){
 		vector<segment*> integrated_segments;
 
 		T.get_time(rank);
+		FHW<<"(main) Loading bedgraph files into intervals of interest: ";
 		integrated_segments= insert_bedgraph_to_segment_joint(GG, 
 			forward_bed_graph_file, reverse_bed_graph_file, rank);
+		FHW<<to_string(int(integrated_segments.size()))<<endl;
+		FHW.flush();
 		BIN(integrated_segments, stod(P->p["-br"]), stod(P->p["-ns"]),true);
 			
 		double window 				= stod(P->p["-window_res"]);
@@ -348,7 +351,9 @@ int main(int argc, char* argv[]){
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
 				0.8,scale,ct, 64,0. ,0, FHW );	
 		T.get_time(rank);
+		T.start_time(rank, "Running Model on individual segments:");
 		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments, P,FHW);
+		T.get_time(rank);
 		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
 		if (rank==0){//write_out_to_MLE
 			write_out_models_from_free_mode(GGG, P, job_ID, IDS);

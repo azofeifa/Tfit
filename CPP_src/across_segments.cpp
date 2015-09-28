@@ -549,13 +549,14 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
 	return fits;
 }
 
-map<int, vector<classifier> > make_classifier_struct_free_model(params * P){
+map<int, vector<classifier> > make_classifier_struct_free_model(params * P, segment * data){
 
 	int min_k 	= stoi(P->p["-minK"]);
 	int max_k 	= stoi(P->p["-maxK"]);
 	int rounds 	= stoi(P->p["-rounds"]);
+	int BDS 	= int(data->centers.size());
 	map<int, vector<classifier> > A;
-	for (int k = min_k; k <= max_k;k++ ){
+	for (int k = max(min_k, BDS/2); k <= min(BDS, max_k)+1 ;k++ ){
 		for (int r = 0; r < rounds; r++){
 			A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
 			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
@@ -663,7 +664,8 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 			 FSI[i]->centers.push_back(center);
 		}
 		segment * data 	= FSI[i];
-		map<int, vector<classifier> > A 	= make_classifier_struct_free_model(P);
+		printf("%d\n", int (FSI[i]->centers.size())  );
+		map<int, vector<classifier> > A 	= make_classifier_struct_free_model(P, FSI[i]);
 		for (it_type k = A.begin(); k!= A.end(); k++){
 			int N 	=  k->second.size();
 			#pragma omp parallel for num_threads(num_proc)	

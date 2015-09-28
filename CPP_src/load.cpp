@@ -1899,6 +1899,7 @@ void get_noise_mean_var(string noise_file, string bedgraph, double * mean, doubl
 void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > > G, 
 	params * P, int job_ID,map<int, string> IDS){
 	double scale 	= stof(P->p["-ns"]);
+	double penality = stof(P->p["-ms_pen"]) ;
 	string out_dir 	= P->p["-o"];
 	ofstream FHW;
 	FHW.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv");
@@ -1915,6 +1916,8 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
 	typedef map<int, string>::iterator it_type_IDS;
 	int IN=0;
+	string mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
+			
 	for (it_type_1 i = G.begin(); i!=G.end();i++){
 		string name 	= IDS[i->first];
 		string chrom;
@@ -1928,7 +1931,7 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 			}
 		}
 		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
-			string mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
+			mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
 			for (int sc = 0; sc < j->second.size(); sc++){
 				ll 			= j->second[sc].SS[0];
 				converged 	= j->second[sc].ID[4];
@@ -1971,6 +1974,113 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 
 
 		IN++;
+	}
+
+	ofstream Bidirectionals;
+	ofstream bidirectional_elongations;
+	Bidirectionals.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidirections_hits_K_MLE.bed");
+	bidirectional_elongations.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidir_elongation_K_MLE.gtf") ;
+	
+	int t 	= 0;
+	for (it_type_1 i = G.begin(); i!=G.end();i++){
+		string name 	= IDS[i->first];
+		string chrom;
+		int start, stop, converged;
+		double N_forward, N_reverse, ll;
+		double BIC_NULL 	= INF;
+		double NULL_LL 		= nINF;
+		double vl, pi;
+		double N;
+		int argK 	= 0;
+		double BIC_MOD;
+		double BEST_BIC 	= INF;
+		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
+			for (int sc = 0; sc < j->second.size(); sc++){
+				chrom 		= j->second[sc].chrom;
+				start 		= j->second[sc].ID[1],stop=j->second[sc].ID[2];
+				N_forward  	= j->second[sc].SS[1], N_reverse=j->second[sc].SS[2];
+				ll 			= j->second[sc].SS[0];
+				N 			= N_forward + N_reverse;
+				pi 			= N_forward / (N);
+				vl 			= scale / float(stop - start);
+				NULL_LL 	= log(vl*pi)*N_forward + log(vl*(1-pi))*N_reverse;
+
+				BIC_NULL 	=  -2*NULL_LL + log(N);
+				if (BIC_NULL < BEST_BIC){
+					argK 		= 0;
+					BEST_BIC  	= BIC_NULL;
+				}
+				BIC_MOD 	= -2*ll + penality*j->first*7*log(N);
+				if (BIC_MOD < BEST_BIC){
+					argK 	= j->first;
+					BEST_BIC = BIC_MOD;
+				}
+			}
+		}
+		double std;
+		string INFO;
+		mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
+			
+		for (int sc = 0; sc < argK; sc++){
+			//BIDIR BED
+			chrom 		= i->second[argK][sc].chrom;
+			start 		= i->second[argK][sc].ps[0]*scale + i->second[argK][sc].ID[1];
+			stop 		= i->second[argK][sc].ps[0]*scale + i->second[argK][sc].ID[1];	
+			std 		= i->second[argK][sc].ps[1]*scale + (1.0/i->second[argK][sc].ps[2])*scale;
+			start-=std;
+			stop+=std;
+			N_forward  	= i->second[argK][sc].SS[1], N_reverse=i->second[argK][sc].SS[2];
+			mus=to_string(i->second[argK][sc].ps[0]*scale + start);
+			sis=to_string(i->second[argK][sc].ps[1]*scale);
+			ls=to_string((1.0/i->second[argK][sc].ps[2])*scale);
+			wEMs=to_string(i->second[argK][sc].ps[3]);
+			wPIs=to_string(i->second[argK][sc].ps[4]);
+			INFO 	= mus+"_"+sis+"_"+ls+"_"+wEMs+"_"+wPIs+"_"+to_string(int(N_forward))+"_"+to_string(int(N_reverse)) ;
+			Bidirectionals<<chrom+"\t"+to_string(start)+"\t" + to_string(stop) + "\t" +INFO+"\n";
+
+			//===================
+			//GFF FILE
+			// forward_bs+=to_string(j->second[sc].ps[5]*scale + start);
+			// 	forward_ws+=to_string(j->second[sc].ps[6]);
+			// 	forward_PIs+=to_string(j->second[sc].ps[7]);
+			// 	reverse_as+=to_string(j->second[sc].ps[8]*scale + start);
+			// 	reverse_ws+=to_string(j->second[sc].ps[9]);
+			// 	reverse_PIs+=to_string(j->second[sc].ps[10]);
+				
+			int center 	= (stop + start) /2.;
+			string L, R, parent, bidir;
+
+			parent 	= chrom +"\t.\tgene\t";
+			parent+= to_string(start) + "\t" + to_string(stop) +"\t.\t.\t.\tID=Bidir_"+to_string(t);
+			
+			
+			bidir 	= chrom +"\tEMGU\tCDS\t";
+			bidir 	+= to_string(center) + "\t" + to_string(stop) + "\t.\t+\t.\tParent=Bidir_"+to_string(t);
+			bidir 	+=";Name= "+mus+"_"+sis+"_"+ls+"_"+wEMs+"_"+wPIs+"_"+to_string(int(N_forward))+"_"+to_string(int(N_reverse)) ;
+			bidirectional_elongations<<parent<<endl;
+			bidirectional_elongations<<bidir<<endl;
+			if ((i->second[argK][sc].ps[6] > 0.001)){
+				int right 	= int(i->second[argK][sc].ps[5]*scale + i->second[argK][sc].ID[1]);
+				R 		= chrom +"\tEMGU\tCDS\t";
+				R 		+= to_string(right ) + "\t" + to_string(int(25+right)) + "\t.\t+\t.\tParent=Bidir_"+to_string(t);
+				R 		+=";Name=Forward Strand Elongation Component";
+				bidirectional_elongations<<R<<endl;
+			}
+			
+			if (i->second[argK][sc].ps[9] > 0.001){
+				int left = int(i->second[argK][sc].ps[8]*scale + i->second[argK][sc].ID[1]);
+				L 		= chrom +"\tEMGU\tCDS\t";
+				L 		+= to_string(int(left-25)) + "\t" + to_string(left) + "\t.\t-\t.\tParent=Bidir_"+to_string(t);
+				L+=";Name=Reverse Strand Elongation Component";
+				bidirectional_elongations<<L<<endl;
+			}
+			t++;
+			
+			
+		}
+
+
+
 	}
 
 

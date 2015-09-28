@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import time
 import math 
 import numpy as np
-def refseq(FILE):
+def refseq(FILE, OUT):
 	G 	= {}
 	with open(FILE) as FH:
 		header=True
@@ -35,10 +35,11 @@ def refseq(FILE):
 			stop 	= A[chrom][i+1][0]
 			if chrom not in GAPS:
 				GAPS[chrom]=list()
+			
 			GAPS[chrom].append((start, stop))
 			i+=1
 
-	FHW=open("/Users/joazofeifa/Lab/genome_files/NO_ANNOTATION.bed", "w")
+	FHW=open(OUT, "w")
 	for chrom  in GAPS:
 		for start, stop in GAPS[chrom]:
 			FHW.write(chrom + "\t" + str(start) + "\t" + str(stop) +"\n")
@@ -52,6 +53,9 @@ def getNONE(FILE):
 		D[chrom].append((int(start), int(stop)))
 	return D
 def get_distributions(FILE,NONE):
+	for chrom in NONE:
+		NONE[chrom] 	= [(((stop+start)/2.)-500  , ((stop+start)/2.)+500)  for start, stop in NONE[chrom] if (stop - start ) > 1000  ]
+		print NONE[chrom]
 	D 	= {}
 	prevChrom 	= {}
 	t 	= 0
@@ -110,6 +114,11 @@ def make_gene_bed(FILE,OUT):
 				start, stop 	= line.split("\t")[4:6]
 				start, stop 	= int(start), int(stop)
 				chrom 			= line.split("\t")[2]
+				strand 			= line.split("\t")[3]
+				if (strand=="+"):
+					stop+=1500
+				else:
+					start-=1500
 				if "random" not in chrom:
 					name 			= line.split("\t")[1]
 					if chrom not in G:
@@ -125,7 +134,7 @@ def make_gene_bed(FILE,OUT):
 	chromosomes 	= [CHR for i, CHR in chromosomes]
 	LS 				= list()
 	for chrom in chromosomes:
-		A 	= [(start, stop,G[chrom][start][stop] ) for start in G[chrom] for stop in G[chrom][start] if 1000<(stop -start) < 200000 ]
+		A 	= [(start, stop,G[chrom][start][stop] ) for start in G[chrom] for stop in G[chrom][start] if 2500<(stop -start) < 200000 ]
 		LS+=[ stop-start for start, stop, ID in A]
 		A.sort()
 		for start, stop, name in A:
@@ -135,20 +144,22 @@ def make_gene_bed(FILE,OUT):
 
 if __name__ == "__main__":
 
-	GENE_BED 	= True
-	NOISE_BED 	= False
+	GENE_BED 	= False
+	NOISE_BED 	= True
 	if GENE_BED:
-		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.txt"
-		OUT  =  "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.bed"
+		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
+		OUT  =  "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.bed"
 		make_gene_bed(FILE,OUT)
 
 	if NOISE_BED:
 
-		# FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.txt"
-		# refseq(FILE)
-		NONE 	= "/Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed"
+		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.txt"
 		NONE2 	= "/Users/joazofeifa/Lab/genome_files/hg18_no_anntation.bed"
-
+		refseq(FILE, NONE2)
+		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
+		NONE 	= "/Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed"
+		refseq(FILE, NONE)
+		
 		HCT_F 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
 		DANK_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Danko_2014/GSE66031_ac16.unt.all_plus.bw.bedGraph.mod.bedGraph"
 		PUC_F 	= "/Users/joazofeifa/Lab/gro_seq_files/Puc2015/bedgraph_files/siControl_1h_vehicle_hg18_forward.bedGraph"

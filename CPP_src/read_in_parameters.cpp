@@ -41,6 +41,7 @@ params::params(){
 	p["-bct"] 		= "0.95";
 	p["-window_res"]= "10";
 	p["-log_out"] 	= "";
+	p["-ms_pen"] 	= "1";
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
@@ -190,7 +191,8 @@ void params::display(int nodes, int cores){
 			cout<<"-mi        : "<<p["-mi"]<<endl;
 			cout<<"-bct       : "<<p["-bct"]<<endl;
 			cout<<"-window_res: "<<p["-window_res"]<<endl;
-			
+			cout<<"-minK      : "<<p["-minK"]<<endl;
+			cout<<"-maxK      : "<<p["-maxK"]<<endl;			
 			cout<<"-threads   : "<<cores<<endl;
 			cout<<"-MPI_nodes : "<<nodes<<endl;
 			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
@@ -340,7 +342,7 @@ string params::get_header(int ID){
 		header+="#-window_res  : "+p["-window_res"]+"\n";
 		header+="#-minK        : "+p["-minK"]+"\n";
 		header+="#-maxK        : "+p["-maxK"]+"\n";
-		
+		header+="#-ms_pen      : "+p["-ms_pen"]+"\n";
 		header+="#-mi          : "+p["-mi"]+"\n";
 		header+="#-ct          : "+p["-ct"]+"\n";
 		header+="#-rounds      : "+p["-rounds"]+"\n";
