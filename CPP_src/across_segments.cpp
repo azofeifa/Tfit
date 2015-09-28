@@ -643,12 +643,12 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 	typedef map<int, vector<classifier> > ::iterator it_type;
 	double scale 	= stof(P->p["-ns"]);
 	int num_proc 				= omp_get_max_threads();
-	log_file<<"(across_segments) running model on bidirectional possibilities...";
+	log_file<<"(across_segments) running model across provided intervals...";
 	log_file.flush();
 	double N 		= FSI.size();
 	double percent 	= 0;
 	for (int i = 0 ; i < FSI.size(); i++){
-		if ((i / N) > (percent+0.5)){
+		if ((i / N) > (percent+0.05)){
 			log_file<<to_string(int((i / N)*100))+"%,";
 			log_file.flush();
 			percent 	= (i / N);

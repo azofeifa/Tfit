@@ -126,7 +126,7 @@ def make_gene_bed(FILE,OUT):
 	LS 				= list()
 	for chrom in chromosomes:
 		A 	= [(start, stop,G[chrom][start][stop] ) for start in G[chrom] for stop in G[chrom][start] if 1000<(stop -start) < 200000 ]
-		LS+=[ stop-start for start, stop, chrom in A]
+		LS+=[ stop-start for start, stop, ID in A]
 		A.sort()
 		for start, stop, name in A:
 			FHW.write(chrom + "\t" + str(start) + "\t" + str(stop) + "\t" + name+ "\n" )
@@ -138,8 +138,8 @@ if __name__ == "__main__":
 	GENE_BED 	= True
 	NOISE_BED 	= False
 	if GENE_BED:
-		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
-		OUT  =  "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.bed"
+		FILE = "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.txt"
+		OUT  =  "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.bed"
 		make_gene_bed(FILE,OUT)
 
 	if NOISE_BED:
