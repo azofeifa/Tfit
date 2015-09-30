@@ -55,10 +55,13 @@ public:
 	double minX, maxX;
 	vector< vector<double> > forward;
 	vector< vector<double> > reverse;
+	string strand ;
 	int counts;
 	vector<double> centers;
 	segment(string, int , int);
 	segment(string, int , int, int);
+	segment(string, int , int, int,string);
+
 	segment();
 	string write_out();
 	void bin(double, double, bool);
@@ -86,10 +89,11 @@ public:
 	int ID;
 	int start, stop, strand; //strand, 1 == forward, -1 == reverse
 	bool EMPTY;
+	string STRAND;
 	interval();
 	interval(string, int, int );
 	interval(string, int, int , int );
-	
+	interval(string, int, int, int , string);
 	vector<double> forward_x, forward_y, reverse_x, reverse_y;
 	void insert(double, double, int);
 	int hits;

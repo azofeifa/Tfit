@@ -3,11 +3,11 @@
 ~BIDIR #do not change this line
 -N     	       	      	= EMG-testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/gro_seq_files/Li2013/bedgraph_files/GSM1115996_Groseq-MCF7-E2-rep1_2.forward.bedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/Li2013/bedgraph_files/GSM1115996_Groseq-MCF7-E2-rep1_2.reverse.bedGraph
--nf 			= /Users/joazofeifa/Lab/genome_files/hg18_no_anntation.bed
--o 	  		= /Users/joazofeifa/Lab/gro_seq_files/Li2013/EMG_out_files/
--chr 			= chr1 #specific chromosome
+-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.nneg.BedGraph
+-nf 			= /Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed
+-o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-chr 			= all #specific chromosome
 -br 			= 100 #binning resolution do not consider changing
 -window_res 		= 3 #window
 -pad 			= 3000

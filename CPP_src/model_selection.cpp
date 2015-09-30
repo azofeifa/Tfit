@@ -494,6 +494,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 		}
 		penality+=delta;
 	}
+	
 	//now we have the "best" BIC penailty score
 	//we want to return a data structure for each segment of data, the corrent model
 	scores 	= get_scores(G, best_penality);

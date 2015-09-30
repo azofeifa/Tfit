@@ -179,7 +179,7 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 
 	int res 	= stoi(P->p4["-foot_res"]);
 	double lower, upper;
-	lower=0, upper=350;
+	lower=0, upper=500;
 
 	double delta; 
 	if (res==0){
@@ -187,15 +187,21 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 	}else{
 		delta 	= (upper-lower) / float(res);
 	}
-	vector<classifier> clfs(stoi(P->p4["-rounds"])   );
+	vector<classifier> clfs(stoi(P->p4["-rounds"])*res   );
 	double foot_print;
 	int i 	= 0;
+	int r 	= 0;
 	double scale 	= stod(P->p4["-ns"]);
 	while (i < clfs.size()){
+		if (r > res){
+			r=0;
+		}
+		foot_print 	= delta*r + lower;
 		clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
-			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,0 );
+			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,foot_print );
 		i++;
+		r++;
 	
 	}
 	return clfs;
@@ -314,8 +320,7 @@ vector<simple_c> wrapper_pp(segment * s, params * P, int seg){
 	return fits;
 }
 
-vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
-	int num_proc 				= omp_get_max_threads();
+vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg, int np){
 	vector<simple_c> fits;
 	classifier noise_clf(0, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 		stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
@@ -325,9 +330,9 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg){
 	
 	double noise_ll 	= noise_clf.ll;
 	
-	for (int k = s->counts; k<= s->counts;k++){
+	for (int k = 1; k<= s->counts;k++){
 		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
-		#pragma omp parallel for num_threads(num_proc)
+		#pragma omp parallel for num_threads(np)
 		for (int t = 0; t <  clfs.size(); t++){
 			clfs[t].fit(s, s->centers);
 		}
@@ -397,18 +402,31 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segmen
 
 	double percent 	= 0;
 	double N 		= segments.size();
-	for (int i = 0; i < segments.size(); i++){
-		if ((i / N) > (percent+0.10)){
-			log_file<<to_string(int((i / N)*100))+"%,";
-			log_file.flush();
-			percent 	= (i / N);
-		}
-
-		vector<simple_c> curr_fits 	= wrapper_pp_just_segments(segments[i], P , i);
-		for (int j = 0; j < curr_fits.size(); j++){
-			fits.push_back(curr_fits[j]);
-    	}	
+	int rounds 		= stod(P->p4["-rounds"]);
+	int outer_np 	= 1;
+	int inner_np 	= 1;
+	outer_np 	= max(omp_get_max_threads()/2, 1);
+	inner_np 	= max(omp_get_max_threads()/2, 1);
+	if (inner_np > rounds){
+		inner_np=rounds;
 	}
+	if (outer_np+inner_np < omp_get_max_threads()){
+		outer_np+=omp_get_max_threads()-(outer_np+inner_np);
+	}
+
+	map<int, vector<simple_c>> 	G;
+	#pragma omp parallel for num_threads(outer_np)
+	for (int i = 0; i < segments.size(); i++){
+		
+		vector<simple_c> curr_fits 	= wrapper_pp_just_segments(segments[i], P , i, inner_np);
+		G[i] 	= curr_fits;
+	}
+	typedef map<int, vector<simple_c> >::iterator it_type;
+	for (it_type i 	= G.begin(); i!=G.end(); i++){
+		for (int j = 0; j < i->second.size(); j++){
+			fits.push_back(i->second[j]);
+	    }
+    }
 	log_file<<"...done\n";
 	log_file.flush();
 	return fits;
@@ -556,7 +574,7 @@ map<int, vector<classifier> > make_classifier_struct_free_model(params * P, segm
 	int rounds 	= stoi(P->p["-rounds"]);
 	int BDS 	= int(data->centers.size());
 	map<int, vector<classifier> > A;
-	for (int k = max(min_k, BDS/2); k <= min(BDS, max_k)+1 ;k++ ){
+	for (int k =max(min_k, BDS/2); k < BDS; k++){
 		for (int r = 0; r < rounds; r++){
 			A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
 			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
@@ -648,6 +666,8 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 	log_file.flush();
 	double N 		= FSI.size();
 	double percent 	= 0;
+	int elon_move 	= stoi(P->p["-elon"]);
+	int topology 	= stoi(P->p["-topology"]);
 	for (int i = 0 ; i < FSI.size(); i++){
 		if ((i / N) > (percent+0.05)){
 			log_file<<to_string(int((i / N)*100))+"%,";
@@ -664,13 +684,12 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 			 FSI[i]->centers.push_back(center);
 		}
 		segment * data 	= FSI[i];
-		printf("%d\n", int (FSI[i]->centers.size())  );
 		map<int, vector<classifier> > A 	= make_classifier_struct_free_model(P, FSI[i]);
 		for (it_type k = A.begin(); k!= A.end(); k++){
 			int N 	=  k->second.size();
 			#pragma omp parallel for num_threads(num_proc)	
 			for (int r = 0; r < N; r++ ){
-				A[k->first][r].fit2(data, data->centers,1,1);
+				A[k->first][r].fit2(data, data->centers,topology,elon_move);
 			}
 		}
 		D.push_back(get_max_from_free_mode(A, FSI[i], i));

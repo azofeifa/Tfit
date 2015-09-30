@@ -74,13 +74,13 @@ int main(int argc, char* argv[]){
     	return 1;
 	}
 	if (P->module == "BIDIR"){
+
 		int nprocs		= MPI::COMM_WORLD.Get_size();
 		int rank 		= MPI::COMM_WORLD.Get_rank();
 	    int threads  	= omp_get_max_threads();
 		int verbose 	= stoi(P->p4["-v"]);
 		string job_name = P->p4["-N"];
 		int job_ID 		=  get_job_ID(P->p4["-log_out"], job_name, rank, nprocs);
-
 		string log_out 	= P->p4["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
 		ofstream 	FHW;
 		FHW.open(log_out);
@@ -295,7 +295,8 @@ int main(int argc, char* argv[]){
 		string job_name = P->p["-N"];
 
 		int job_ID 		=  get_job_ID(P->p["-log_out"], job_name, rank, nprocs);
-
+		job_ID 			= 1;
+		
 		string log_out 	= P->p["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
 		ofstream 	FHW;
 		FHW.open(log_out);
@@ -346,13 +347,14 @@ int main(int argc, char* argv[]){
 		double window 				= stod(P->p["-window_res"]);
 		double ct 					= stod(P->p["-bct"]);
 		double scale 				= stod(P->p["-ns"]);
-		
+
 		T.start_time(rank, "Running Template Matching on individual segments:");
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
 				0.8,scale,ct, 64,0. ,0, FHW );	
 		T.get_time(rank);
 		T.start_time(rank, "Running Model on individual segments:");
-		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments, P,FHW);
+		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,
+		 P,FHW);
 		T.get_time(rank);
 		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
 		if (rank==0){//write_out_to_MLE
@@ -360,7 +362,7 @@ int main(int argc, char* argv[]){
 		}
 		
 		if (rank==0){
-			collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
+		//	collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
 		}
 		TF.get_time(rank);		
 	}

@@ -30,6 +30,7 @@ public:
 	//sufficient stats
 	double ri_forward, ri_reverse; //current responsibility
 	double ey, ex, ex2, r_forward, r_reverse;//running total
+	double ex_r;
 	double foot_print;
 	EMG();
 	EMG(double, double, double, double, double);
@@ -38,6 +39,16 @@ public:
 	double EY2(double ,int);
 	string print();
 };
+
+class NORMAL{
+public:
+	double mu,si,pi,w;
+	double ex,ex2,r,ri;
+	NORMAL();
+	NORMAL(double, double, double, double);
+	double pdf(double, int);
+};
+
 
 class NOISE{
 public:
@@ -55,12 +66,13 @@ public:
 	EMG bidir;
 	UNI forward;
 	UNI reverse;
-	NOISE noise; 
+	NOISE noise;
+	NORMAL term; 
 	component * forward_neighbor;
 	component * reverse_neighbor;
 	
 	bool type;
-
+	bool termination;
 	bool EXIT;
 
 	//=====================================
@@ -79,6 +91,8 @@ public:
 
 	double foot_print;
 
+	double w_thresh=0;
+
 
 	component();
 	void initialize(double, segment *, int , double , double, double, double);
@@ -89,7 +103,7 @@ public:
 	void add_stats(double, double , int, double);
 	double pdf(double , int);
 	void update_parameters(double,int);
-	void set_priors(double,double,double,double,double,double);
+	void set_priors(double,double,double,double,double,double,double, int);
 	double get_all_repo();
 	bool check_elongation_support();
 	void print();

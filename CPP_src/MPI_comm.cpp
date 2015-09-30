@@ -415,6 +415,7 @@ seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
 
 struct simple_seg_struct{
 	char chrom[6];
+	char strand[2];
 	int st_sp[3]; //first->start, second->stop
 };
 
@@ -566,14 +567,15 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 	simple_seg_struct sss;
 	MPI_Datatype mystruct;
 	
-	int blocklens[2]={6,3};
-	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT}; 
+	int blocklens[3]={6,2,3};
+	MPI_Datatype old_types[3] = {MPI_CHAR,MPI_CHAR, MPI_INT}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(simple_seg_struct, chrom);
-	displacements[1] 	= offsetof(simple_seg_struct, st_sp);
+	displacements[1] 	= offsetof(simple_seg_struct, strand);
+	displacements[2] 	= offsetof(simple_seg_struct, st_sp);
 	
 	
-	MPI_Type_create_struct( 2, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_create_struct( 3, blocklens, displacements, old_types, &mystruct );
 	MPI_Type_commit( &mystruct );
 
 	vector<simple_seg_struct> runs;
@@ -607,6 +609,8 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 					}
 				}
 				SSS.chrom[5]	= '\0';
+				SSS.strand[0] 	= FSI[i]->strand[0];
+				SSS.strand[1] 	= '\0';
 				SSS.st_sp[0] 	= FSI[i]->start;
 				SSS.st_sp[1] 	= FSI[i]->stop;
 				SSS.st_sp[2] 	= FSI[i]->ID;
@@ -628,7 +632,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 	}
 	//now convert to GG type
 	for (int i = 0; i < runs.size(); i++){
-		segment * ns 	= new segment(runs[i].chrom, runs[i].st_sp[0], runs[i].st_sp[1], runs[i].st_sp[2]);
+		segment * ns 	= new segment(runs[i].chrom, runs[i].st_sp[0], runs[i].st_sp[1], runs[i].st_sp[2], runs[i].strand);
 		GG[ns->chrom].push_back(ns) ;
 	}
 	typedef map<string, vector<segment *> >::iterator it_type;

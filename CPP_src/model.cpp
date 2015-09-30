@@ -58,9 +58,28 @@ NOISE::NOISE(double A, double B, double W, double PI){
 }
 
 //=============================================
+//Normal Distribution Class
+
+NORMAL::NORMAL(){}
+NORMAL::NORMAL(double MU, double SI, double PI, double W){
+	mu=MU,si=SI,pi=PI,w=W;
+}
+double NORMAL::pdf(double x, int s){
+	if ((s == 1 and pi==1) or (s== -1 and pi == 0)){
+		return (w/(si*sqrt(2*M_PI))  )*exp(-pow(x-mu,2)/(2*pow(si,2)));
+	}else{
+		return 0;
+	}
+
+}
+
+//=============================================
 //Uniform Class
 double UNI::pdf(double x, int strand){ //probability density function
 	double p;
+	if (w==0){
+		return 0;
+	}
 
 	if ( a<= x and x <=b){
 
@@ -125,6 +144,9 @@ EMG::EMG(double MU, double SI, double L, double W, double PI ){
 
 
 double EMG::pdf(double z, int s ){
+	if (w==0){
+		return 0;
+	}
 	if (s==1){
 		z-=foot_print;
 	}else{
@@ -174,7 +196,7 @@ component::component(){//empty constructor
 } 
 
 void component::set_priors(double s_0, double s_1, 
-	double l_0, double l_1, double w_0,double strand_0){
+	double l_0, double l_1, double w_0,double strand_0, double N, int K){
 	//============================
 	//for sigma
 	alpha_0 	= 20.46;
@@ -194,26 +216,12 @@ void component::set_priors(double s_0, double s_1,
 	ALPHA_1 = l_0, BETA_1 =l_1; //for lambda
 	ALPHA_2 = w_0; //for weights, dirchlet
 	ALPHA_3 = strand_0; //for strand probs
-
+	//bidir.w 	= (r + ALPHA_2) / (N + ALPHA_2*K*3 + K*3) ;
+		
+	w_thresh= ( ALPHA_2 ) / (N + ALPHA_2*K*3 + K*3 );
 	
 }
 
-int get_nearest_position(segment * data, double center, double dist){
-	int i;
-
-	if (dist < 0 ){
-		i=0;
-		while (i < data->XN and (data->X[0][i] -center) < dist){
-			i++;
-		}
-	}else{
-		i=data->XN-1;
-		while (i >0 and (data->X[0][i] - center) > dist){
-			i--;
-		}
-	}
-	return i;
-}
 bool check_uniform_support(component c, int forward){
 	if (forward==1){
 		if (c.forward.b < (c.bidir.mu + c.bidir.si + (1.0 / c.bidir.l) )){
@@ -228,6 +236,22 @@ bool check_uniform_support(component c, int forward){
 		return true;
 
 	}
+}
+int get_nearest_position(segment * data, double center, double dist){
+	int i;
+
+	if (dist < 0 ){
+		i=0;
+		while (i < (data->XN-1) and (data->X[0][i] -center) < dist){
+			i++;
+		}
+	}else{
+		i=data->XN-1;
+		while (i >0 and (data->X[0][i] - center) > dist){
+			i--;
+		}
+	}
+	return i;
 }
 
 
@@ -287,7 +311,7 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 } 
 
 void component::initialize_bounds(double mu, segment * data , int K, double scale, double noise_w, 
-	double noise_pi, double fp, double forward_bound, double reverse_bound){//random seeds...
+	double termination, double fp, double forward_bound, double reverse_bound){//random seeds...
 	foot_print 	= fp;
 	EXIT=false;
 	if (noise_w>0){
@@ -295,6 +319,14 @@ void component::initialize_bounds(double mu, segment * data , int K, double scal
 			noise_w, 0.5);
 		type 	= 0; 
 	}else{
+
+		int complexity=1;
+		if (data->strand == "."){
+			complexity=3;
+		}else{
+			complexity=2;
+		}
+
 		//====================================
 		random_device rd;
 		mt19937 mt(rd());
@@ -315,37 +347,30 @@ void component::initialize_bounds(double mu, segment * data , int K, double scal
 		double dist 		=  (1.0/lambda);
 		int j 				= get_nearest_position(data, mu, dist);
 		int k 				= get_nearest_position(data, mu, forward_bound-mu);
-
-		forward 			= UNI(mu+(1.0/lambda), forward_bound, 1.0 / (3*K), 1, j, 0.5);
+		double pi 			= 0.5;
+		if (data->strand == "+"){
+			pi 				= 1.0;
+		}else if (data->strand=="-") {
+			pi 				= 0.;
+		}
+		forward 			= UNI(mu+(1.0/lambda), forward_bound, 1.0 / (complexity*K), 1, j, pi);
 		forward.j=j, forward.k=k;
-		bidir 				= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
+		
+
+		bidir 				= EMG(mu, sigma, lambda, 1.0 / (complexity*K), 0.5);
 		bidir.foot_print 	= 0;
-		dist 				=  - (1.0/lambda);
+		dist 				=  -(1.0/lambda);
 		j 					= get_nearest_position(  data, mu, dist);
 		k 					= get_nearest_position(data, mu, reverse_bound-mu);
-
-		reverse 			= UNI(reverse_bound, mu-(1.0/lambda), 0., -1, j,0.5);
+		reverse 			= UNI(reverse_bound, mu-(1.0/lambda),  1.0 / (complexity*K) , -1, j,1-pi);
 		reverse.j=k, reverse.k=j;
+		termination 		= (termination > 1);
 		
 		type 		= 1;
 		
 	}
 
 } 
-
-void update_j_k( component * components,segment * data, int K){
-	for (int k = 0; k < K; k++){
-		if (components[k].reverse_neighbor!=NULL){
-			components[k].reverse.j 	= get_nearest_position(data, components[k].bidir.mu, components[k].reverse_neighbor->bidir.mu - components[k].bidir.mu );
-		}
-		components[k].reverse.k 	= get_nearest_position(  data, components[k].bidir.mu, -1.0/components[k].bidir.l);
-		components[k].forward.j 	= get_nearest_position(data, components[k].bidir.mu, 1.0/components[k].bidir.l);
-		if (components[k].forward_neighbor!=NULL){
-			components[k].forward.k 	= get_nearest_position(data, components[k].bidir.mu, components[k].forward_neighbor->bidir.mu - components[k].bidir.mu);
-		
-		}
-	}
-}
 
 
 
@@ -371,6 +396,21 @@ string component::write_out(){
 	return "";
 }
 
+
+void sort_components(component components[], int K){
+	bool sorted=true;
+	while (sorted){
+		sorted=false;
+		for (int k = 0; k < K-1; k++){
+			if (components[k].bidir.mu > components[k+1].bidir.mu){
+				component cp 		= components[k];
+				components[k] 		= components[k+1];
+				components[k+1] 	= cp;
+				sorted 				= true;
+			}
+		}
+	}
+}
 
 
 double component::evaluate(double x, int st){
@@ -473,6 +513,60 @@ double get_sum(segment * data, int j, int k, int st){
 	return S;
 }
 
+
+void update_j_k( component * components,segment * data, int K, double N){
+	for (int k = 0 ; k < K;k++){
+		if (k > 0){
+			components[k].reverse_neighbor 	= &components[k-1]; 
+		}
+		if (k+1 < K){
+			components[k].forward_neighbor 	= &components[k+1];
+		}
+	}
+
+	double center, w_thresh;
+
+	for (int k = 0; k < K; k++){
+		int j 	= k;
+		//for the forward
+		w_thresh= ( components[k].ALPHA_2 ) / (N + components[k].ALPHA_2*K*3 + K*3 );
+		while ( j < K and components[j].forward_neighbor!=NULL and  components[j].forward_neighbor->bidir.w  < pow(10,-2)   ){
+			j++;
+		}
+		double delta 				= (1.0 / components[k].bidir.l);
+		components[k].forward.j 	= get_nearest_position(data, components[k].bidir.mu, delta  );
+		
+		if (j < K and components[j].forward_neighbor!=NULL  ){
+			center 						= components[k].bidir.mu + delta;
+			components[k].forward.k 	= get_nearest_position(data, center, components[j].forward_neighbor->bidir.mu -center  );
+		}else{
+			components[k].forward.k 	= get_nearest_position(data, components[k].bidir.mu,data->maxX -components[k].bidir.mu );			
+		}
+		if (components[k].forward.j >= components[k].forward.k ){
+			components[k].forward.j 	= components[k].forward.k;
+			components[k].forward.w 	= 0;
+		}
+		
+		j 	= k;
+		while (j >=0 and components[j].reverse_neighbor!=NULL and  components[j].reverse_neighbor->bidir.w   < pow(10,-2) ){
+			j--;
+		}
+
+
+
+		if (K>j and j>=0 and components[j].reverse_neighbor!=NULL){
+			center 						= components[k].bidir.mu-delta;
+			components[k].reverse.j 	= get_nearest_position(data, center, components[j].reverse_neighbor->bidir.mu - center );
+		}else{
+			components[k].reverse.j 	= get_nearest_position(data, components[k].bidir.mu, data->minX-components[k].bidir.mu );			
+		}
+		components[k].reverse.k 		= get_nearest_position(data, components[k].bidir.mu, -delta);
+		if (components[k].reverse.j >= components[k].reverse.k ){
+			components[k].reverse.j 	= components[k].reverse.k;
+			components[k].reverse.w 	= 0;
+		}		
+	}
+}
 void update_l(component * components, segment * data, int K){
 	for (int k 	= 0; k < K; k++){
 		//forward
@@ -544,21 +638,30 @@ void component::update_parameters(double N, int K){
 		
 		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
-		if (bidir.si > 50){
+		if (bidir.si > 20){
+			EXIT 	= true;
+			bidir.w = 0;
+		}
+		if ((r / N) < pow(10,-3) ){
 			EXIT 	= true;
 		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + BETA_1), 5.);
-		if (bidir.l < 0.01  ){
+		bidir.l 	= max(bidir.l, 0.05);
+		if (bidir.l < 0.05  ){
 			EXIT 	= true;
+			bidir.w = 0;
 		}
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
-		forward.a 	= bidir.mu + (2.0 /bidir.l), reverse.b=bidir.mu - (2.0 / bidir.l);
+		forward.a 	= bidir.mu  , reverse.b=bidir.mu ;
 		//update PIS, this is obviously overwritten if we start the EM seeder with 0/1
 		forward.pi 	= (forward.r_forward + 1) / (forward.r_forward + forward.r_reverse+2);
 		reverse.pi 	= (reverse.r_forward + 1)/ (reverse.r_forward + reverse.r_reverse+2);
-
+		if (bidir.w==0){
+			forward.w 	= 0;
+			reverse.w 	= 0;
+		}
 
 	}
 }
@@ -917,6 +1020,19 @@ double move_foot_print(segment * data, component * components, double base, int 
 	return base;
 }
 
+void update_elongation_supports(component * components, int K){
+	for (int k = 0; k < K;k++)		{
+		if (components[k].forward_neighbor!=NULL){
+			components[k].forward.b 	= components[k].forward_neighbor->bidir.mu;
+		}
+		if (components[k].reverse_neighbor!=NULL){
+			components[k].reverse.a 	= components[k].reverse_neighbor->bidir.mu;
+		}
+			
+	}
+
+}
+
 
 //=========================================================
 //For Classifier class / wrapper around EM
@@ -1025,7 +1141,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 
 	//initialize components
 	for (int k = 0; k < K; k++){
-		components[k].set_priors(ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
+		components[k].set_priors(ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3,data->N,K);
 	}
 
 	//===========================================================================
@@ -1037,10 +1153,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		if (mu_seeds.size()>0){
 			i 	= sample_centers(mu_seeds ,  p);
 			mu 	= mu_seeds[i];
-			if (r_mu > 0){
-				normal_distribution<double> dist_r_mu(mu, r_mu);
-				mu 		= dist_r_mu(mt);
-			}
+			// if (r_mu > 0){
+			// 	normal_distribution<double> dist_r_mu(mu, r_mu);
+			// 	mu 		= dist_r_mu(mt);
+			// }
 		}else{
 			mu 			= dist_uni(mt);
 		}
@@ -1060,7 +1176,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	converged 		= false; //has the EM converged?
 	double norm_forward, norm_reverse,N; //helper variables
 	while (t < max_iterations && not converged){
-		
+		ll 			= 0;
 		//******
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
@@ -1084,7 +1200,16 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 				if (data->X[2][i]){//if there is actually data point here...
 					norm_reverse+=components[k].evaluate(data->X[0][i],-1);
 				}
+
+				
 			}
+			if (norm_forward > 0){
+				ll+=LOG(norm_forward)*data->X[1][i];
+			}
+			if (norm_reverse > 0){
+				ll+=LOG(norm_reverse)*data->X[2][i];
+			}
+
 			//now we need to add the sufficient statistics
 			for (int k=0; k < K+add; k++){
 				if (norm_forward){
@@ -1110,20 +1235,12 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		}
 		
 
-		ll 	= calc_log_likelihood(components, K+add, data);
 		//******
 		//Move Uniform support		
-		ll 	= move_foot_print(data, components, 
-				ll, K, add, 10.0 / data->SCALE);
 		if (abs(ll-prevll)<convergence_threshold){
 			for (int k = 0; k < K; k++){
-				double std 	= (components[k].bidir.si + (1.0 / components[k].bidir.l)) ;
-				if (std > 10){
-					ll 		= nINF;	
-				}
+				double std 	= (components[k].bidir.si + (1.0 / components[k].bidir.l));
 			}	
-
-		
 			converged=true;
 		}
 		if (not isfinite(ll)){
@@ -1243,6 +1360,12 @@ string classifier::print_out_components(){
 	}
 	return text;
 }
+void print_components(component * components, int K, double ll){
+	printf("-------------------- === %f\n", ll);
+	for (int c = 0; c < K; c++){
+		components[c].print();
+	}
+}
 
 void sort_vector(double X[], int N){
 	bool sorted=true;
@@ -1259,7 +1382,8 @@ void sort_vector(double X[], int N){
 	}
 }
 
-int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int elon_move ){
+int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
+	 int elon_move ){
 	//=========================================================================
 	//for resets
 	random_device rd;
@@ -1272,7 +1396,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 
 	//initialize components
 	for (int k = 0; k < K; k++){
-		components[k].set_priors(ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3);
+		components[k].set_priors(ALPHA_0, BETA_0, ALPHA_1, BETA_1, ALPHA_2, ALPHA_3,data->N, K);
 	}
 
 	//===========================================================================
@@ -1299,7 +1423,8 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 			mu_seeds.erase (mu_seeds.begin()+i);	
 		}
 	}
-	sort_vector(mus,K);
+	sort_vector(mus, K);
+	//sort_vector(mus,K);
 	double reverse_bound=data->minX, forward_bound=data->maxX;
 	int pad 	= 500;
 	for (int k = 0; k < K;k++){
@@ -1314,16 +1439,21 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 			forward_bound=data->maxX;
 		}
 
-		components[k].initialize_bounds(mus[k], data, K, data->SCALE , 0., 0.,0, forward_bound, reverse_bound);
+		components[k].initialize_bounds(mus[k], data, K, data->SCALE , 0., topology,0, forward_bound, reverse_bound);
 		
 	}
-
+	sort_components(components, K);
+	
 	for (int k = 0; k < K; k++){
 		if (k > 0){
 			components[k].reverse_neighbor 	= &components[k-1];
+		}else{
+			components[k].reverse_neighbor 	= NULL;
 		}
 		if (k+1 < K){
 			components[k].forward_neighbor 	= &components[k+1];
+		}else{
+			components[k].forward_neighbor 	= NULL;
 		}
 	}
 
@@ -1331,7 +1461,9 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 	if (add){
 		components[K].initialize_bounds(0., data, 0., 0. , noise_max, pi, foot_print, data->minX, data->maxX);
 	}
-	update_l(components, data, K);
+	if (topology<2 ){
+		update_l(components, data, K);
+	}
 	//===========================================================================
 	int t 			= 0; //EM loop ticker
 	double prevll 	= nINF; //previous iterations log likelihood
@@ -1342,12 +1474,6 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 	double MU, L;
 	int u 			= 0;
 	while (t < max_iterations && not converged){
-		if (u > 200){
-			update_j_k(components,data, K);
-			update_l(components,  data, K);
-			u 	= 0;
-		}
-		u++;
 		//******
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
@@ -1403,13 +1529,21 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int foot_move, int
 		}
 		
 		if (abs(ll-prevll)<convergence_threshold){
+			printf("converged?\n");
 			converged=true;
 		}
-		
 		if (not isfinite(ll)){
 			ll 	= nINF;
 			return 0;	
 		}
+		if (u > 200 and elon_move ){
+			sort_components(components, K);
+			update_j_k(components,data, K, N);
+			update_l(components,  data, K);
+			u 	= 0;
+		}
+		u++;
+		
 		last_diff=abs(ll-prevll);
 
 		prevll=ll;

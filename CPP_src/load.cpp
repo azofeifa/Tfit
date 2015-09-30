@@ -82,6 +82,7 @@ segment::segment(string chr, int st, int sp){
 	counts 	= 1;
 	XN 		= 0;
 	ID 		= 0;
+	strand 	= ".";
 }
 segment::segment(string chr, int st, int sp, int i){
 	chrom	= chr;
@@ -92,6 +93,19 @@ segment::segment(string chr, int st, int sp, int i){
 	counts 	= 1;
 	XN 		= 0;
 	ID 		= i;
+	strand 	= ".";
+}
+
+segment::segment(string chr, int st, int sp, int i, string STR){
+	chrom	= chr;
+	start	= st;
+	stop	= sp;
+	N 		= 0;
+	minX=st, maxX=sp;
+	counts 	= 1;
+	XN 		= 0;
+	ID 		= i;
+	strand 	= STR;
 }
 
 segment::segment(){
@@ -99,6 +113,7 @@ segment::segment(){
 	counts 	= 1;
 	XN 		= 0;
 	ID 		= 0;
+	strand 	= ".";
 }
 
 string segment::write_out(){
@@ -439,6 +454,10 @@ interval::interval(string chr, int st, int sp){
 interval::interval(string chr, int st, int sp, int IDD){
 	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false;
 }
+interval::interval(string chr, int st, int sp, int IDD, string str){
+	
+	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false, STRAND=str;
+}
 
 
 void interval::insert(double x, double y, int strand){
@@ -705,7 +724,7 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 	bool INSERT 	= false;
 	while (getline(FH, line)){
 		lineArray=splitter(line, "\t");
-		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
+		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=abs(stof(lineArray[3]));
 		if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
 			FOUND 		= true;
 			if (chrom.size() < 6){
@@ -730,7 +749,7 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 	FOUND=false;
 	while (getline(FH2, line)){
 		lineArray=splitter(line, "\t");
-		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=stod(lineArray[3]);
+		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=abs(stof(lineArray[3]));
 		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
 			break;
 		}
@@ -805,7 +824,8 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 	typedef map<string, vector<segment *> >::iterator it_type_2;
 	for (it_type_2 i = FSI.begin(); i != FSI.end(); i++){
 		for (int j = 0; j < i->second.size(); j++){
-			G[i->first].push_back(interval(i->second[j]->chrom, i->second[j]->start, i->second[j]->stop, i->second[j]->ID)  );
+			G[i->first].push_back(interval(i->second[j]->chrom, 
+				i->second[j]->start, i->second[j]->stop, i->second[j]->ID, i->second[j]->strand)  );
 		}
 	}
 	//want to sort intervals by there ending point
@@ -1098,7 +1118,7 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 					break;
 
 				}
-				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = abs(stod(lineArray[3]));
 				if (prevchrom!=chrom){
 					if (A.find(chrom)!=A.end()){
 						FOUND=true;
@@ -1158,7 +1178,7 @@ vector<segment *> insert_bedgraph_to_segment(map<string, vector<segment *> > A, 
 			while (getline(FH, line)){
 				lineArray 	= splitter(line, "\t");
 				chrom 		= lineArray[0];
-				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = abs(stod(lineArray[3]));
 
 				if (prevchrom!=chrom){
 					if (A.find(chrom)!=A.end()){
@@ -1321,14 +1341,20 @@ vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS,
 		int start, stop;
 		int 	i = 0;
 		vector<string>lineArray;
+		string strand; 
 		while(getline(FH, line)){
 			lineArray=splitter(line, "\t");
 			if (lineArray.size() > 3){
 				IDS[i] 		= lineArray[3];
 			}
+			if (lineArray.size() > 4){
+				strand 		= lineArray[4];
+			}else{
+				strand 		= ".";
+			}
 			chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]);
 			if (spec_chrom=="all" or spec_chrom==chrom){
-				segment * S 	= new segment(chrom, start, stop,i);
+				segment * S 	= new segment(chrom, start, stop,i,strand);
 				G.push_back(S);
 			}
 			i++;
@@ -1630,7 +1656,7 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 			while (getline(FH, line)){
 				lineArray 	= splitter(line, "\t");
 				chrom 		= lineArray[0];
-				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = abs(stod(lineArray[3]));
 				center 	= (stop + start) /2.;
 				if (AT.find(chrom)!=AT.end()){
 					AT[chrom]->insert(center, coverage, strand);
@@ -1652,7 +1678,7 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 			center 	= (c->second[i]->stop + c->second[i]->start) /2.;
 			interval FOUND 	= AT[c->first]->get_interval(c->second[i]->start, c->second[i]->stop );
 			if (not FOUND.EMPTY and FOUND.forward_x.size()){
-				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID);
+				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID, FOUND.STRAND);
 				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
 					vector<double> curr(2);
 					curr[0] 	= FOUND.forward_x[u], curr[1] 	= FOUND.forward_y[u];
@@ -1840,7 +1866,7 @@ void get_noise_mean_var(string noise_file, string bedgraph, double * mean, doubl
 		int t = 0;
 		while (getline(BED, line)){
 			lineArray 	= splitter(line, "\t");
-			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), cov=stof(lineArray[3]);
+			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), cov=abs(stof(lineArray[3]));
 			if (chrom!=prevchrom){
 				if (G.find(chrom)!=G.end()){
 					j= 0,N=G[chrom].size();
@@ -1903,6 +1929,8 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	string out_dir 	= P->p["-o"];
 	ofstream FHW;
 	FHW.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv");
+	ofstream FHW_bed;
+	FHW_bed.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE_bidirectionals_only.bed");
 
 	FHW<<P->get_header(0);
 	FHW<<"#Interval Number\tName from Interval File\tchromosome\tstart\tstop\tmodel complexity\tconverged\t";
@@ -1914,176 +1942,33 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	
 	typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
 	typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
+	typedef vector<simple_c_free_mode>::iterator it_type_3;
+	
 	typedef map<int, string>::iterator it_type_IDS;
 	int IN=0;
 	string mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
-			
-	for (it_type_1 i = G.begin(); i!=G.end();i++){
-		string name 	= IDS[i->first];
-		string chrom;
-		int start, stop, converged;
-		double N_forward, N_reverse, ll;
-		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
-			for (int sc = 0; sc < j->second.size(); sc++){
-				chrom 		= j->second[sc].chrom;
-				start 		= j->second[sc].ID[1],stop=j->second[sc].ID[2];
-				N_forward  	= j->second[sc].SS[1], N_reverse=j->second[sc].SS[2];
+	double w_thresh 	= 0.;
+	double ALPHA_2 	= stof(P->p["-ALPHA_2"]);
+	double mu, std,N;
+	int start;
+	string chrom;
+
+	for (it_type_1 s = G.begin(); s!=G.end(); s++){ //iterate over each segment
+		for (it_type_2 k 	= s->second.begin(); k != s->second.end(); k++){//iterate over each model_complexity
+			for (it_type_3 c = k->second.begin(); c!=k->second.end(); c++){
+				chrom 		= (*c).chrom;
+				start 		= (*c).ID[1];
+				N 			= (*c).SS[1] + (*c).SS[2];
+				w_thresh= ( ALPHA_2 ) / (N + ALPHA_2*k->first*3 + k->first*3 );
+				if ( (*c).ps[3] - w_thresh > pow(10,-3) ){
+					std 	= (*c).ps[1]*scale;
+					mu 		= (*c).ps[0]*scale + start;
+					FHW_bed<<chrom+"\t" + to_string(int(mu-std))+"\t" + to_string(int(mu+std))+ "\t" + to_string((*c).ps[3])+   "\n";
+				}
 			}
 		}
-		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
-			mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
-			for (int sc = 0; sc < j->second.size(); sc++){
-				ll 			= j->second[sc].SS[0];
-				converged 	= j->second[sc].ID[4];
- 				mus+=to_string(j->second[sc].ps[0]*scale + start);
-				sis+=to_string(j->second[sc].ps[1]*scale);
-				ls+=to_string((1.0/j->second[sc].ps[2])*scale);
-				wEMs+=to_string(j->second[sc].ps[3]);
-				wPIs+=to_string(j->second[sc].ps[4]);
-				forward_bs+=to_string(j->second[sc].ps[5]*scale + start);
-				forward_ws+=to_string(j->second[sc].ps[6]);
-				forward_PIs+=to_string(j->second[sc].ps[7]);
-				reverse_as+=to_string(j->second[sc].ps[8]*scale + start);
-				reverse_ws+=to_string(j->second[sc].ps[9]);
-				reverse_PIs+=to_string(j->second[sc].ps[10]);
-				if (sc < j->second.size()-1){
-					mus+=",";
-					sis+=",";
-					ls+=",";
-					wEMs+=",";
-					wPIs+=",";
-					forward_bs+=",";
-					forward_ws+=",";
-					forward_PIs+=",";
-					reverse_as+=",";
-					reverse_ws+=",";
-					reverse_PIs+=",";
-				}								
-			}
-			FHW<<to_string(IN)+"\t"+name+"\t"+chrom +"\t"+to_string(start)+"\t";
-			FHW<<to_string(stop)+"\t"+to_string(j->first)+"\t"+to_string(converged)+"\t";
-			FHW<<to_string(int(N_forward))+","+to_string(int(N_reverse))+","+to_string(ll)+"\t";
-			FHW<<mus+"\t"+sis+"\t"+ls+"\t"+wEMs+"\t"+wPIs+"\t";
-			FHW<<forward_bs+"\t"+forward_ws+"\t"+forward_PIs;
-			FHW<<reverse_as+"\t"+reverse_ws+"\t"+reverse_PIs;
-			FHW<<endl;
-
-
-		}
-
-
-
-		IN++;
 	}
-
-	ofstream Bidirectionals;
-	ofstream bidirectional_elongations;
-	Bidirectionals.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidirections_hits_K_MLE.bed");
-	bidirectional_elongations.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidir_elongation_K_MLE.gtf") ;
 	
-	int t 	= 0;
-	for (it_type_1 i = G.begin(); i!=G.end();i++){
-		string name 	= IDS[i->first];
-		string chrom;
-		int start, stop, converged;
-		double N_forward, N_reverse, ll;
-		double BIC_NULL 	= INF;
-		double NULL_LL 		= nINF;
-		double vl, pi;
-		double N;
-		int argK 	= 0;
-		double BIC_MOD;
-		double BEST_BIC 	= INF;
-		for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
-			for (int sc = 0; sc < j->second.size(); sc++){
-				chrom 		= j->second[sc].chrom;
-				start 		= j->second[sc].ID[1],stop=j->second[sc].ID[2];
-				N_forward  	= j->second[sc].SS[1], N_reverse=j->second[sc].SS[2];
-				ll 			= j->second[sc].SS[0];
-				N 			= N_forward + N_reverse;
-				pi 			= N_forward / (N);
-				vl 			= scale / float(stop - start);
-				NULL_LL 	= log(vl*pi)*N_forward + log(vl*(1-pi))*N_reverse;
-
-				BIC_NULL 	=  -2*NULL_LL + log(N);
-				if (BIC_NULL < BEST_BIC){
-					argK 		= 0;
-					BEST_BIC  	= BIC_NULL;
-				}
-				BIC_MOD 	= -2*ll + penality*j->first*7*log(N);
-				if (BIC_MOD < BEST_BIC){
-					argK 	= j->first;
-					BEST_BIC = BIC_MOD;
-				}
-			}
-		}
-		double std;
-		string INFO;
-		mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
-			
-		for (int sc = 0; sc < argK; sc++){
-			//BIDIR BED
-			chrom 		= i->second[argK][sc].chrom;
-			start 		= i->second[argK][sc].ps[0]*scale + i->second[argK][sc].ID[1];
-			stop 		= i->second[argK][sc].ps[0]*scale + i->second[argK][sc].ID[1];	
-			std 		= i->second[argK][sc].ps[1]*scale + (1.0/i->second[argK][sc].ps[2])*scale;
-			start-=std;
-			stop+=std;
-			N_forward  	= i->second[argK][sc].SS[1], N_reverse=i->second[argK][sc].SS[2];
-			mus=to_string(i->second[argK][sc].ps[0]*scale + start);
-			sis=to_string(i->second[argK][sc].ps[1]*scale);
-			ls=to_string((1.0/i->second[argK][sc].ps[2])*scale);
-			wEMs=to_string(i->second[argK][sc].ps[3]);
-			wPIs=to_string(i->second[argK][sc].ps[4]);
-			INFO 	= mus+"_"+sis+"_"+ls+"_"+wEMs+"_"+wPIs+"_"+to_string(int(N_forward))+"_"+to_string(int(N_reverse)) ;
-			Bidirectionals<<chrom+"\t"+to_string(start)+"\t" + to_string(stop) + "\t" +INFO+"\n";
-
-			//===================
-			//GFF FILE
-			// forward_bs+=to_string(j->second[sc].ps[5]*scale + start);
-			// 	forward_ws+=to_string(j->second[sc].ps[6]);
-			// 	forward_PIs+=to_string(j->second[sc].ps[7]);
-			// 	reverse_as+=to_string(j->second[sc].ps[8]*scale + start);
-			// 	reverse_ws+=to_string(j->second[sc].ps[9]);
-			// 	reverse_PIs+=to_string(j->second[sc].ps[10]);
-				
-			int center 	= (stop + start) /2.;
-			string L, R, parent, bidir;
-
-			parent 	= chrom +"\t.\tgene\t";
-			parent+= to_string(start) + "\t" + to_string(stop) +"\t.\t.\t.\tID=Bidir_"+to_string(t);
-			
-			
-			bidir 	= chrom +"\tEMGU\tCDS\t";
-			bidir 	+= to_string(center) + "\t" + to_string(stop) + "\t.\t+\t.\tParent=Bidir_"+to_string(t);
-			bidir 	+=";Name= "+mus+"_"+sis+"_"+ls+"_"+wEMs+"_"+wPIs+"_"+to_string(int(N_forward))+"_"+to_string(int(N_reverse)) ;
-			bidirectional_elongations<<parent<<endl;
-			bidirectional_elongations<<bidir<<endl;
-			if ((i->second[argK][sc].ps[6] > 0.001)){
-				int right 	= int(i->second[argK][sc].ps[5]*scale + i->second[argK][sc].ID[1]);
-				R 		= chrom +"\tEMGU\tCDS\t";
-				R 		+= to_string(right ) + "\t" + to_string(int(25+right)) + "\t.\t+\t.\tParent=Bidir_"+to_string(t);
-				R 		+=";Name=Forward Strand Elongation Component";
-				bidirectional_elongations<<R<<endl;
-			}
-			
-			if (i->second[argK][sc].ps[9] > 0.001){
-				int left = int(i->second[argK][sc].ps[8]*scale + i->second[argK][sc].ID[1]);
-				L 		= chrom +"\tEMGU\tCDS\t";
-				L 		+= to_string(int(left-25)) + "\t" + to_string(left) + "\t.\t-\t.\tParent=Bidir_"+to_string(t);
-				L+=";Name=Reverse Strand Elongation Component";
-				bidirectional_elongations<<L<<endl;
-			}
-			t++;
-			
-			
-		}
-
-
-
-	}
-
-
 
 
 

@@ -42,6 +42,7 @@ params::params(){
 	p["-window_res"]= "10";
 	p["-log_out"] 	= "";
 	p["-ms_pen"] 	= "1";
+	p["-topology"] 	= "1";
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
