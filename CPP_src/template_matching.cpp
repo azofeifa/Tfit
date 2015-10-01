@@ -272,7 +272,10 @@ double get_mean(double ** X, int j,int k,int s, double foot_print){
 }
 
 double BIC(double ** X,  double * avgLL, double * variances,double * lambdas, 
-	double ** skews, double mu, int i, int j, int k , int single, double fp_res, double * densities_f, double * densities_r, double scale){
+	double ** skews, double mu, int i, int j, int k , 
+	int single, double fp_res, double * densities_f, double * densities_r, double scale, double window, 
+	double N_pos, double N_neg){
+	
 	double score 	= 0;
 	double a 		= X[0][k];
 	double b 		= X[0][j];	
@@ -294,15 +297,9 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 		double arg_l, arg_si, arg_bic, arg_ll; 
 		arg_l=0, arg_si=0;
 		arg_ll=nINF, arg_bic=INF;
-		double N_pos=0;
-		double N_neg=0;
 		double N=0;
-		for (int i = k; i < j; i++ ){
-			N_pos+=X[1][i];
-			N_neg+=X[2][i];
-		}
-		densities_f[i] 	= N_pos / (b-a);
-		densities_r[i] 	= N_neg / (b-a);
+		densities_f[i] 	= N_pos / window;
+		densities_r[i] 	= N_neg / window;
 		if (N_pos == 0 or N_neg ==0){
 			return 0;
 		}
@@ -374,21 +371,29 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 	double vl;
 	int NN 	= int(data->XN);
 	int threads  	= omp_get_max_threads();
-	#pragma omp parallel for num_threads(threads)
+	int j =0, k =0;
+	double N_pos=0, N_neg=0;
 	for (int i = 0; i < NN; i++){
-		int j=i;
-		while (j < data->XN && (data->X[0][j] - data->X[0][i]) < window){
+		while (j < data->XN && (data->X[0][j] - data->X[0][i]) < -window){
+			N_pos-=data->X[1][j];
+			N_neg-=data->X[2][j];
 			j++;
 		}
-		int k=i;
-		while (k >0 and (data->X[0][i] - data->X[0][k]) < window){
-			k--;
+		while (k < data->XN and (data->X[0][k] - data->X[0][i]) < window){
+			N_pos+=data->X[1][k];
+			N_neg+=data->X[2][k];
+			k++;
 		}
-		if (k > 0 and j < data->XN ){
+//		printf("%d,%d, %f\n", j,k,data->XN );
+		if (k < data->XN  and j < data->XN and k!=j ){
 			if (not single){
-				BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k,  single, foot_res, densities, densities_r,scale );
+				BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews,
+				 data->X[0][i], i, k, j,  single, foot_res,
+				  densities, densities_r,scale , window, N_pos, N_neg);
 			}else{
-				BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews, data->X[0][i], i, j, k,  single, foot_res, densities, densities_r,scale );	
+				BIC_values[i] 	= BIC(data->X, avgLL, variances, 
+					lambdas, skews, data->X[0][i], i, k, j,  single, foot_res, 
+					densities, densities_r,scale , window, N_pos, N_neg);	
 			}
 				
 		}else{
@@ -460,7 +465,9 @@ void run_global_template_matching(vector<segment*> segments,
 		
 	};
 	int mj;
+	int threads  	= omp_get_max_threads();
 	vector<merged> mergees;
+	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
 		double * BIC_values 	= new double[int(segments[i]->XN)];
