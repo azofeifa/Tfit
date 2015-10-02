@@ -11,7 +11,7 @@
 -br 			= 100 #binning resolution do not consider changing
 -window_res 		= 2 #window
 -pad 			= 2000
--MLE			= 0 #get Maximum likelihood estimates
+-MLE			= 1 #get Maximum likelihood estimates
 -bct 			= 1.0 #confidence threshold
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -opt_res 		= 5 #grid search resolution
@@ -27,7 +27,7 @@
 -mi 			= 2000 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
 -optimize 		= 0 #whether or not we should train on the bed files in the -k dir
--foot_res 		= 2
+-foot_res 		= 5
 -show_seeds 		= 1 #show the pseudo moment estimators that the MLE will be fit on
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 

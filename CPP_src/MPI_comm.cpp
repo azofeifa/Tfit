@@ -286,16 +286,11 @@ map<string , vector<vector<double> > > gather_all_bidir_predicitions(vector<segm
 rsimple_c::rsimple_c(){
 };
 rsimple_c transform(simple_c sc, vector<segment *> segments ){
-	string chrom(segments[sc.IDS[0]]->chrom);
 	rsimple_c rc;
-	for (int i = 0; i < 6; i++){
-
-		if (i < chrom.size()){
-			rc.chrom[i] 	= chrom[i];
-		}else{
-			rc.chrom[i] 	= '\0';
-		}
+	for (int i = 0; i < 5; i++){
+		rc.chrom[i] 	= segments[sc.IDS[0]]->chrom[i];
 	}
+	rc.chrom[5] 	= '\0';
 	rc.st_sp[0]=segments[sc.IDS[0]]->start,rc.st_sp[1]=segments[sc.IDS[0]]->stop;
 	rc.st_sp[2]=sc.IDS[0], 	rc.st_sp[3]=sc.IDS[1], rc.st_sp[4]=sc.IDS[2];
 

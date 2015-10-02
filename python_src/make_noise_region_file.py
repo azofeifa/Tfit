@@ -12,7 +12,7 @@ def refseq(FILE, OUT):
 				chrom 			= line.split("\t")[2]
 				if chrom not in G:
 					G[chrom] 	= list()
-				G[chrom].append((int(start)-5000, int(stop)+10000 ))
+				G[chrom].append((int(start)-10000, int(stop)+10000 ))
 			else:
 				header=False 
 	#merge
@@ -55,7 +55,6 @@ def getNONE(FILE):
 def get_distributions(FILE,NONE):
 	for chrom in NONE:
 		NONE[chrom] 	= [(((stop+start)/2.)-500  , ((stop+start)/2.)+500)  for start, stop in NONE[chrom] if (stop - start ) > 1000  ]
-		print NONE[chrom]
 	D 	= {}
 	prevChrom 	= {}
 	t 	= 0
@@ -64,7 +63,6 @@ def get_distributions(FILE,NONE):
 
 		chrom,start, stop, cov 	= line.strip("\n").split("\t")
 		if chrom!=prevChrom:
-			print chrom
 			if chrom in NONE:
 				j,N 	= 0,len(NONE[chrom])
 			else:

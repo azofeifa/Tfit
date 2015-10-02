@@ -196,7 +196,7 @@ vector<classifier> get_vector_classifiers2(params * P, int K){
 		if (r > res){
 			r=0;
 		}
-		foot_print 	= delta*r + lower;
+		foot_print 	= (delta*r + lower)/scale;
 		clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
 			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,foot_print );

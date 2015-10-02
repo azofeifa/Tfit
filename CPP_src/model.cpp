@@ -1110,6 +1110,7 @@ classifier::classifier(){
 int classifier::fit(segment * data, vector<double> mu_seeds ){
 	//=========================================================================
 	//for resets
+	double fpp 		= foot_print;
 	random_device rd;
 	mt19937 mt(rd());
 	uniform_real_distribution<double> dist_uni(data->minX,data->maxX);
@@ -1153,18 +1154,15 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		if (mu_seeds.size()>0){
 			i 	= sample_centers(mu_seeds ,  p);
 			mu 	= mu_seeds[i];
-			// if (r_mu > 0){
-			// 	normal_distribution<double> dist_r_mu(mu, r_mu);
-			// 	mu 		= dist_r_mu(mt);
-			// }
 		}else{
 			mu 			= dist_uni(mt);
 		}
-		components[k].initialize(mu, data, K, data->SCALE , 0., 0.,0);
+		components[k].initialize(mu, data, K, data->SCALE , 0., 0.,foot_print);
 		if (mu_seeds.size() > 0){
 			mu_seeds.erase (mu_seeds.begin()+i);	
 		}
 	}
+	
        
 	if (add){
 		components[K].initialize(0., data, 0., 0. , noise_max, pi, foot_print);
@@ -1177,6 +1175,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	double norm_forward, norm_reverse,N; //helper variables
 	while (t < max_iterations && not converged){
 		ll 			= 0;
+
 		//******
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
@@ -1233,10 +1232,6 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		for (int k = 0; k < K+add; k++){
 			components[k].update_parameters(N, K);
 		}
-		
-
-		//******
-		//Move Uniform support		
 		if (abs(ll-prevll)<convergence_threshold){
 			for (int k = 0; k < K; k++){
 				double std 	= (components[k].bidir.si + (1.0 / components[k].bidir.l));

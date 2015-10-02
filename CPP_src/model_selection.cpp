@@ -503,7 +503,6 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	double noise_ll;
 	double k_ll;
 	int start, stop;
-	string chr;
 	log_file<<"(optimize_model_selection_bidirs) best error: " + to_string(best_penality)+ "\n";
 	log_file<<"(optimize_model_selection_bidirs) covering to final_model_output...";
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
@@ -514,7 +513,11 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 			noise_ll 		= B->second[scores[i]][0].ps[0];
 			start 			= B->second[scores[i]][0].st_sp[0];
 			stop 			= B->second[scores[i]][0].st_sp[1];
-			chr 			= B->second[scores[i]][0].chrom;
+			string chr 		= "";
+			for (int c = 0 ; c < 5; c++){
+				chr+=B->second[scores[i]][0].chrom[c];
+			}
+
 			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop,i ) );
 		}else{
 			k_ll 			= nINF;
