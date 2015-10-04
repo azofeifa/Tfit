@@ -308,9 +308,10 @@ string params::get_header(int ID){
 	}else if (ID == 4){
 		header+="#----------------------------------------------------\n";
 		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-N           : "+p4["-N"]+"\n";
 		header+="#-i           : "+p4["-i"]+"\n";
 		header+="#-j           : "+p4["-j"]+"\n";
-		header+="#-f           : "+p4["-f"]+"\n";
+		header+="#-nf          : "+p4["-nf"]+"\n";
 		header+="#-o           : "+p4["-o"]+"\n";
 		header+="#-ns          : "+p4["-ns"]+"\n";
 		header+="#-br          : "+p4["-br"]+"\n";
