@@ -329,7 +329,6 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg, int
 	noise_clf.fit(s, s->centers);
 	
 	double noise_ll 	= noise_clf.ll;
-	
 	for (int k = 1; k<= s->counts;k++){
 		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
 		#pragma omp parallel for num_threads(np)
@@ -396,28 +395,25 @@ vector<simple_c> run_model_accross_segments_template(vector<segment*> segments,
 vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *> segments, 
 	params * P, ofstream& log_file){
 	vector<simple_c> fits;
-	log_file<<"(across_segments) running model on bidirectional possibilities...";
+	log_file<<"(across_segments) model progress...";
 	log_file<<to_string(0) + "%%,";
 	log_file.flush();
 
 	double percent 	= 0;
 	double N 		= segments.size();
 	int rounds 		= stod(P->p4["-rounds"]);
-	int outer_np 	= 1;
 	int inner_np 	= 1;
-	outer_np 	= max(omp_get_max_threads()/2, 1);
-	inner_np 	= max(omp_get_max_threads()/2, 1);
-	if (inner_np > rounds){
-		inner_np=rounds;
-	}
-	if (outer_np+inner_np < omp_get_max_threads()){
-		outer_np+=omp_get_max_threads()-(outer_np+inner_np);
-	}
-
+	inner_np 	= omp_get_max_threads();
+	
 	map<int, vector<simple_c>> 	G;
-	#pragma omp parallel for num_threads(outer_np)
+	int PP 	= 0;
 	for (int i = 0; i < segments.size(); i++){
-		
+		if ((i/N) > percent+ 0.1 ){
+			PP+=10;
+			log_file<<to_string(PP) + "%%,";
+			log_file.flush();
+			percent 	= i / N;
+		}
 		vector<simple_c> curr_fits 	= wrapper_pp_just_segments(segments[i], P , i, inner_np);
 		G[i] 	= curr_fits;
 	}
