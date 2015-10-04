@@ -188,6 +188,9 @@ int main(int argc, char* argv[]){
 				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
 				FHW<<"done\n";
 				FHW.flush();
+				FHW<< "MLE fit on " + node_name + ", going to process " + to_string(int(bidir_segments.size())) + " segments"<<endl;
+				FHW.flush();
+
 				T.start_time(0, "MLE fit on " + node_name + ", going to process " + to_string(int(bidir_segments.size())) + " segments: ");
 				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P,FHW);
 				T.get_time(0);
