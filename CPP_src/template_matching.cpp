@@ -361,9 +361,38 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 	}
 	return score;
 
+}
 
+double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas, 
+	double ** skews, double N_pos, double N_neg, double S_pos, 
+		double S_neg, double S2_pos, double S2_neg,double mu, int j,int k,int i ){
+	double l  	= 1./ 0.5*((S_pos / N_pos) - (S_neg / N_neg));
+	double sv_f = sqrt((S2_pos - (2*mu*S_pos) + (N_pos*pow(mu,2)))/N_pos);
+	double sv_r = sqrt((S2_neg - (2*mu*S_neg) + (N_neg*pow(mu,2)))/N_neg);
+	double si 	= 0.5*(sv_f + sv_r) - (1. / l);
 	
+	double N 	= N_neg + N_pos;
+	double pi 	= N_pos / (N_neg + N_pos);
+	double a 	= X[0][j], b=X[0][k];
+	double uni_ll= LOG(pi/ (b-a) )*N_pos + LOG((1-pi)/(b-a))*N_neg;
+	double argBIC= 0;
+	double emg_ll =nINF;
+	if (l > 0 and si > 0){
 
+		EMG EMG_clf(mu, si, l, 1.0, 0.5 );
+		emg_ll=0;
+		double foot_print 	= 0;
+		for (int i = j; i < k; i++ ){
+			emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);	
+		}	
+		argBIC= (-2*uni_ll + 1*LOG(N) ) / (-2*emg_ll + 3*LOG(N));
+	}
+
+	variances[i] 	= si;
+	lambdas[i] 		= l;
+	avgLL[i] 		= emg_ll / N;
+	skews[i][0]  	= 0, skews[i][1]= 0;
+	return argBIC;
 }
 
 void BIC_template(segment * data, double * avgLL, double * BIC_values, double * densities, double * densities_r,
@@ -371,33 +400,61 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 	double vl;
 	int NN 	= int(data->XN);
 	int threads  	= omp_get_max_threads();
-	#pragma omp parallel for num_threads(threads)
-	for (int i = 0; i < NN; i++){
-		int j =i, k =i+1;
-		double N_pos=0, N_neg=0;
-		while (j > 0 and (data->X[0][j] - data->X[0][i]) > -window){
-			N_pos+=data->X[1][j];
-			N_neg+=data->X[2][j];
-			j--;
+	int counts 		= NN / threads;
+	#pragma omp parallel num_threads(threads)
+	{
+		int tid 	= omp_get_thread_num();
+		int start 	= tid*counts;
+		int stop 	= (tid+1)*(counts);
+		if (tid+1 == threads){
+			stop 	= NN;
 		}
-		while (k < data->XN and (data->X[0][k] - data->X[0][i]) < window){
-			N_pos+=data->X[1][k];
-			N_neg+=data->X[2][k];
-			k++;
-		}
-		if (k < data->XN  and j < data->XN and k!=j ){
-			if (not single){
-				BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews,
-				 data->X[0][i], i, k, j,  single, foot_res,
-				  densities, densities_r,scale , window, N_pos, N_neg);
-			}else{
-				BIC_values[i] 	= BIC(data->X, avgLL, variances, 
-					lambdas, skews, data->X[0][i], i, k, j,  single, foot_res, 
-					densities, densities_r,scale , window, N_pos, N_neg);	
-			}
+		int j = start, k =start;
+		double N_pos=0,N_neg=0;
+		double S_pos=0, S_neg=0;
+		double S2_pos=0, S2_neg=0;
+		
+		for (int i = start; i < stop; i++){
+			while (j < data->XN and (data->X[0][j] - data->X[0][i]) < -window){
+				N_pos-=data->X[1][j];
+				N_neg-=data->X[2][j];
+				S_pos-=(data->X[0][j]*data->X[1][j]);
+				S_neg-=(data->X[0][j]*data->X[2][j]);
 				
-		}else{
-			BIC_values[i] 	= 0;
+				S2_pos-=(pow(data->X[0][j],2)*data->X[1][j]);
+				S2_neg-=(pow(data->X[0][j],2)*data->X[2][j]);
+				
+				j++;
+			}
+			while (k < data->XN and (data->X[0][k] - data->X[0][i]) < window){
+				N_pos+=data->X[1][k];
+				N_neg+=data->X[2][k];
+
+				S_pos+=(data->X[0][k]*data->X[1][k]);
+				S_neg+=(data->X[0][k]*data->X[2][k]);
+
+				S2_pos+=(pow(data->X[0][k],2)*data->X[1][k]);
+				S2_neg+=(pow(data->X[0][k],2)*data->X[2][k]);
+				k++;
+			}
+			if (k < data->XN  and j < data->XN and k!=j and N_neg > 0 and N_pos > 0 ){
+				densities[i] 	= N_pos / (data->X[0][k] - data->X[0][j]);
+				densities_r[i] 	= N_neg / (data->X[0][k] - data->X[0][j]);
+
+
+				// BIC_values[i] 	= BIC(data->X, avgLL, variances, 
+				// 	lambdas, skews, data->X[0][i], i, k, j,  single, foot_res, 
+				// 	densities, densities_r,scale , window, N_pos, N_neg);	
+				BIC_values[i] 	=  BIC2(data->X, avgLL, variances, 
+					lambdas, skews, N_pos,  N_neg, S_pos, 
+			 		S_neg, S2_pos, S2_neg, data->X[0][i], j, k,i );
+			
+					
+			}else{
+				BIC_values[i] 	= 0;
+				densities[i] 	= 0;
+				densities_r[i] 	= 0;
+			}
 		}
 	}
 }
@@ -486,7 +543,7 @@ void run_global_template_matching(vector<segment*> segments,
 			mj 	= 0;
 			//write out contigous regions of up?
 			for (int j = 1; j<segments[i]->XN-1; j++){
-				if (avgLL[j-1]< avgLL[j] and avgLL[j] > avgLL[j+1]){
+				if (BIC_values[j-1]< BIC_values[j] and BIC_values[j] > BIC_values[j+1]){
 					if (BIC_values[j] >=ct and densities[j] > (density/2.) and densities_r[j]>(density/2.)   ){
 						start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 						stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
