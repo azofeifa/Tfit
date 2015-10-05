@@ -365,32 +365,43 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 
 double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas, 
 	double ** skews, double N_pos, double N_neg, double S_pos, 
-		double S_neg, double S2_pos, double S2_neg,double mu, int j,int k,int i ){
-	double l  	= 1./ 0.5*((S_pos / N_pos) - (S_neg / N_neg));
-	double sv_f = sqrt((S2_pos - (2*mu*S_pos) + (N_pos*pow(mu,2)))/N_pos);
-	double sv_r = sqrt((S2_neg - (2*mu*S_neg) + (N_neg*pow(mu,2)))/N_neg);
-	double si 	= 0.5*(sv_f + sv_r) - (1. / l);
-	
+		double S_neg, double S2_pos, double S2_neg,double mu, int j,int k,int i, double scale ){
+	double argBIC 	= 0;
+	double arg_si 	= 0;
+	double arg_l 	= 0;
+	double arg_ll 	= nINF;
+	double fp_a 	= 0;
+	double fp_b 	= 500/scale;
+	double fp_delta = (fp_b-fp_a) /2.;
 	double N 	= N_neg + N_pos;
 	double pi 	= N_pos / (N_neg + N_pos);
 	double a 	= X[0][j], b=X[0][k];
 	double uni_ll= LOG(pi/ (b-a) )*N_pos + LOG((1-pi)/(b-a))*N_neg;
-	double argBIC= 0;
-	double emg_ll =nINF;
-	if (l > 0 and si > 0){
+	for (int fp = 0; fp < 5; fp++){
+		double foot_print 	= fp*fp_delta;
+			
+		
+		double l  	= 1./ (0.5*((S_pos / N_pos) - (S_neg / N_neg)) - foot_print);
+		double sv_f = sqrt((S2_pos - (2*(mu-foot_print)*S_pos) + (N_pos*pow((mu-foot_print),2)))/N_pos);
+		double sv_r = sqrt((S2_neg - (2*(mu-foot_print)*S_neg) + (N_neg*pow((mu-foot_print),2)))/N_neg);
+		double si 	= 0.5*(sv_f + sv_r) - (1. / l);
+		
+		if (l > 0 and si > 0){
 
-		EMG EMG_clf(mu, si, l, 1.0, 0.5 );
-		emg_ll=0;
-		double foot_print 	= 0;
-		for (int i = j; i < k; i++ ){
-			emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);	
-		}	
-		argBIC= (-2*uni_ll + 1*LOG(N) ) / (-2*emg_ll + 3*LOG(N));
+			EMG EMG_clf(mu, si, l, 1.0, 0.5 );
+			double emg_ll=0;
+			for (int i = j; i < k; i++ ){
+				emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);	
+			}	
+			double currBIC= (-2*uni_ll + 1*LOG(N) ) / (-2*emg_ll + 3*LOG(N));
+			if (currBIC > argBIC){
+				argBIC=currBIC, arg_si=si, arg_l=l, arg_ll=emg_ll;
+			}
+		}
 	}
-
-	variances[i] 	= si;
-	lambdas[i] 		= l;
-	avgLL[i] 		= emg_ll / N;
+	variances[i] 	= arg_si;
+	lambdas[i] 		= arg_l;
+	avgLL[i] 		= arg_ll / N;
 	skews[i][0]  	= 0, skews[i][1]= 0;
 	return argBIC;
 }
@@ -447,7 +458,7 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 				// 	densities, densities_r,scale , window, N_pos, N_neg);	
 				BIC_values[i] 	=  BIC2(data->X, avgLL, variances, 
 					lambdas, skews, N_pos,  N_neg, S_pos, 
-			 		S_neg, S2_pos, S2_neg, data->X[0][i], j, k,i );
+			 		S_neg, S2_pos, S2_neg, data->X[0][i], j, k,i, scale );
 			
 					
 			}else{
