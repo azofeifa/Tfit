@@ -371,20 +371,20 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 	double vl;
 	int NN 	= int(data->XN);
 	int threads  	= omp_get_max_threads();
-	int j =0, k =0;
-	double N_pos=0, N_neg=0;
+	#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < NN; i++){
-		while (j < data->XN && (data->X[0][j] - data->X[0][i]) < -window){
-			N_pos-=data->X[1][j];
-			N_neg-=data->X[2][j];
-			j++;
+		int j =i, k =i+1;
+		double N_pos=0, N_neg=0;
+		while (j > 0 and (data->X[0][j] - data->X[0][i]) > -window){
+			N_pos+=data->X[1][j];
+			N_neg+=data->X[2][j];
+			j--;
 		}
 		while (k < data->XN and (data->X[0][k] - data->X[0][i]) < window){
 			N_pos+=data->X[1][k];
 			N_neg+=data->X[2][k];
 			k++;
 		}
-//		printf("%d,%d, %f\n", j,k,data->XN );
 		if (k < data->XN  and j < data->XN and k!=j ){
 			if (not single){
 				BIC_values[i] 	= BIC(data->X, avgLL, variances, lambdas, skews,

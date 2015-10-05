@@ -397,7 +397,7 @@ class EMGU:
 			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-			#mus 		= [40,70]
+		mus 		= [110]
 		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
@@ -410,11 +410,11 @@ class EMGU:
 			uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
 			uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
 		else:
-			uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 , foot_print=self.foot_print) for k in range(self.K)]
-			uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] , foot_print=self.foot_print) for k in range(self.K)]
+			uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0.5, bidirs[k], "reverse",self ,0 , foot_print=self.foot_print) for k in range(self.K)]
+			uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 0.5, bidirs[k], "forward",self, X.shape[0] , foot_print=self.foot_print) for k in range(self.K)]
 			
 		if self.noise:
-			uniforms+=[component_elongation(minX, maxX, self.noise_max, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
+			uniforms+=[component_elongation(minX, maxX, 0.1, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
 		N_f, N_r 			= sum(X[:,1]), sum(X[:,2])
 		t,converged 		= 0 , False
@@ -426,7 +426,7 @@ class EMGU:
 			FHW.write(str(X[i,0])+"\t" + str(X[i,1]) + "\t" + str(X[i,2]) + "\n")
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
-			#self.draw(X)
+			self.draw(X)
 			
 			# for rv in self.rvs:
 			# 	if rv.type=="EMGU":
@@ -481,7 +481,8 @@ class EMGU:
 	def draw(self, X):
 		assert self.rvs is not None, "need to run fit before drawing"
 		F 			= plt.figure(figsize=(15,10))
-
+		for c in self.rvs:
+			print c
 		ax 			= F.add_subplot(111)
 		ax.bar(X[:,0],  X[:,1] / float(np.sum(X[:,1:]) ), color="blue", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		ax.bar(X[:,0], -X[:,2] / float(np.sum(X[:,1:])), color="red", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
@@ -494,29 +495,127 @@ class EMGU:
 		ax.grid()
 		plt.show()
 	
+def display(X):
+	# a,b, w, pi, bidir_component, ty, classifier, j, foot_print=0):
+	#self, mu, si, l, w,pi , classifier,foot_print=0):
+	E 	= component_bidir(0,1,0.15,0.4,0.5, None)
+	UF 	= component_elongation(2/0.15,150,0.3,1,None, None, None,None)
+	UR 	= component_elongation(-150,-2/0.15,0.3,0,None, None, None, None)
 
+	RE 		= component_bidir(158,1.1,0.15,0.31,0.5, None)
+	RUF 	= component_elongation(168,355,0.427,1,None, None, None,None)
+	RUR 	= component_elongation(0,152,0.26,0,None, None, None, None)
+	
+	N 	= 1000
+	F 	= [x for x in np.random.normal(0,1,int(N*0.4)) + np.random.exponential(1/0.15,int(N*0.4))] + [x for x in np.random.uniform(2/0.15,150, int(N*0.4) )  ]
+	R 	= [x for x in np.random.normal(0,1,int(N*0.4)) - np.random.exponential(1/0.15,int(N*0.4))] + [x for x in np.random.uniform(-150,-2/0.15, int(N*0.4) )]
+	NO 	= [x for x in np.random.uniform(-175,175,20)]
+	NO2 = [x for x in np.random.uniform(-175,175,20)]
+	F_cts, F_edges 	= np.histogram(F, bins=100, normed=1)	
+	R_cts, R_edges 	= np.histogram(R, bins=100, normed=1)	
+	N_cts, N_edges 	= np.histogram(NO, bins=100, normed=1)	
+	N2_cts, N2_edges = np.histogram(NO2, bins=100, normed=1)	
+	
+	F_edges 		= (F_edges[:-1]+F_edges[1:])/2.
+	R_edges 		= (R_edges[:-1]+R_edges[1:])/2.
+	N_edges 		= (N_edges[:-1]+N_edges[1:])/2.
+	N2_edges 		= (N2_edges[:-1]+N2_edges[1:])/2.
+
+
+
+	F 	= plt.figure(figsize=(10,5))
+	ax 	= F.add_subplot(1,2,1)
+	xs 	= np.linspace(-220,220,10000)
+	ysf = [E.pdf(x,1) for x in xs]
+	ysr = [-E.pdf(x,-1) for x in xs]
+	ysef = [UF.pdf(x,1) for x in xs]
+	yser = [-UR.pdf(x,-1) for x in xs]
+	
+	lw 	= 3
+	ax.set_title("Simulated Data")
+	ax.plot(xs, ysf,linewidth=lw, color="blue",label="Paused")
+	ax.plot(xs, ysr,linewidth=lw, color="blue")
+	ax.plot(xs, ysef,linewidth=lw, color="red", label="Forward")
+	ax.plot(xs, yser,linewidth=lw, color="green", label="Reverse")
+	ax.bar(F_edges, F_cts*0.5,alpha=0.2)
+	ax.bar(R_edges, -R_cts*0.5,alpha=0.2)
+	ax.bar(N_edges, -N_cts*0.1, alpha=0.2)
+	ax.bar(N2_edges, N_cts*0.1, alpha=0.2)
+	ax.set_ylim(-0.025,0.025)
+	ax.set_ylabel("Probability Density")
+	ax.legend()
+
+	ax.grid()
+	ax.set_xlim(-220,200)
+	ax.legend(loc=(0.6,0.2))
+
+	ax.set_xlabel("Simulated Genomic Coordinate (kb)")
+
+	ax2 = F.add_subplot(1,2,2)
+	ax2.set_title("Divergent Promoter (Fitted MLE Estimates)")
+	ax2.bar(X[:,0], 0.7*X[:,1]/np.sum(X[:,1:]), alpha=0.3)
+	ax2.bar(X[:,0], -0.7*X[:,2]/np.sum(X[:,1:]), alpha=0.3)
+	xs 	= np.linspace(min(X[:,0]), max(X[:,0]), 1000)
+	ysf = [RE.pdf(x,1) for x in xs]
+	ysr = [-RE.pdf(x,-1) for x in xs]
+	ysef= [RUF.pdf(x,1) for x in xs]
+	yser= [-RUR.pdf(x,-1) for x in xs]
+	ax2.plot(xs, ysf,linewidth=lw, color="blue",label="Paused",alpha=1)
+	ax2.plot(xs, ysr,linewidth=lw, color="blue",alpha=1)
+	ax2.plot(xs, ysef,linewidth=lw, color="red", label="Forward",alpha=1)
+	ax2.plot(xs, yser,linewidth=lw, color="green", label="Reverse",alpha=1)
+	ax2.set_ylim(-0.025,0.025)
+	ax2.set_ylabel("Probability Density")
+	ax2.set_xticklabels([str(int(i/1000)) for i in np.linspace(3757936,3793447,10) ])
+	ax2.grid()
+	ax2.legend(loc=(0.6,0.2))
+	ax2.annotate("",
+            xy=(10, 0.012), xycoords='data',
+            xytext=(120, 0.012), textcoords='offset points',
+            arrowprops=dict(arrowstyle="->"
+                            ),
+            )
+	ax2.annotate("",
+            xy=(350, 0.012), xycoords='data',
+            xytext=(-150, 0.012), textcoords='offset points',
+            arrowprops=dict(arrowstyle="->"),
+            )
+	ax2.text(200,0.0123, "Gene: DFFB")
+	ax2.text(30,0.0123, "Gene: CEP104")
+	ax2.set_xlabel("Genomic Coordinate (kb)")
+	plt.tight_layout()
+	plt.savefig("/Users/joazofeifa/Lab/Talks/2015/CSHL/GeneFig")
+	plt.show()
+	pass
 
 
 if __name__ == "__main__":
-
+	X 	= load.grab_specific_region("chr1",3757936,3793447, SHOW=False, bins=200 )
+	X[:,0]-=min(X[:,0])
+	X[:,0]/=100.
+# 	N: 158.069236368,6.81693059347,0.25561583127,0.310244224912,0.480576958276
+# U: 0.0,158.069236368,0.426535423252,2.83473394126e-05
+# U: 158.069236368,355.54,0.263184077474,0.999954058985
+# U: 0.0,355.54,0.0,0.5
+	display(X)
 	#-124020.007205
 	#-120376.261402
 	# 29692.0
-	N 	= 29692.0
-	#==================================
-	#testing MAP-EM procedure
-	X 	= simulate.runOne(mu=0, s=1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-		N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
-	# X[:,0]*=100
-	# X[:,0]+=abs(X[0,0])
-	# #make test_file
-	FHW_f 	= open("three_prime_forward.bedgraph", "w")
-	FHW_r 	= open("three_prime_reverse.bedgraph", "w")
-	for i in range(X.shape[0]):
-		x 		= int(X[i,0])
+	# N 	= 29692.0
+	# #==================================
+	# #testing MAP-EM procedure
+	# X 	= simulate.runOne(mu=0, s=1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
+	# 	N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
+	# # X[:,0]*=100
+	# # X[:,0]+=abs(X[0,0])
+	# # #make test_file
+	# FHW_f 	= open("three_prime_forward.bedgraph", "w")
+	# FHW_r 	= open("three_prime_reverse.bedgraph", "w")
+	# for i in range(X.shape[0]):
+	# 	x 		= int(X[i,0])
 
-		FHW_f.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,1])) + "\n" )
-		FHW_r.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,2])) + "\n" )
+	# 	FHW_f.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,1])) + "\n" )
+	# 	FHW_r.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,2])) + "\n" )
 
 
 
@@ -526,15 +625,16 @@ if __name__ == "__main__":
 	#2,518,131-2,523,183
 	#chr1:25,656,111-25,693,262
 	#chr1:28,569,727-28,580,179
-	# X 	= load.grab_specific_region("chr1",28569727,28580179, SHOW=False, bins=300 )
-	# X[:,0]-=min(X[:,0])
-	# X[:,0]/=100.
+	#chr1:1,403,824-1,426,126
+	#chr1:1,644,778-1,661,469
+	#chr1:3,757,936-3,793,447
 	
 	# print max(X[:,0])
 
 	# clf = EMGU(noise=True, K=1,noise_max=0.,moveUniformSupport=0,max_it=200, cores=1, 
-	# 	seed=True,foot_print=10)
+	# 	seed=True,foot_print=0)
 	# clf.fit(X)
+
 
 	# clf.draw(X)
 	#==================================

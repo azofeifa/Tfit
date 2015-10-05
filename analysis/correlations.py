@@ -101,7 +101,73 @@ def overlaps_and_not(A_L, B_L):
 					o 	= max(o)
 	return A,B
 
+def run_all(overlaps):
 
+	F 	= plt.figure(figsize=(15,10))
+	ax1 = F.add_subplot(2,2,1)
+	ax1.set_title("Loading Variance")
+	attr 			= "si"
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, attr) is not None and  getattr(y, attr) is not None ]
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, "wEM") >0.1 and  getattr(y, "wEM") > 0.1]
+	x,y 			= [math.log(getattr(x, attr),10) for x,y in overlaps],[math.log(getattr(y, attr),10) for x,y in overlaps]
+	xy = np.vstack([x,y])
+	
+	z = gaussian_kde(xy)(xy)
+	
+	ax1.scatter(x, y, c=z, s=14, edgecolor='' )
+	ax1.grid()
+	ax1.set_xlabel("HCT116 GRO-seq Rep1, log10 bp")
+	ax1.set_ylabel("HCT116 GRO-seq Rep2, log10 bp")
+
+	ax2 = F.add_subplot(2,2,2)
+	ax2.set_title("Initiating Length")
+
+	attr 			= "lam"
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, attr) is not None and  getattr(y, attr) is not None ]
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, "wEM") >0.1 and  getattr(y, "wEM") > 0.1]
+	x,y 			= [math.log(getattr(x, attr),10) for x,y in overlaps],[math.log(getattr(y, attr),10) for x,y in overlaps]
+	xy = np.vstack([x,y])
+	
+	z = gaussian_kde(xy)(xy)
+	
+	ax2.scatter(x, y, c=z, s=14, edgecolor='' )
+	ax2.grid()
+	ax2.set_xlabel("HCT116 GRO-seq Rep1, log10 bp")
+	ax2.set_ylabel("HCT116 GRO-seq Rep2, log10 bp")
+
+	ax3 = F.add_subplot(2,2,3)
+	ax3.set_title("Strand Bias")
+
+	attr 			= "pi"
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, attr) is not None and  getattr(y, attr) is not None ]
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, "wEM") >0.1 and  getattr(y, "wEM") > 0.1]
+	x,y 			= [getattr(x, attr)  for x,y in overlaps],[ getattr(y, attr)  for x,y in overlaps]
+	xy = np.vstack([x,y])
+	
+	z = gaussian_kde(xy)(xy)
+	
+	ax3.scatter(x, y, c=z, s=14, edgecolor='' )
+	ax3.grid()
+	ax3.set_xlabel("HCT116 GRO-seq Rep1")
+	ax3.set_ylabel("HCT116 GRO-seq Rep2")
+	
+	ax4 = F.add_subplot(2,2,4)
+	ax4.set_title("Paused Probability")
+
+	attr 			= "wEM"
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, attr) is not None and  getattr(y, attr) is not None ]
+	overlaps 		= [(x,y) for x,y in overlaps if getattr(x, "wEM") >0.1 and  getattr(y, "wEM") > 0.1]
+	x,y 			= [getattr(x, attr)  for x,y in overlaps],[ getattr(y, attr)  for x,y in overlaps]
+	xy = np.vstack([x,y])
+	
+	z = gaussian_kde(xy)(xy)
+	
+	ax4.scatter(x, y, c=z, s=14, edgecolor='' )
+	ax4.grid()
+	ax4.set_xlabel("HCT116 GRO-seq Rep1")
+	ax4.set_ylabel("HCT116 GRO-seq Rep2")
+	plt.tight_layout()
+	plt.savefig("/Users/joazofeifa/Lab/Talks/2015/CSHL/GeneFig.svg")
 
 def run(overlaps, attr ="si", LOG=False):
 
@@ -382,16 +448,20 @@ def p53_binding(Nutlin2_3, DMSO2_3, overlaps):
 	print "..."
 	print "Of the", DMSO_N_no_overlap, "bidirectional calls that are only in  DMSO2_3", float(len(DMSO2_3_p53_no_overlap)) /DMSO_N_no_overlap  , "percent of them overlap a p53 call"
 
-	
-
-
-
-
-	
 
 
 	pass
 
+def parameters_dist(L):
+	si 	= [m.si for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5]
+	lam = [m.lam for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5]
+	F 	= plt.figure(figsize=(8,6))
+	ax1 = F.add_subplot(2,2,1)
+	ax1.hist(si,bins=150)
 
+	ax2 = F.add_subplot(2,2,2)
+	ax2.hist(lam,bins=150)
+	
+	plt.show()
 
 
