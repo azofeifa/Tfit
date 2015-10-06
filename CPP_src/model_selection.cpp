@@ -447,7 +447,7 @@ vector<int> get_scores(map<string, map<int, vector<rsimple_c> > > G, double pena
 	return best_models;
 }
 vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, vector<rsimple_c> > > G, 
-	params * P, ofstream& log_file){
+	params * P, ofstream& log_file, map<int, string> chromosomes ){
 	double scale 	= stod(P->p4["-ns"]);
 	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
 	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
@@ -502,7 +502,7 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	int 	i = 0;
 	double noise_ll;
 	double k_ll;
-	int start, stop;
+	int start, stop, chrom_ID;
 	log_file<<"(optimize_model_selection_bidirs) best error: " + to_string(best_penality)+ "\n";
 	log_file<<"(optimize_model_selection_bidirs) covering to final_model_output...";
 	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
@@ -513,10 +513,8 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 			noise_ll 		= B->second[scores[i]][0].ps[0];
 			start 			= B->second[scores[i]][0].st_sp[0];
 			stop 			= B->second[scores[i]][0].st_sp[1];
-			string chr 		= "";
-			for (int c = 0 ; c < 5; c++){
-				chr+=B->second[scores[i]][0].chrom[c];
-			}
+			chrom_ID 		= B->second[scores[i]][0].st_sp[5];
+			string chr 		= chromosomes[chrom_ID];
 
 			A.push_back( final_model_output(chr,B->first, scores[i], components, noise_ll, k_ll, scale,start, stop,i ) );
 		}else{
@@ -531,32 +529,33 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 
 
 
-vector<final_model_output> convert_to_final_model_output(map<string, map<int, vector<rsimple_c> > > G, params * P){
-	vector<final_model_output> A;
-	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
-	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
-	typedef vector<rsimple_c> ::iterator it_type_3;
-	string chr, h;
-	int start,stop;
-	double scale 	= stod(P->p4["-ns"]);
-	double k_ll, noise_ll;
-	for (it_type B=G.begin(); B!=G.end(); B++){//segments of data
-		if ( int(B->second.size())  > 1 ){
-			printf("WHAT? convert_to_final_model_output\n");
-		}else{
-			int k 							= B->second.begin()->first;
-			vector<rsimple_c> components 	= B->second.begin()->second;
-			k_ll 							= components[0].ps[1];
-			noise_ll 						= components[0].ps[0];
-			start 	= components[0].st_sp[0], stop 	= components[0].st_sp[1];
-			chr  	= components[0].chrom;
-			A.push_back( final_model_output(chr,B->first, k, components, noise_ll, k_ll, scale,start, stop, components[0].st_sp[4] ) );
-		}
-	}
+// vector<final_model_output> convert_to_final_model_output(map<string, map<int, vector<rsimple_c> > > G, 
+// 	params * P){
+// 	vector<final_model_output> A;
+// 	typedef map<string, map<int, vector<rsimple_c> > >::iterator it_type;
+// 	typedef map<int, vector<rsimple_c> >::iterator it_type_2;
+// 	typedef vector<rsimple_c> ::iterator it_type_3;
+// 	string chr, h;
+// 	int start,stop;
+// 	double scale 	= stod(P->p4["-ns"]);
+// 	double k_ll, noise_ll;
+// 	for (it_type B=G.begin(); B!=G.end(); B++){//segments of data
+// 		if ( int(B->second.size())  > 1 ){
+// 			printf("WHAT? convert_to_final_model_output\n");
+// 		}else{
+// 			int k 							= B->second.begin()->first;
+// 			vector<rsimple_c> components 	= B->second.begin()->second;
+// 			k_ll 							= components[0].ps[1];
+// 			noise_ll 						= components[0].ps[0];
+// 			start 	= components[0].st_sp[0], stop 	= components[0].st_sp[1];
+// 			chr  	= components[0].chrom;
+// 			A.push_back( final_model_output(chr,B->first, k, components, noise_ll, k_ll, scale,start, stop, components[0].st_sp[4] ) );
+// 		}
+// 	}
 
 
-	return A;
-}
+// 	return A;
+//}
 
 
 vector<final_model_output> convert_bidir_segs_to_final_model(map<string, vector<vector<double>>  > G ){

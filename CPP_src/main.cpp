@@ -130,8 +130,10 @@ int main(int argc, char* argv[]){
 		
 		T.start_time(rank, "loading BG files:");
 		FHW<<"(main) loaded begraph files...";
+		map<string, int> chrom_to_ID;
+		map<int, string> ID_to_chrom;
 		vector<segment*> segments 	= load_bedgraphs_total(forward_bedgraph, 
-			reverse_bedgraph, BINS, scale, spec_chrom);
+			reverse_bedgraph, BINS, scale, spec_chrom, chrom_to_ID, ID_to_chrom );
 		FHW<<"done\n";
 		T.get_time(rank);
 		if (segments.empty()){
@@ -175,7 +177,7 @@ int main(int argc, char* argv[]){
 				FHW.flush();
 
 				bidir_segments 	= bidir_to_segment( G, 
-					forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]),P->p4["-chr"]   );
+					forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]),P->p4["-chr"],chrom_to_ID   );
 				T.get_time(rank);
 				FHW<<"done\n";
 
@@ -198,7 +200,8 @@ int main(int argc, char* argv[]){
 			FHW<<"(main) (MPI) gathering MLE results...";
 				
 			T.start_time(rank, "(MPI) gathering MLE results:");
-			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, fits, rank, nprocs);
+			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, 
+				fits, rank, nprocs,ID_to_chrom);
 			FHW<<"done";
 			FHW.flush();
 			T.get_time(rank);
@@ -208,7 +211,7 @@ int main(int argc, char* argv[]){
 					
 			if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
 				T.start_time(rank, "opt model selection:");
-				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P, FHW);
+				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P, FHW,ID_to_chrom);
 				T.get_time(rank);
 				T.start_time(rank, "writing out bidir model selection:");
 				write_out_MLE_model_info(A, P, job_name, job_ID);

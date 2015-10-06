@@ -51,7 +51,7 @@ class classifier; //forward declare
 class segment{
 public:
 	string chrom; 
-	int start, stop, ID;
+	int start, stop, ID, chrom_ID;
 	double minX, maxX;
 	vector< vector<double> > forward;
 	vector< vector<double> > reverse;
@@ -146,7 +146,7 @@ void insert_bedgraph(map<string, interval_tree *>, string, int);
 void write_out(string,map<string, interval_tree *> );
 
 vector<segment*> load_bedgraphs_total(string, 
-	string, int , double, string);
+	string, int , double, string,map<string, int>&,map<int, string>&);
 vector<segment*> load_bedgraphs_single(string, int , double, string);
 map<string, interval_tree *> load_bidir_bed_files(string,
 	string);
@@ -157,7 +157,7 @@ void write_out_bidir_fits( vector<segment*>,
 void write_out_bidirs(map<string , vector<vector<double> > >, string, string, int ,params *);
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > >, 
-	string , string, int, string );
+	string , string, int, string, map<string, int> );
 vector<segment *>  combind_bidir_fits_with_intervals_of_interest(vector<final_model_output> , vector<segment *> );
 
 void write_out_MLE_model_info(vector<final_model_output>, params *, string, int);

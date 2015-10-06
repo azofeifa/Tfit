@@ -453,14 +453,24 @@ def p53_binding(Nutlin2_3, DMSO2_3, overlaps):
 	pass
 
 def parameters_dist(L):
-	si 	= [m.si for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5]
-	lam = [m.lam for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5]
+	si 	= [m.si for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5 and m.lam > 26 and m.si < 500]
+	lam = [m.lam for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5 and m.lam > 26 and m.si < 500]
+	pi 	= [m.pi for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5 and m.lam > 26 and m.si < 500]
+	fp 	= [m.fp for chrom in L for st, sp, S in L[chrom] for m in S.models if m.wEM > 0.5 and m.lam > 26 and m.si < 500]
 	F 	= plt.figure(figsize=(8,6))
 	ax1 = F.add_subplot(2,2,1)
 	ax1.hist(si,bins=150)
 
+	ax1.set_xlim(0,500)
 	ax2 = F.add_subplot(2,2,2)
 	ax2.hist(lam,bins=150)
+	ax2.set_xlim(0,500)
+
+	ax3 = F.add_subplot(2,2,3)
+	ax3.hist(pi,bins=150)
+
+	ax4 = F.add_subplot(2,2,4)
+	ax4.hist(fp,bins=150)
 	
 	plt.show()
 

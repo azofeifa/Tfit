@@ -287,13 +287,9 @@ rsimple_c::rsimple_c(){
 };
 rsimple_c transform(simple_c sc, vector<segment *> segments ){
 	rsimple_c rc;
-	for (int i = 0; i < 5; i++){
-		rc.chrom[i] 	= segments[sc.IDS[0]]->chrom[i];
-	}
-	rc.chrom[5] 	= '\0';
 	rc.st_sp[0]=segments[sc.IDS[0]]->start,rc.st_sp[1]=segments[sc.IDS[0]]->stop;
 	rc.st_sp[2]=sc.IDS[0], 	rc.st_sp[3]=sc.IDS[1], rc.st_sp[4]=sc.IDS[2];
-
+	rc.st_sp[5]=segments[sc.IDS[0]]->chrom_ID;
 	rc.ps[0]=sc.noise_ll,rc.ps[1]=sc.ll;
 	for (int i = 0; i < 13; i++){
 		rc.ps[i+2]=sc.ps[i];
@@ -302,22 +298,21 @@ rsimple_c transform(simple_c sc, vector<segment *> segments ){
 }
 
 map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segment *> segments, 
-	vector<simple_c> fits, int rank, int nprocs)
+	vector<simple_c> fits, int rank, int nprocs,map<int, string> chromosomes)
 {
 
 	//make MPI derived data type
 	rsimple_c rc;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={6,5,15};
-	MPI_Datatype old_types[3] = {MPI_INT, MPI_CHAR, MPI_DOUBLE}; 
-	MPI_Aint displacements[3];
+	int blocklens[2]={6,15};
+	MPI_Datatype old_types[2] = {MPI_INT, MPI_DOUBLE}; 
+	MPI_Aint displacements[2];
 	displacements[0] 	= offsetof(rsimple_c, st_sp);
-	displacements[1] 	= offsetof(rsimple_c, chrom);
-	displacements[2] 	= offsetof(rsimple_c, ps);
+	displacements[1] 	= offsetof(rsimple_c, ps);
 	
 	
-	MPI_Type_create_struct( 3, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_create_struct( 2, blocklens, displacements, old_types, &mystruct );
 	MPI_Type_commit( &mystruct );
 	
 	vector<rsimple_c> rsimple_c_fits;
@@ -357,8 +352,8 @@ map<string, map<int, vector<rsimple_c> > > gather_all_simple_c_fits(vector<segme
 		for (int i =0; i < rsimple_c_fits.size(); i++)
 		{
 			rc 	= rsimple_c_fits[i];
-			string chrom(rc.chrom);
-			ID 	= string(rc.chrom) + ":" + to_string(rc.st_sp[0]) + "-" + to_string(rc.st_sp[1]);
+			string chrom 	= chromosomes[rc.st_sp[5]];
+			ID 	= string(chrom) + ":" + to_string(rc.st_sp[0]) + "-" + to_string(rc.st_sp[1]);
 			K 	= rc.st_sp[3] ;
 			G[ID][K].push_back(rc);
 		}

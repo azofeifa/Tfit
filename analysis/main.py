@@ -16,7 +16,7 @@ def run(root):
 		DMSO1hr101911 	="DMSO1hr101911_model_fits/EMG-4_bidirectional_hits_intervals.bed"
 		DMSO1027 		="DMSO1027_1212_model_fits/EMG-3_bidirectional_hits_intervals.bed"
 		Ma6_NoIndex 	="Ma6_NoIndex_L008_R1_001/EMG-6_bidirectional_hits_intervals.bed"
-		DMSO2_3 		="Allen2014_DMSO2_3-1_bidirectional_hits_intervals.bed"
+		DMSO2_3 		="Allen2014_DMSO2_3-2_bidirectional_hits_intervals.bed"
 		Nutlin2_3 		= "Nutlin2_3_model_fits/EMG-2_bidirectional_hits_intervals.bed"
 		
 		RefSeq 			= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"

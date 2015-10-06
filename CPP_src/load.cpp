@@ -83,6 +83,8 @@ segment::segment(string chr, int st, int sp){
 	XN 		= 0;
 	ID 		= 0;
 	strand 	= ".";
+	chrom_ID= 0;
+
 }
 segment::segment(string chr, int st, int sp, int i){
 	chrom	= chr;
@@ -94,6 +96,8 @@ segment::segment(string chr, int st, int sp, int i){
 	XN 		= 0;
 	ID 		= i;
 	strand 	= ".";
+	chrom_ID= 0;
+
 }
 
 segment::segment(string chr, int st, int sp, int i, string STR){
@@ -106,6 +110,8 @@ segment::segment(string chr, int st, int sp, int i, string STR){
 	XN 		= 0;
 	ID 		= i;
 	strand 	= STR;
+	chrom_ID= 0;
+
 }
 
 segment::segment(){
@@ -114,6 +120,7 @@ segment::segment(){
 	XN 		= 0;
 	ID 		= 0;
 	strand 	= ".";
+	chrom_ID= 0;
 }
 
 string segment::write_out(){
@@ -697,7 +704,8 @@ interval interval_tree::get_interval(int start, int stop){
 //loading from file functions...need to clean this up...
 
 vector<segment*> load_bedgraphs_total(string forward_strand, 
-	string reverse_strand, int BINS, double scale, string spec_chrom){
+	string reverse_strand, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
+	, map<int, string>& ID_to_chrom){
 	bool FOUND 	= false;
 	if (spec_chrom=="all"){
 		FOUND 	= true;
@@ -747,9 +755,11 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 
 	prevChrom="";
 	FOUND=false;
+	int c =1;
 	while (getline(FH2, line)){
 		lineArray=splitter(line, "\t");
 		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=abs(stof(lineArray[3]));
+
 		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
 			break;
 		}
@@ -762,6 +772,13 @@ vector<segment*> load_bedgraphs_total(string forward_strand,
 	typedef map<string, segment*>::iterator it_type;
 	for (it_type i = G.begin(); i != G.end(); i++){
 		i->second->bin(BINS, scale,false);
+		if (chromosomes.find(i->second->chrom)==chromosomes.end()){
+			chromosomes[i->second->chrom]=c;
+			ID_to_chrom[c] 	= i->second->chrom;
+			c++;
+		}
+
+
 		segments.push_back(i->second);
 	}
 	if (not FOUND){
@@ -1044,7 +1061,7 @@ map<string, interval_tree *> load_bidir_bed_files(string in_directory, string sp
 }
 
 vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G, 
-	string forward_file, string reverse_file, int pad, string spec_chrom){
+	string forward_file, string reverse_file, int pad, string spec_chrom, map<string, int> chromosomes){
 	
 	typedef map<string , vector<vector<double> > >::iterator it_type;
 	typedef map<string, vector<segment *> >::iterator it_type_2;
@@ -1057,6 +1074,7 @@ vector<segment *> bidir_to_segment(map<string , vector<vector<double> > > G,
 		G[i->first] 	= interval_sort(i->second);
 		for (int j = 0; j < G[i->first].size(); j++){
 			S 			= new segment(i->first, int(G[i->first][j][0] )-pad, int(G[i->first][j][1])+pad);
+			S->chrom_ID = chromosomes[S->chrom];
 			B[i->first].push_back(S);
 		}
 	
