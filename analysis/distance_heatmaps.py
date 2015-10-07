@@ -10,20 +10,22 @@ import matplotlib.cm as cm
 def load(FILE):
 	G 	= {}
 	TF,fimo="",""
+	collect=True
 	with open(FILE) as FH:
 		for line in FH:
 			if "fimo" in line:
 				fimo 	= line.strip("\n")
 
 				G[TF][fimo] 	= list()
-			elif line[0] == "[":
-				line 	= line.strip("\n")
-				line 	= line[1:-1]
+				collect 		= True
+			elif collect and len(line.split(",")) > 5:
+				line 	= line.strip(",\n")
 				G[TF][fimo] 	= [float(x) for x in line.split(",")]
-			else:
+			elif collect:
 				TF 	= line.strip("\n")
 				if TF not in G:
 					G[TF] =	{}
+				collect=False
 
 	return G
 class motif_distance:
@@ -37,21 +39,22 @@ class motif_distance:
 		self.N 		= None
 		self.calc_pvalues()
 	def calc_pvalues(self):
-		x 			= self.D
-		start 		= min(x)
-		stop 		= max(x)
-		sigma 		= np.std(x)
-		mu 			= np.mean(x)
-		N 			= len(x)
-		y 			= np.random.uniform(start, stop, N)
-		z 			= mu/(sigma/math.sqrt(N))
-		p 			= 1 - scipy.special.ndtr(z)
-		k 			= scipy.stats.ks_2samp(x,y)
-		self.U 		= k[1]
-		self.ZERO 	= p
-		self.mean 	= mu
-		self.std 	= sigma
-		self.N 		= N
+		if self.D:
+			x 			= self.D
+			start 		= min(x)
+			stop 		= max(x)
+			sigma 		= np.std(x)
+			mu 			= np.mean(x)
+			N 			= len(x)
+			y 			= np.random.uniform(start, stop, N)
+			z 			= mu/(sigma/math.sqrt(N))
+			p 			= 1 - scipy.special.ndtr(z)
+			k 			= scipy.stats.ks_2samp(x,y)
+			self.U 		= k[1]
+			self.ZERO 	= p
+			self.mean 	= mu
+			self.std 	= sigma
+			self.N 		= N
 	def bin(self, bins, cmap):
 		counts,edges 	= np.histogram(self.D, bins)
 		edges 			= (edges[1:] + edges[:-1])/2.
@@ -87,7 +90,10 @@ def make_class(G):
 		L.append(tf)
 	return L
 def display_Hmaps(L):
-	L 	= [TF for TF in L if "H3" not in TF.name]
+	L 	= [(TF.get_most().N, TF) for TF in L if "H3" not in TF.name and TF.name]
+	L.sort()
+	L 	= L[::-1]
+	L 	= [TF for N,TF in L]
 	cmap = cm.Blues
 
 	bins = 50
@@ -101,6 +107,7 @@ def display_Hmaps(L):
 	min_x,max_x 	= 0,0
 	for i in range(6):
 		TF 	= L[i]
+		print "Name: ", TF.name
 		md 	= TF.get_most()
 		edges, counts, colors 	= md.bin(55, cmap)
 		rect_scatter[1]=(i*height + i*0.063 + 0.045)
@@ -119,6 +126,7 @@ def display_Hmaps(L):
 	i 	= 5
 	rect_scatter[0] = 0.5
 	for j in range(6):
+		print "Name: ", TF.name
 		TF 	= L[j+i]
 		md 						= TF.get_most()
 		edges, counts, colors 	= md.bin(55, cmap)
@@ -132,7 +140,7 @@ def display_Hmaps(L):
 		ax.bar(edges,np.ones((len(edges),)), color=colors, width=(edges[-1]-edges[0])/len(edges) , edgecolor=colors )
 
 		axes.append(ax)
-	min_x,max_x=-750,750
+	min_x,max_x=-1,1
 	for ax in axes:
 		ax.set_xlim(min_x,max_x)
 	
@@ -195,7 +203,7 @@ def display_Hmaps(L):
 
 
 if __name__ == "__main__":
-	FILE 	= "/Users/joazofeifa/Lab/gro_seq_files/EMG_analysis_out_files/TFMotifToBidirDistance.txt"
+	FILE 	= "/Users/joazofeifa/Downloads/TFMotifToBidirDistancePad.txt"
 	TFS 	= make_class(load(FILE))
 	display_Hmaps(TFS)
 	pass

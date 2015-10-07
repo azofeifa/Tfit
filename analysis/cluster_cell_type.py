@@ -147,11 +147,11 @@ def get_all(EXPS, ROOT):
 if __name__ == "__main__":
 	make=False
 	EXPS2 	= ("Allen2014 (HCT116)", "Andersson2014 (HeLa)", "Core2014 (K562)", 
-		"Duttke 2015 (HeLa)", "Jin2013 (IMR90)", "Jin2014 (LNCaP)", "Le2013 (MCF-7) ",
+		"Duttke 2015 (HeLa)", "Jin2013 (IMR90)",  "Le2013 (MCF-7) ",
 		 "Li2013 (IMR90)", 
 		"Luo2014 (AC16)", "Puc2015 (LNCaP)", "Saponaro2014 (HeLa)" )
 	EXPS 	= ("Allen2014", "Andersson2014", "Core2014", 
-		"Duttke2015", "Jin2013", "Jin2014", "Le2013",
+		"Duttke2015", "Jin2013",   "Le2013",
 		 "Li2013", 
 		"Luo2014", "Puc2015", "Saponaro2014" )
 	if make:
