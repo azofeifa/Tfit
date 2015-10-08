@@ -121,7 +121,7 @@ def display_dengraom(FILE,IDS):
 		for j in range(len(A)):
 			dist 	= sum([ abs(A[i][k] - A[j][k])  for k in range(len(A[i]))] )
 			D[i,j] 	= dist+1
-	linkage_matrix = linkage(D, "complete")
+	linkage_matrix = linkage(D, "single")
 
 	ddata = dendrogram(linkage_matrix,
                    color_threshold=1,

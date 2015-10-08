@@ -98,7 +98,7 @@ def display_Hmaps(L):
 
 	bins = 50
 	N    = 10000
-	F    = plt.figure(figsize=(15,10))
+	F    = plt.figure(figsize=(5,8))
 	left, width = 0.05, 0.35
 	height = 0.1
 	bottom = 0.2

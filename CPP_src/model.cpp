@@ -283,28 +283,19 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		
 		sigma 		= dist_sigma_2(mt)/scale;
 		lambda 		= scale/dist_lambda_2(mt) ;
-		double dist = (1.0/lambda) + sigma + dist_lengths(mt);
+		double dist = data->maxX - mu+(1.0/lambda) ;
 		int j 		= get_nearest_position(data, mu, dist);
 		
-		b_forward 	= data->X[0][j];
-		if (b_forward < (mu+(1.0/lambda)) ){
-			forward 	= UNI(mu+(1.0/lambda), data->maxX, 0., 1, j, 0.5);
-		}
-		else{	
-			forward 	= UNI(mu+(1.0/lambda), b_forward, 1.0 / (3*K), 1, j, 0.5);
-		}	
-		dist 		= (-1.0/lambda) - sigma - dist_lengths(mt);
+		forward 	= UNI(mu+(1.0/lambda), data->maxX, 0., 1, j, 0.5);
+		
+		dist 		= data->minX - mu - (-1.0/lambda) ;
 		j 			= get_nearest_position(  data, mu, dist);
 		
-		a_reverse 	= data->X[0][j];
+		a_reverse 			= data->X[0][j];
 
 		bidir 				= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
 		bidir.foot_print 	= foot_print;
-		if (a_reverse > mu-(1.0/lambda) ){
-			reverse 	= UNI(data->minX, mu-(1.0/lambda), 0., -1, j,0.5);
-		}else{
-			reverse 	= UNI(a_reverse, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
-		}
+		reverse 	= UNI(data->minX, mu-(1.0/lambda), 0., -1, j,0.5);
 		type 		= 1;
 	}
 
@@ -655,6 +646,7 @@ void component::update_parameters(double N, int K){
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		forward.a 	= bidir.mu  , reverse.b=bidir.mu ;
+
 		//update PIS, this is obviously overwritten if we start the EM seeder with 0/1
 		forward.pi 	= (forward.r_forward + 1) / (forward.r_forward + forward.r_reverse+2);
 		reverse.pi 	= (reverse.r_forward + 1)/ (reverse.r_forward + reverse.r_reverse+2);
@@ -662,7 +654,6 @@ void component::update_parameters(double N, int K){
 			forward.w 	= 0;
 			reverse.w 	= 0;
 		}
-
 	}
 }
 
@@ -1175,7 +1166,6 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	double norm_forward, norm_reverse,N; //helper variables
 	while (t < max_iterations && not converged){
 		ll 			= 0;
-
 		//******
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){

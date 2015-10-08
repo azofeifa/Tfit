@@ -492,7 +492,7 @@ void run_global_template_matching(vector<segment*> segments,
 	double window_b;
 	if (not single){
 		window_a 	= 1000;
-		window_b 	= 3000;
+		window_b 	= 2000;
 	}else{
 		window_a 	= 2000;
 		window_b 	= 4000;
