@@ -461,9 +461,10 @@ interval::interval(string chr, int st, int sp){
 interval::interval(string chr, int st, int sp, int IDD){
 	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false;
 }
-interval::interval(string chr, int st, int sp, int IDD, string str){
+interval::interval(string chr, int st, int sp, int IDD, string str, vector<vector<double>> p ){
 	
 	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false, STRAND=str;
+	parameters 	= p;
 }
 
 
@@ -843,7 +844,8 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 	for (it_type_2 i = FSI.begin(); i != FSI.end(); i++){
 		for (int j = 0; j < i->second.size(); j++){
 			G[i->first].push_back(interval(i->second[j]->chrom, 
-				i->second[j]->start, i->second[j]->stop, i->second[j]->ID, i->second[j]->strand)  );
+				i->second[j]->start, i->second[j]->stop, 
+				i->second[j]->ID, i->second[j]->strand, i->second[j]->parameters)  );
 		}
 	}
 	//want to sort intervals by there ending point
@@ -857,6 +859,7 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 
 		    j 				= 0;
 		    merged_interval * I = new  merged_interval(G[c->first][0].start, G[c->first][0].stop, G[c->first][0], j);
+		    I->parameters 	= G[c->first][0].parameters;
 		    N 				= G[c->first].size();
 		    i 				= 1;
 		    bool inserted 	= false;
@@ -869,6 +872,8 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 		    	inserted=true;
 		    	if (i < N){
 		    		I 	= new merged_interval(G[c->first][i].start, G[c->first][i].stop, G[c->first][i], j);
+				    I->parameters 	= G[c->first][i].parameters;
+
 		    		inserted=false;
 		    		j++;
 		    	}
@@ -1698,6 +1703,7 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 			interval FOUND 	= AT[c->first]->get_interval(c->second[i]->start, c->second[i]->stop );
 			if (not FOUND.EMPTY and FOUND.forward_x.size()){
 				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID, FOUND.STRAND);
+				S->parameters 	= FOUND.parameters;
 				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
 					vector<double> curr(2);
 					curr[0] 	= FOUND.forward_x[u], curr[1] 	= FOUND.forward_y[u];
@@ -2007,9 +2013,10 @@ public:
 		vector<vector<double>> centers; 
 		for (int i = 0 ; i < INFOS.size(); i++){
 			lineArray 	= splitter(INFOS[i], "_");
-			vector<double> current(5);
+			vector<double> current(6);
 			current[0]  = stod(lineArray[0]),current[1] 	= stod(lineArray[1]), current[2]=stod(lineArray[2]);
 			current[3] 	= stod(lineArray[3]), current[4] 	= stod(lineArray[4]);
+			current[5] 	= stod(lineArray[6]);
 			centers.push_back(current);
 		}
 		return centers;
@@ -2049,7 +2056,7 @@ vector<bidir_segment> get_merged(params * P){
 		while(getline(FH, line)){
 			if (line.substr(0,1)!="#"){
 				lineArray=splitter(line, "\t");
-				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]);
+				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2])+pad;
 				vector<int> current(3);
 				current[0]=start-pad, current[1]=stop+pad, current[2]=i;
 
@@ -2099,6 +2106,7 @@ map<string, vector<segment *> > load_bidir_predictions(params * P, vector<int> s
 	for (int i = st_sp[0]; i < st_sp[1]; i++){
 		segment * S 	= new segment(Merged[i].chrom, Merged[i].start, Merged[i].stop);
 		S->parameters 	= Merged[i].get_parameters();
+
 		G[S->chrom].push_back(S);
 	}
 

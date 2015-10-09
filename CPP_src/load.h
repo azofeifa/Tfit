@@ -91,10 +91,13 @@ public:
 	int start, stop, strand; //strand, 1 == forward, -1 == reverse
 	bool EMPTY;
 	string STRAND;
+	vector<vector<double>> parameters; //for bootstraping
+
 	interval();
 	interval(string, int, int );
 	interval(string, int, int , int );
-	interval(string, int, int, int , string);
+	interval(string, int, int, int , string,vector<vector<double>>);
+	
 	vector<double> forward_x, forward_y, reverse_x, reverse_y;
 	void insert(double, double, int);
 	int hits;
@@ -105,6 +108,7 @@ public:
 	string chrom;
 	int start, stop;
 	int id;
+	vector<vector<double>> parameters;
 	merged_interval * left;
 	merged_interval * right;
 	vector<interval> intervals; 

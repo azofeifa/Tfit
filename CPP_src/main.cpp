@@ -15,6 +15,7 @@
 #include <thread>
 #include "template_matching.h"
 #include "MPI_comm.h"
+#include "bootstrap.h"
 #include "density_profiler.h"
 #include <omp.h>
 using namespace std;
@@ -392,12 +393,14 @@ int main(int argc, char* argv[]){
 			start_stops 	=  get_line_start_stops(P, nprocs);
 		}
 		vector<int> st_sp 						= send_out_merged_start_stops(start_stops,   rank,   nprocs);
+		
 		map<string, vector<segment *> > GG		= load_bidir_predictions( P,   st_sp);
 
 
 		vector<segment *> integrated_segments= insert_bedgraph_to_segment_joint(GG, 
 			P->p6["-j"], P->p6["-k"], rank);
-
+		BIN(integrated_segments, stod(P->p6["-br"]), stod(P->p6["-ns"]),true);
+		run_bootstrap_across(integrated_segments, P);
 		FHW<<"#Temp Log File for mpi process: " + to_string(rank) + "\n";
 		FHW<<P->get_header(6);
 		if (rank==0){

@@ -20,7 +20,7 @@
 -ALPHA_2 		= 1 #prior for weights
 -ALPHA_3 		= 100 #prior for strand probs
 -rounds 		= 1 #number of random EM initializations
--brounds 		= 100 #number of bootstrap samples
+-brounds 		= 8 #number of bootstrap samples
 -ct 			= 0.0001 #EM convergence threshold difference
 -mi 			= 2000 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
