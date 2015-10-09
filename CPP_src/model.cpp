@@ -1189,10 +1189,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	double norm_forward, norm_reverse,N; //helper variables
 	int u 			= 0;
 	while (t < max_iterations && not converged){
-		// if (u > 100){
-		// 	check_mu_positions( components, K);
-		// 	u=0;
-		// }
+		if (u > 100){
+			check_mu_positions( components, K);
+			u=0;
+		}
 		u++;
 		ll 			= 0;
 		//******
