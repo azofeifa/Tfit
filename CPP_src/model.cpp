@@ -157,7 +157,7 @@ double EMG::pdf(double z, int s ){
 	if (vl > 100){ //potential for overflow, inaccuracies
 		p 			= l*IN((z-mu)/si)*R(l*si - s*((z-mu)/si));
 	}else{
-		p 			= (l/2)*exp(vl)*erfc((s*(mu-z) + l*pow(si ,2))/(sqrt(2)*si));
+		p 			= (l/2)*exp(vl)*erfc((s*(mu-z) + l*pow(si ,2) )/(sqrt(2)*si));
 	}
 	vl 				= p*w*pow(pi, max(0, s) )*pow(1.-pi, max(0, -s) );
 	if (checkNumber(vl)){
@@ -286,7 +286,7 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		double dist = data->maxX - mu+(1.0/lambda) ;
 		int j 		= get_nearest_position(data, mu, dist);
 		
-		forward 	= UNI(mu+(1.0/lambda), data->maxX, 0., 1, j, 0.5);
+		forward 	= UNI(mu+(1.0/lambda), data->maxX, 1.0 / (3*K), 1, j, 0.5);
 		
 		dist 		= data->minX - mu - (-1.0/lambda) ;
 		j 			= get_nearest_position(  data, mu, dist);
@@ -295,8 +295,12 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 
 		bidir 				= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
 		bidir.foot_print 	= foot_print;
-		reverse 	= UNI(data->minX, mu-(1.0/lambda), 0., -1, j,0.5);
+		reverse 	= UNI(data->minX, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
 		type 		= 1;
+		// cout<<K<<endl;
+		// cout<<bidir.print()<<endl;
+		// cout<<forward.print()<<endl;
+		// cout<<reverse.print()<<endl;
 	}
 
 } 
@@ -1185,10 +1189,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	double norm_forward, norm_reverse,N; //helper variables
 	int u 			= 0;
 	while (t < max_iterations && not converged){
-		if (u > 100){
-			check_mu_positions( components, K);
-			u=0;
-		}
+		// if (u > 100){
+		// 	check_mu_positions( components, K);
+		// 	u=0;
+		// }
 		u++;
 		ll 			= 0;
 		//******
@@ -1202,8 +1206,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		       
 		}
 		
+		
 		//******
 		//E-step
+
 		for (int i =0; i < data->XN;i++){
 			norm_forward=0;
 			norm_reverse=0;
@@ -1214,9 +1220,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 				if (data->X[2][i]){//if there is actually data point here...
 					norm_reverse+=components[k].evaluate(data->X[0][i],-1);
 				}
-
+		
 				
 			}
+
 			if (norm_forward > 0){
 				ll+=LOG(norm_forward)*data->X[1][i];
 			}
@@ -1236,6 +1243,7 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 
 		
 		}
+
 		//******
 		//M-step
 		//get normalizing constant

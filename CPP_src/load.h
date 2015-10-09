@@ -59,6 +59,7 @@ public:
 	int counts;
 	vector<double> centers;
 	vector<vector<double>> parameters; //for bootstraping
+	map<int, vector<double> > variances;
 	segment(string, int , int);
 	segment(string, int , int, int);
 	segment(string, int , int, int,string);

@@ -314,7 +314,7 @@ void params::display(int nodes, int cores){
 
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"                 (Fitting single model)                       "<<endl;
+		cout<<"               (Bootstraping MLE Estimates)                     "<<endl;
 		cout<<"Date Time    : "<<currentDateTime()<<endl;
 		cout<<"-i           : "<<p6["-i"]<<endl;
 		cout<<"-j           : "<<p6["-j"]<<endl;
@@ -324,6 +324,9 @@ void params::display(int nodes, int cores){
 		cout<<"-ns          : "<<p6["-ns"]<<endl;
 		cout<<"-br          : "<<p6["-br"]<<endl;
 		cout<<"-chr         : "<<p6["-chr"]<<endl;
+		cout<<"-rounds      : "<<p6["-rounds"]<<endl;
+		cout<<"-brounds     : "<<p6["-brounds"]<<endl;
+		
 		cout<<"-pad         : "<<p6["-pad"]	<<endl;
 		cout<<"-r_mu        : "<<p6["-r_mu"]	<<endl;
 		cout<<"-ALPHA_0     : "<<p6["-ALPHA_0"]	<<endl;

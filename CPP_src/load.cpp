@@ -2006,7 +2006,6 @@ public:
 	bidir_segment(){};
 	bidir_segment(string c, int st, int sp, string info){
 		chrom=c, start=st, stop=sp, INFO=info;
-		INFOS.push_back(INFO);
 	}
 	vector<vector<double> > get_parameters(){
 		vector<string> lineArray;
