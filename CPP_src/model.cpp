@@ -668,11 +668,7 @@ void check_mu_positions(component * components, int K){
 	for (int i = 0; i < K; i++){
 		for (int j = i+1; j < K; j++){
 			dist 	= abs(components[i].bidir.mu - components[j].bidir.mu); 
-			dist_a 	= (1.0 / components[i].bidir.l) + components[i].bidir.si;
-			dist_a /=4.;
-			dist_b 	= (1.0 / components[j].bidir.l) + components[j].bidir.si;
-			dist_b /=4.;
-			if (dist <  1 or dist < 1   ) {
+			if (dist <  1  ) {
 				components[i].EXIT 	= true, components[j].EXIT=true;
 			}
 		}
