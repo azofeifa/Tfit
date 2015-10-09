@@ -58,6 +58,7 @@ public:
 	string strand ;
 	int counts;
 	vector<double> centers;
+	vector<vector<double>> parameters; //for bootstraping
 	segment(string, int , int);
 	segment(string, int , int, int);
 	segment(string, int , int, int,string);
@@ -182,6 +183,8 @@ void get_noise_mean_var(string, string, double *, double *);
 
 void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > >,params *,int,map<int, string>);
 
+map<string, vector<segment *> > load_bidir_predictions( params *,vector<int> );
+vector<vector<int> > get_line_start_stops(params * , int );
 
 
 #endif

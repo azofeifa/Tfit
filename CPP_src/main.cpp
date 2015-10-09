@@ -374,6 +374,40 @@ int main(int argc, char* argv[]){
 		}
 		TF.get_time(rank);		
 	}
+	else if (P->module=="BOOTSTRAP"){
+		int nprocs		= MPI::COMM_WORLD.Get_size();
+		int rank 		= MPI::COMM_WORLD.Get_rank();
+	    int threads  	= omp_get_max_threads();
+		int verbose 	= stoi(P->p6["-v"]);
+		string job_name = P->p6["-N"];
+		int job_ID 		= get_job_ID(P->p6["-log_out"], job_name, rank, nprocs);
+		string log_out 	= P->p6["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
+		ofstream 	FHW;
+		FHW.open(log_out);
+		if (verbose and rank==0){//show current user parameters...
+			P->display(nprocs,threads);
+		}
+		vector<vector<int> > start_stops;
+		if (rank==0){
+			start_stops 	=  get_line_start_stops(P, nprocs);
+		}
+		vector<int> st_sp 						= send_out_merged_start_stops(start_stops,   rank,   nprocs);
+		map<string, vector<segment *> > GG		= load_bidir_predictions( P,   st_sp);
+
+
+		vector<segment *> integrated_segments= insert_bedgraph_to_segment_joint(GG, 
+			P->p6["-j"], P->p6["-k"], rank);
+
+		FHW<<"#Temp Log File for mpi process: " + to_string(rank) + "\n";
+		FHW<<P->get_header(6);
+		if (rank==0){
+			collect_all_tmp_files(P->p6["-log_out"], job_name, nprocs, job_ID);
+		}
+	
+		FHW.close();
+	}
+
+
 	else {
 		printf("Could not understand module or not provided...\n");
 		printf("exiting\n");

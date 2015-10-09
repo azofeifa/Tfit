@@ -329,7 +329,7 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg, int
 	noise_clf.fit(s, s->centers);
 	
 	double noise_ll 	= noise_clf.ll;
-	for (int k = 1; k<= s->counts;k++){
+	for (int k = s->counts; k<= s->counts+1;k++){
 		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
 		#pragma omp parallel for num_threads(np)
 		for (int t = 0; t <  clfs.size(); t++){

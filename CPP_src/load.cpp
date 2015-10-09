@@ -486,6 +486,7 @@ vector<interval> bubble_sort(vector<interval> X){
 	return X;
 }
 
+
 merged_interval::merged_interval(){};
 
 merged_interval::merged_interval(int st, int sp, interval unit, int i){
@@ -1988,9 +1989,149 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	}
 	
 
+}
+
+struct bidir_segment{
+public:
+	string chrom; 
+	int start, stop;
+	string INFO;
+	vector<string > INFOS;
+	bidir_segment(){};
+	bidir_segment(string c, int st, int sp, string info){
+		chrom=c, start=st, stop=sp, INFO=info;
+		INFOS.push_back(INFO);
+	}
+	vector<vector<double> > get_parameters(){
+		vector<string> lineArray;
+		vector<vector<double>> centers; 
+		for (int i = 0 ; i < INFOS.size(); i++){
+			lineArray 	= splitter(INFOS[i], "_");
+			vector<double> current(5);
+			current[0]  = stod(lineArray[0]),current[1] 	= stod(lineArray[1]), current[2]=stod(lineArray[2]);
+			current[3] 	= stod(lineArray[3]), current[4] 	= stod(lineArray[4]);
+			centers.push_back(current);
+		}
+		return centers;
+
+	}
+
+};
+vector<bidir_segment> bubble_sort_bidir_segment(vector<bidir_segment> X){
+	bool changed=true;
+	while (changed){
+		changed=false;
+		for (int i = 0; i < X.size()-1; i++  )	{
+			if (X[i].start > X[i+1].start){ //sort by starting position
+				bidir_segment copy 			= X[i];
+				X[i] 					= X[i+1];
+				X[i+1] 					= copy;
+				changed=true;
+			}
+		}
+	}
+	return X;
+}
+
+vector<bidir_segment> get_merged(params * P){
+	string FILE 		= P->p6["-i"];
+	string spec_chrom 	= P->p6["-chr"];
+	int pad 		= stoi(P->p6["-pad"]);
+	ifstream FH(FILE);
+	map<string, vector< bidir_segment >> G;
+	int ct 	= 1;
+	if (FH){
+		string line, chrom;
+		int start, stop;
+		int 	i = 0;
+		string strand; 
+		vector<string> lineArray;
+		while(getline(FH, line)){
+			if (line.substr(0,1)!="#"){
+				lineArray=splitter(line, "\t");
+				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]);
+				vector<int> current(3);
+				current[0]=start-pad, current[1]=stop+pad, current[2]=i;
+
+				if (chrom==spec_chrom or spec_chrom=="all"){
+					G[chrom].push_back(bidir_segment(chrom, start, stop, lineArray[3]) );
+				}
+			}
+			i++;
+		}
+	}else{
+		printf("couldn't open %s for reading\n", FILE.c_str() );
+	}
+
+	//sort by starting
+	typedef map<string, vector< bidir_segment  > >::iterator it_type;
+	for (it_type g = G.begin(); g!=G.end(); g++){
+		G[g->first] 	= bubble_sort_bidir_segment(g->second);
+	}
+	vector<bidir_segment > Merged;
+	for (it_type g = G.begin(); g!=G.end(); g++ ){
+		int j = 0, N = g->second.size();
+		vector<bidir_segment> d 	= g->second;
+		bidir_segment current;
+		if (j < N){
+			current 	= d[j];
+		}
+		while ( j < N ){
+			while (j < N and  d[j].stop > current.start  and  d[j].start < current.stop   ){
+				current.start 	= min(current.start, d[j].start);
+				current.stop 	= max(current.stop, d[j].stop);
+				current.INFOS.push_back(d[j].INFO);
+				j+=1;
+			}
+			Merged.push_back(current);
+			if (j < N){
+				current 	= d[j];
+			}	
+		}
+	}
+	return Merged;
+}
+
+map<string, vector<segment *> > load_bidir_predictions(params * P, vector<int> st_sp){
+	int pad 	= stoi(P->p6["-pad"]);
+	vector<bidir_segment> Merged 	= get_merged(P);
+	map<string, vector<segment *> > G;
+	for (int i = st_sp[0]; i < st_sp[1]; i++){
+		segment * S 	= new segment(Merged[i].chrom, Merged[i].start, Merged[i].stop);
+		S->parameters 	= Merged[i].get_parameters();
+		G[S->chrom].push_back(S);
+	}
+
+
+
+	return G;
+
+}
+
+vector<vector<int> > get_line_start_stops(params * P, int nprocs){
+	vector<bidir_segment> Merged 	= get_merged(P);
+	int counts 	= int(Merged.size()) / nprocs;
+	vector<vector<int> > start_stop;
+	int start = 0, stop 	= 0;
+	for (int j = 0 ; j < nprocs; j++){
+		if (j+1 < nprocs){
+			start 	= j*counts;
+			stop 	= (j+1)*counts;
+		}else{
+			start 	= j*counts;
+			stop 	= Merged.size();
+		}
+		vector<int> st_sp(2);
+		st_sp[0] 	= start, st_sp[1]=stop;
+		start_stop.push_back(st_sp);
+	}
+
+	return start_stop;
 
 
 }
+
+
 
 
 

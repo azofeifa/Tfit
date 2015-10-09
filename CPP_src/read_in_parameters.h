@@ -23,6 +23,8 @@ public:
 	map<string, string> p3;
 	map<string, string> p4;
 	map<string, string> p5;
+	map<string, string> p6;
+	
 	string get_header(int);
 	
 	bool EXIT;

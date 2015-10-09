@@ -120,7 +120,30 @@ params::params(){
 	p5["-bct"] 			= "1";
 	p5["-template"] 	= "0";
 	p5["-pad"] 			= "0";
-
+	
+	p6["-v"] 			= "1";
+	p6["-N"] 			= "";
+	p6["-i"] 			= "";
+	p6["-j"] 			= "";
+	p6["-k"] 			= "";
+	p6["-o"]			= "";
+	p6["-chr"] 			= "all";
+	p6["-br"] 			= "100";
+	p6["-pad"] 			= "";
+	p6["-ns"] 			= "100";
+	p6["-r_mu"] 		= "1";
+	p6["-ALPHA_0"] 		= "1";
+	p6["-BETA_0"] 		= "1";
+	p6["-ALPHA_1"] 		= "1";
+	p6["-BETA_1"] 		= "1";
+	p6["-ALPHA_2"] 		= "1";
+	p6["-ALPHA_3"] 		= "1";
+	p6["-rounds"] 		= "1";
+	p6["-brounds"] 		= "1";
+	p6["-mi"] 			= "1000";
+	p6["-ct"] 			= "0.0001";
+	p6["-max_noise"] 	= "0.05";
+	p6["-log_out"] 		= ""	;
 
 	
 	N 				= 0;
@@ -287,12 +310,44 @@ void params::display(int nodes, int cores){
 		cout<<"-MPI_nodes   : "<<nodes<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
 		cout<<"----------------------------------------------------------------"<<endl;
+	}else if (module == "BOOTSTRAP"){
+
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"              User Provided EMGU Parameters                     "<<endl;
+		cout<<"                 (Fitting single model)                       "<<endl;
+		cout<<"Date Time    : "<<currentDateTime()<<endl;
+		cout<<"-i           : "<<p6["-i"]<<endl;
+		cout<<"-j           : "<<p6["-j"]<<endl;
+		cout<<"-k           : "<<p6["-j"]<<endl;
+		cout<<"-o           : "<<p6["-o"]<<endl;
+		cout<<"-log_out     : "<<p6["-log_out"]<<endl;
+		cout<<"-ns          : "<<p6["-ns"]<<endl;
+		cout<<"-br          : "<<p6["-br"]<<endl;
+		cout<<"-chr         : "<<p6["-chr"]<<endl;
+		cout<<"-pad         : "<<p6["-pad"]	<<endl;
+		cout<<"-r_mu        : "<<p6["-r_mu"]	<<endl;
+		cout<<"-ALPHA_0     : "<<p6["-ALPHA_0"]	<<endl;
+		cout<<"-BETA_0      : "<<p6["-BETA_0"]	<<endl;
+		cout<<"-ALPHA_1     : "<<p6["-ALPHA_1"]	<<endl;
+		cout<<"-BETA_1      : "<<p6["-BETA_1"]	<<endl;
+		cout<<"-ALPHA_2     : "<<p6["-ALPHA_2"]	<<endl;
+		cout<<"-ALPHA_3     : "<<p6["-ALPHA_3"]	<<endl;
+		cout<<"-mi          : "<<p6["-mi"]	<<endl;
+		cout<<"-ct          : "<<p6["-ct"]	<<endl;
+		cout<<"-max_noise   : "<<p6["-max_noise"]	<<endl;
+		cout<<"-threads     : "<<cores<<endl;
+		cout<<"-MPI_nodes   : "<<nodes<<endl;
+		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		cout<<"----------------------------------------------------------------"<<endl;
+
 	}
 }
 
 
 string params::get_header(int ID){
 	string header = "";
+
+
 	if (ID == 5){
 		header+="#Date Time    : "+currentDateTime()+"\n";
 		header+="#-i           : "+p5["-i"]+"\n";
@@ -355,6 +410,27 @@ string params::get_header(int ID){
 		header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
 		header+="#----------------------------------------------------\n";
 	
+	}else if (ID==6){
+		header+="#----------------------------------------------------\n";
+		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-N           : "+p6["-N"]+"\n";
+		header+="#-i           : "+p6["-i"]+"\n";
+		header+="#-j           : "+p6["-j"]+"\n";
+		header+="#-k           : "+p6["-k"]+"\n";
+		header+="#-o           : "+p6["-o"]+"\n";
+		header+="#-ns          : "+p6["-ns"]+"\n";
+		header+="#-br          : "+p6["-br"]+"\n";
+		header+="#-mi          : "+p6["-mi"]+"\n";
+		header+="#-ct          : "+p6["-ct"]+"\n";
+		header+="#-rounds      : "+p6["-rounds"]+"\n";
+		header+="#-brounds     : "+p6["-brounds"]+"\n";
+		header+="#-ALPHA_0     : "+p6["-ALPHA_0"]+"\n";	
+		header+="#-BETA_0      : "+p6["-BETA_0"]+"\n";	
+		header+="#-BETA_1      : "+p6["-BETA_1"]+"\n";	
+		header+="#-ALPHA_2     : "+p6["-ALPHA_2"]+"\n";	
+		header+="#-ALPHA_3     : "+p6["-ALPHA_3"]+"\n";	
+		header+="#----------------------------------------------------\n";
+
 	}
 
 	return header;
@@ -472,6 +548,12 @@ void read_in_config_file(string FILE, params * P){
 					}else if (not ID.empty() ){
 						not_valid.push_back(ID);
 					}
+				}else if(P->module=="BOOTSTRAP"){
+					if (P->p6.find(ID) !=P->p6.end()){
+							P->p6[ID] 	= val;
+					}else if (not ID.empty() ){
+						not_valid.push_back(ID);
+					}				
 				}
 			}	
 		}
@@ -550,6 +632,13 @@ void fillInOptions(char* argv[],params * P){
 				}else{
 					F 			= "";
 				}
+			}else if (P->module == "BOOTSTRAP"){
+				if (P->p6.find(F) !=P->p6.end()){
+					P->p6[F] 	= "1";
+					P->N+=1;
+				}else{
+					F 			= "";
+				}
 			}
 
 
@@ -576,6 +665,10 @@ void fillInOptions(char* argv[],params * P){
 			}else if(P->module=="SINGLE"){
 				if (P->p5.find(F) !=P->p5.end()){
 					P->p5[F]=string(*argv);
+				}
+			}else if(P->module=="BOOTSTRAP"){
+				if (P->p6.find(F) !=P->p6.end()){
+					P->p6[F]=string(*argv);
 				}
 			}
 		}

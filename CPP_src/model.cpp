@@ -657,6 +657,25 @@ void component::update_parameters(double N, int K){
 	}
 }
 
+void check_mu_positions(component * components, int K){
+	double dist 	= 0;
+	double dist_a  	= 0;
+	double dist_b 	= 0;
+	for (int i = 0; i < K; i++){
+		for (int j = i+1; j < K; j++){
+			dist 	= abs(components[i].bidir.mu - components[j].bidir.mu); 
+			dist_a 	= (1.0 / components[i].bidir.l) + components[i].bidir.si;
+			dist_a /=4.;
+			dist_b 	= (1.0 / components[j].bidir.l) + components[j].bidir.si;
+			dist_b /=4.;
+			if (dist <  1 or dist < 1   ) {
+				components[i].EXIT 	= true, components[j].EXIT=true;
+			}
+		}
+	}
+}
+
+
 bool component::check_elongation_support(){
 	if (forward.b <=forward.a and bidir.mu==0){
 		return true;
@@ -1164,7 +1183,13 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	double prevll 	= nINF; //previous iterations log likelihood
 	converged 		= false; //has the EM converged?
 	double norm_forward, norm_reverse,N; //helper variables
+	int u 			= 0;
 	while (t < max_iterations && not converged){
+		if (u > 100){
+			check_mu_positions( components, K);
+			u=0;
+		}
+		u++;
 		ll 			= 0;
 		//******
 		//reset old sufficient statistics

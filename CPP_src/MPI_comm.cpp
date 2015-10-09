@@ -833,7 +833,40 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 
 
 }
+struct st_sp_bidir{
+	int st_sp[2];
+};
 
+vector<int> send_out_merged_start_stops(vector<vector<int>> start_stops, int rank, int nprocs){
+	st_sp_bidir ssb;
+	MPI_Datatype mystruct;
+	
+	int blocklens[1]={2};
+	MPI_Datatype old_types[1] = { MPI_INT }; 
+	MPI_Aint displacements[1];
+	displacements[0] 	= offsetof(st_sp_bidir, st_sp);
+	
+	
+	MPI_Type_create_struct( 1, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+
+	
+	vector<int> st_sp(2) ;
+	if (rank==0){
+		st_sp = start_stops[rank];
+		for (int j = 1 ; j < nprocs; j++){
+			st_sp_bidir ssb2;
+
+			ssb2.st_sp[0] 	= start_stops[j][0],ssb2.st_sp[1] 	= start_stops[j][1];
+			MPI_Send(&ssb2, 1, mystruct, j, 0, MPI_COMM_WORLD);
+
+		}
+	}else{
+		MPI_Recv(&ssb, 1, mystruct, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
+		st_sp[0] 	= ssb.st_sp[0], st_sp[1]=ssb.st_sp[1];
+	}
+	return st_sp;
+}
 
 
 
