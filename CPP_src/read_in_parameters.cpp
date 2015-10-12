@@ -690,13 +690,13 @@ void fill_in_bidir_boostrap(params * P ){
 	vector<string> lineArray;
 	string line, ID;
 	map<string, int> NOT;
-	NOT["-i"] 	= 1;
-	NOT["-j"] 	= 1;
-	NOT["-N"] 	= 1;
-	NOT["-o"] 	= 1;
-	NOT["-chr"] = 1;
+	NOT["-i"] 		= 1;
+	NOT["-j"] 		= 1;
+	NOT["-N"] 		= 1;
+	NOT["-o"] 		= 1;
+	NOT["-chr"] 	= 1;
 	NOT["-log_out"] = 1;
-	
+	NOT["-rounds"] 	= 1;
 	
 	bool COLLECT;
 	while(getline(FH, line)){

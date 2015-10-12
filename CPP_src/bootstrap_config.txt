@@ -9,6 +9,7 @@
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 -chr 			= chr1  #specific chromosome
+-rounds 		= 5
 -brounds 		= 8 #number of bootstrap samples
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 
