@@ -36,4 +36,5 @@ void fillInOptions(char*,params);
 params * readInParameters(char**);
 
 const std::string currentDateTime();
+void fill_in_bidir_boostrap(params *);
 #endif

@@ -819,14 +819,6 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 	for (it_type_fm sc = recieved.begin(); sc!=recieved.end(); sc++){
 		G[(*sc).ID[0]][(*sc).ID[3]].push_back(*sc);
 	}
-	// typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
-	// typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
-	// for (it_type_1 i = G.begin(); i!=G.end();i++){
-	// 	printf("Segment %d\n", i->first );
-	// 	for (it_type_2 j = i->second.begin(); j!=i->second.end(); j++){
-	// 		printf("K: %d, %d\n", j->first, int(j->second.size() ));
-	// 	}
-	// }
 
 	return G;
 
@@ -836,6 +828,43 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 struct st_sp_bidir{
 	int st_sp[2];
 };
+
+boostrap_struct::boostrap_struct(){}
+boostrap_struct::boostrap_struct(vector<double> old, 
+	vector<double> variances,int start, int stop, int chrom_ID ){
+		IDS[0] 	= start, IDS[1] = stop, IDS[2] = chrom_ID;
+		int j 	= 0;
+		for (int i = 0; i < old.size(); i++){
+			parameters[j] 	= old[i];
+			j++;
+		}
+		for (int i = 0; i < variances.size(); i++){
+			parameters[j] 	= variances[i];
+			j++;
+		}
+}
+string boostrap_struct::print_out(map<int, string> G, params * P){
+	double scale 	= stod(P->p6["-ns"]);
+	string line ="",old="", var="";
+	if (G.find(IDS[2])==G.end()  ){
+		printf("Chromosome not in ID_to_chrom...bootsrap_struct...\n");
+		return line;
+	}
+	int center 	= parameters[0] ;
+	int std 	= (parameters[1] /2.)  + ( parameters[2]);
+	line 		= G[IDS[2]] + "\t" + to_string(center-std) + "\t" + to_string(center+std)+ "\t";
+	for (int i = 0 ; i < 7; i++){
+		old+=to_string(parameters[i])+"_";
+	}
+	old+=to_string(parameters[7]) + "\t";
+
+	for (int i=8; i < 13;i++){
+		var+=to_string(parameters[i])+"_";
+	}
+	var+=to_string(parameters[13]);
+	return line + old+ var+ "\n";
+
+}
 
 vector<int> send_out_merged_start_stops(vector<vector<int>> start_stops, int rank, int nprocs){
 	st_sp_bidir ssb;
@@ -866,6 +895,57 @@ vector<int> send_out_merged_start_stops(vector<vector<int>> start_stops, int ran
 		st_sp[0] 	= ssb.st_sp[0], st_sp[1]=ssb.st_sp[1];
 	}
 	return st_sp;
+}
+
+vector<boostrap_struct> collect_bootstrap(vector<segment *> segments, int rank, int nprocs,
+	map<string, int> chrom_to_ID){
+	//need to send 
+	//chrom,start, stop -> ints
+	//MLE paramters from before
+	//variances of these parameters
+	//old LL, and old N
+	boostrap_struct bs;
+	MPI_Datatype mystruct;
+	
+	int blocklens[2]={3,14};
+	MPI_Datatype old_types[4] = { MPI_INT, MPI_DOUBLE}; 
+	MPI_Aint displacements[2];
+	displacements[0] 	= offsetof(boostrap_struct, IDS);
+	displacements[1] 	= offsetof(boostrap_struct, parameters);
+	
+	
+	MPI_Type_create_struct( 2, blocklens, displacements, old_types, &mystruct );
+	MPI_Type_commit( &mystruct );
+
+
+	int S ;
+	vector<boostrap_struct> BS;
+	for (int i = 0 ; i < segments.size(); i++){
+		if (segments[i]->parameters.size() == segments[i]->variances.size()) {
+			for (int j = 0; j < segments[i]->parameters.size(); j++){
+				BS.push_back(boostrap_struct(segments[i]->parameters[j], segments[i]->variances[j], 
+					segments[i]->start, segments[i]->stop, chrom_to_ID[segments[i]->chrom] )  );
+			}
+		}else{
+			printf("Variances != Old Parameters Size....MPI_comm\n");
+		}
+	}
+	if (rank==0){
+		for (int j =1 ; j < nprocs; j++){
+			MPI_Recv(&S, 1, MPI_INT, j, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+			for (int s = 0; s < S; s++)	{
+				MPI_Recv(&bs, 1, mystruct,j,s+1,  MPI_COMM_WORLD,MPI_STATUS_IGNORE );
+				BS.push_back(bs);
+			}
+		}
+	}else{
+		S 	= BS.size();
+		MPI_Send(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
+		for (int s= 0; s < S;s++ ){
+			MPI_Send(&BS[s], 1, mystruct, 0, s+1, MPI_COMM_WORLD);	
+		}
+	}
+	return BS;
 }
 
 

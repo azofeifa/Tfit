@@ -9,6 +9,7 @@ class simple_c;
 class simple_c_free_mode;
 class final_model_output;
 struct single_simple_c;
+struct boostrap_struct;
 class model_component{
 public:
 	double mu, si, l, w_e, pi;
@@ -188,8 +189,9 @@ void get_noise_mean_var(string, string, double *, double *);
 
 void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > >,params *,int,map<int, string>);
 
-map<string, vector<segment *> > load_bidir_predictions( params *,vector<int> );
+map<string, vector<segment *> > load_bidir_predictions( params *,
+	vector<int>, map<string, int>&, map<int, string>&  );
 vector<vector<int> > get_line_start_stops(params * , int );
-
+void write_bootstrap(vector<boostrap_struct> , map<int, string> , params * ,int );
 
 #endif

@@ -46,7 +46,7 @@ def run(L,R):
 	F 	= plt.figure(figsize=(10,6))
 	ax 	= F.add_subplot(1,2,1)
 	ax.set_title("Strand Bias Distributions")
-	pos, neg, ERNA 	= [m.pi for m in positive],[m.pi for m in negative],[m.pi for m in eRNA]
+	pos, neg, ERNA 	= [m.pi for m in positive if m.lam < 50],[m.pi for m in negative if m.lam < 50],[m.pi for m in eRNA ]
 
 	pos_neg 		= scipy.stats.ks_2samp(pos,neg)
 	pos_ERNA 		= scipy.stats.ks_2samp(pos,ERNA)
@@ -60,11 +60,11 @@ def run(L,R):
 	ax.annotate('', xy=(1,1.1), xytext=(2,1.1), arrowprops=props)
 	ax.annotate('', xy=(2,1.2), xytext=(3,1.2), arrowprops=props)
 	ax.annotate('', xy=(1,1.3), xytext=(3,1.3), arrowprops=props)
-	ax.annotate(r'$p<10^{' + str(int(math.log(pos_neg[1],10))) + "}$", 
+	ax.annotate(r'$p<10^{' + str(int(math.log(pos_neg[1],10)-10)) + "}$", 
 		xy=(1.35,1+0.102), zorder=300,fontsize=12)
-	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
+	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10)-10)) + "}$", 
 		xy=(2.35,1+0.202), zorder=300,fontsize=12)
-	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
+	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10)-10)) + "}$", 
 		xy=(1.8,1+0.302), zorder=300,fontsize=12)
 	
 	
@@ -77,23 +77,23 @@ def run(L,R):
 	bps.append(bp)
 	ax 	= F.add_subplot(1,2,2)
 	ax.set_title("Foot Print Parameter Distributions")
-	pos, neg, ERNA 	= [m.fp for m in positive],[m.fp for m in negative],[m.fp for m in eRNA]
+	pos, neg, ERNA 	= [m.fp for m in positive if m.fp < 400],[m.fp for m in negative if m.fp < 400],[m.fp for m in eRNA if m.fp < 400]
 	pos_neg 		= scipy.stats.ks_2samp(pos,neg)
 	pos_ERNA 		= scipy.stats.ks_2samp(pos,ERNA)
 	neg_ERNA 		= scipy.stats.ks_2samp(ERNA,neg)
 	
 	bp = ax.boxplot((pos, neg, ERNA),patch_artist=True)
 
-	ax.annotate('', xy=(1,550), xytext=(2,550), arrowprops=props)
-	ax.annotate('', xy=(2,600), xytext=(3,600), arrowprops=props)
-	ax.annotate('', xy=(1,650), xytext=(3,650), arrowprops=props)
+	ax.annotate('', xy=(1,450), xytext=(2,450), arrowprops=props)
+	ax.annotate('', xy=(2,500), xytext=(3,500), arrowprops=props)
+	ax.annotate('', xy=(1,550), xytext=(3,550), arrowprops=props)
 	ax.annotate(r'$p=' + str(0.1) + "$", 
-		xy=(1.35,550+2), zorder=300,fontsize=12)
+		xy=(1.35,450+2), zorder=300,fontsize=12)
 	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
-		xy=(2.35,600+2), zorder=300,fontsize=12)
+		xy=(2.35,500+2), zorder=300,fontsize=12)
 	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
-		xy=(1.8,650+2), zorder=300,fontsize=12)
-	ax.set_ylim(-100,750)
+		xy=(1.8,550+2), zorder=300,fontsize=12)
+	ax.set_ylim(-100,650)
 
 	axes.append(ax)
 	bps.append(bp)
@@ -137,9 +137,11 @@ if __name__ == "__main__":
 	# print f(50)
 	# print g(50)
 	DIR 			="/Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/"
+	DIR 			= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/"
 		
 	REF 						= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
 	DMSO2_3 						="Allen2014_DMSO2_3-1_bidirectional_hits_intervals.bed"
+	DMSO2_3 						= "DMSO2_3-1_bidirectional_hits_intervals.bed"
 	DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_bed_file(DIR+DMSO2_3)
 		
 	R 					= refseq(REF)

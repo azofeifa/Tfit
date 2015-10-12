@@ -3,26 +3,12 @@
 ~BOOTSTRAP #do not change this line
 -N     	       	      	= EMG-testing #job name
 -v     	       	      	= 1 #verbose output
--i 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/Allen2014_DMSO2_3-1_bidirectional_hits_intervals.bed
+-i 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/EMG-testing-170_bidirectional_hits_intervals.bed
 -j			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
 -k 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 -chr 			= chr1  #specific chromosome
--br 			= 100 #binning resolution do not consider changing
--pad 			= 2000
--ns 			= 100 #scaling for numerical stability, would not consider changing
--r_mu 			= 1 #seed EM randomally from the peak finder
--ALPHA_0 		= 1 #prior for sigma
--BETA_0 		= 1 #prior for sigma
--ALPHA_1 		= 500 #prior for lambda
--BETA_1 		= 1000 #prior for lambda
--ALPHA_2 		= 1 #prior for weights
--ALPHA_3 		= 100 #prior for strand probs
--rounds 		= 1 #number of random EM initializations
 -brounds 		= 8 #number of bootstrap samples
--ct 			= 0.0001 #EM convergence threshold difference
--mi 			= 2000 #Number of EM iterations before it is aborted
--max_noise		= 0.05 #weight of the random/uniform noise component
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 

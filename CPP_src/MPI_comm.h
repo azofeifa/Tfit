@@ -21,6 +21,16 @@ public:
 				   //4->pi, 5->fw, 6->rw, 7->fb, 8->ra, 9->fpi, 10->rpi, 11->NN
 	rsimple_c();
 };
+struct boostrap_struct{
+public:
+	int IDS[3];
+	double parameters[8+6];
+	boostrap_struct();
+	boostrap_struct(vector<double>  , 
+	vector<double>  ,int  , int  , int  );
+	string print_out(map<int, string>  , params * );
+};
+
 vector<segment *> slice_segments(vector<segment *>, int , int );
 int get_all_segs_size(vector<segment *>, int , int);
 void send_seg_size(vector<segment *>);
@@ -45,6 +55,7 @@ double send_density_val(double ,int, int );
 
 map<int, map<int, vector<simple_c_free_mode>  > >  gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >>  , int  , int  );
 vector<int> send_out_merged_start_stops(vector<vector<int>>  , int  , int  );
-
+vector<boostrap_struct> collect_bootstrap(vector<segment *>, 
+	int, int,map<string, int>);
 
 #endif

@@ -1642,7 +1642,8 @@ vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *
 	return segments;
 }
 
-vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> > A , string forward, string reverse, int rank){
+vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> > A , 
+	string forward, string reverse, int rank){
 	
 	//want instead to make this interval tree
 	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
@@ -1719,7 +1720,6 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 				segments.push_back(S);
 
 			}
-
 		}
 	}
 	return segments;
@@ -2000,7 +2000,7 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 struct bidir_segment{
 public:
 	string chrom; 
-	int start, stop;
+	int start, stop, chrom_ID;
 	string INFO;
 	vector<string > INFOS;
 	bidir_segment(){};
@@ -2012,10 +2012,10 @@ public:
 		vector<vector<double>> centers; 
 		for (int i = 0 ; i < INFOS.size(); i++){
 			lineArray 	= splitter(INFOS[i], "_");
-			vector<double> current(6);
-			current[0]  = stod(lineArray[0]),current[1] 	= stod(lineArray[1]), current[2]=stod(lineArray[2]);
-			current[3] 	= stod(lineArray[3]), current[4] 	= stod(lineArray[4]);
-			current[5] 	= stod(lineArray[6]);
+			vector<double> current(8);
+			for (int i = 0; i < 8;i++){
+				current[i] 	= stod(lineArray[i]);
+			}
 			centers.push_back(current);
 		}
 		return centers;
@@ -2042,10 +2042,11 @@ vector<bidir_segment> bubble_sort_bidir_segment(vector<bidir_segment> X){
 vector<bidir_segment> get_merged(params * P){
 	string FILE 		= P->p6["-i"];
 	string spec_chrom 	= P->p6["-chr"];
-	int pad 		= stoi(P->p6["-pad"]);
+	int pad 			= stoi(P->p6["-pad"]);
 	ifstream FH(FILE);
 	map<string, vector< bidir_segment >> G;
-	int ct 	= 1;
+	int ct 	= 0;
+	int i 	= 0;
 	if (FH){
 		string line, chrom;
 		int start, stop;
@@ -2055,12 +2056,14 @@ vector<bidir_segment> get_merged(params * P){
 		while(getline(FH, line)){
 			if (line.substr(0,1)!="#"){
 				lineArray=splitter(line, "\t");
+				
 				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2])+pad;
 				vector<int> current(3);
 				current[0]=start-pad, current[1]=stop+pad, current[2]=i;
 
 				if (chrom==spec_chrom or spec_chrom=="all"){
 					G[chrom].push_back(bidir_segment(chrom, start, stop, lineArray[3]) );
+					ct++;
 				}
 			}
 			i++;
@@ -2098,18 +2101,29 @@ vector<bidir_segment> get_merged(params * P){
 	return Merged;
 }
 
-map<string, vector<segment *> > load_bidir_predictions(params * P, vector<int> st_sp){
+map<string, vector<segment *> > load_bidir_predictions(params * P, 
+	vector<int> st_sp, map<string, int>& chrom_to_ID, 
+		map<int, string>& ID_to_chrom ){
 	int pad 	= stoi(P->p6["-pad"]);
 	vector<bidir_segment> Merged 	= get_merged(P);
+	//make 
+	int i 	= 0;
+	for (int m = 0 ; m < Merged.size(); m++){
+		if (chrom_to_ID.find(Merged[m].chrom) == chrom_to_ID.end() ){
+			chrom_to_ID[Merged[m].chrom] 	= i;
+			ID_to_chrom[i]  	= Merged[m].chrom;
+			i++;
+		}
+	}
+				
 	map<string, vector<segment *> > G;
 	for (int i = st_sp[0]; i < st_sp[1]; i++){
 		segment * S 	= new segment(Merged[i].chrom, Merged[i].start, Merged[i].stop);
 		S->parameters 	= Merged[i].get_parameters();
-
+		S->chrom_ID 	= chrom_to_ID[S->chrom];
 		G[S->chrom].push_back(S);
 	}
-
-
+	
 
 	return G;
 
@@ -2138,6 +2152,20 @@ vector<vector<int> > get_line_start_stops(params * P, int nprocs){
 
 }
 
+
+void write_bootstrap(vector<boostrap_struct> bs, map<int, string> ID_to_chrom, params * P,int JOB_ID){
+	string out_file_dir 	= P->p6["-o"];
+	string job_name 		= P->p6["-N"];
+
+	ofstream FHW_bed;
+	
+	FHW_bed.open(out_file_dir+ job_name+ "-" +to_string(JOB_ID)+ "_bootstrapped_bidirectional_hits_intervals.bed");
+	FHW_bed<<P->get_header(6);
+	for (int b =0 ; b < bs.size(); b++){
+		FHW_bed<<bs[b].print_out(ID_to_chrom, P);
+	}
+	
+}
 
 
 

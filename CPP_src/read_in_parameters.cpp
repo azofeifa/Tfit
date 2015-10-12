@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include "split.h"
 using namespace std;
 
 params::params(){
@@ -137,6 +138,7 @@ params::params(){
 	p6["-ALPHA_1"] 		= "1";
 	p6["-BETA_1"] 		= "1";
 	p6["-ALPHA_2"] 		= "1";
+	p6["-foot_res"] 	= "5";
 	p6["-ALPHA_3"] 		= "1";
 	p6["-rounds"] 		= "1";
 	p6["-brounds"] 		= "1";
@@ -318,7 +320,7 @@ void params::display(int nodes, int cores){
 		cout<<"Date Time    : "<<currentDateTime()<<endl;
 		cout<<"-i           : "<<p6["-i"]<<endl;
 		cout<<"-j           : "<<p6["-j"]<<endl;
-		cout<<"-k           : "<<p6["-j"]<<endl;
+		cout<<"-k           : "<<p6["-k"]<<endl;
 		cout<<"-o           : "<<p6["-o"]<<endl;
 		cout<<"-log_out     : "<<p6["-log_out"]<<endl;
 		cout<<"-ns          : "<<p6["-ns"]<<endl;
@@ -425,6 +427,7 @@ string params::get_header(int ID){
 		header+="#-br          : "+p6["-br"]+"\n";
 		header+="#-mi          : "+p6["-mi"]+"\n";
 		header+="#-ct          : "+p6["-ct"]+"\n";
+		header+="#-foot_res    : "+p6["-foot_res"]+"\n";
 		header+="#-rounds      : "+p6["-rounds"]+"\n";
 		header+="#-brounds     : "+p6["-brounds"]+"\n";
 		header+="#-ALPHA_0     : "+p6["-ALPHA_0"]+"\n";	
@@ -681,7 +684,49 @@ void fillInOptions(char* argv[],params * P){
 
 }
 
+void fill_in_bidir_boostrap(params * P ){
+	string FILE 		= P->p6["-i"];
+	ifstream FH(FILE);
+	vector<string> lineArray;
+	string line, ID;
+	map<string, int> NOT;
+	NOT["-i"] 	= 1;
+	NOT["-j"] 	= 1;
+	NOT["-N"] 	= 1;
+	NOT["-o"] 	= 1;
+	NOT["-chr"] = 1;
+	NOT["-log_out"] = 1;
+	
+	
+	bool COLLECT;
+	while(getline(FH, line)){
+		ID 	= "";
+		COLLECT 	= false;
+		if (line.substr(0,1)=="#"){
+			for (int i = 1; i < line.size(); i++){
+				if (not isspace(line[i]) ){
+					ID+=line[i];
+				}else{
+					break;
+				}
+			}
+			if (P->p6.find(ID) != P->p6.end() and NOT.find(ID)==NOT.end() ){
+				COLLECT=true;
+			}
+			if (COLLECT){
+				lineArray 	= splitter(line, ":")	;
+				if (lineArray.size()==2){
+					P->p6[ID] 	= lineArray[1].substr(1,lineArray[1].size() );
+				}
+			}
 
+
+		}else{
+
+		}
+
+	}
+}
 
 
 params * readInParameters( char* argv[]){	
