@@ -86,15 +86,22 @@ class segment:
 			self.K 				= len(self.models)
 
 		else:
-			chrom,start, stop, parameters 	= line.strip("\n").split("\t")
+			line_array 				= line.strip("\n").split("\t")
+			chrom,start, stop, parameters 	= line_array[:4]
 			self.chrom 				= chrom 
 			self.start, self.stop 	= int(start), int(stop)
 			mu,si,l,w, pi, N, fp,ll 	= parameters.split("_")
+			self.ll 				= float(ll)
+			self.N 					= float(N)
 			self.models.append(model(float(mu),float(si),float(l),float(pi),float(w) , 0,0,0,0   )  )
 			self.models[-1].N 		= float(N)
 			self.models[-1].fp 		= float(fp)
 			self.models[-1].chrom 	= self.chrom
 			self.models[-1].density = float(N) / (self.stop - self.start)
+			if (len(line_array) > 4):
+				self.variances 		= [float(x) for x in line_array[4].split("_")] 
+
+
 		self.K 				= len(self.models)
 			
 	def add_models(self, line_array):

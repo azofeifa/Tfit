@@ -3,12 +3,12 @@
 ~BIDIR #do not change this line
 -N     	       	      	= EMG-testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-i			= /Users/joazofeifa/Downloads/GSM849353_hg19_wgEncodeRikenCageK562CytosolPamPlusSignal.bedgraph
+-j 	  		= /Users/joazofeifa/Downloads/GSM849353_hg19_wgEncodeRikenCageK562CytosolPamMinusSignal.bedgraph
 -nf 			= /Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -chr 			= chr1  #specific chromosome
--br 			= 100 #binning resolution do not consider changing
+-br 			= 10 #binning resolution do not consider changing
 -window_res 		= 2 #window
 -pad 			= 2000
 -MLE			= 0 #get Maximum likelihood estimates
