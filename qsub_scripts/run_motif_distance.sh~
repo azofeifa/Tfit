@@ -1,0 +1,14 @@
+#PBS -S /bin/bash
+
+#PBS -N Danko2013_merged
+#PBS -m ae
+#PBS -M joseph.azofeifa@colorado.edu
+
+#PBS -e /Users/azofeifa/qsub_errors/EMG/
+#PBS -o /Users/azofeifa/qsub_stdo/EMG/
+
+#PBS -l walltime=12:00:00
+#PBS -l nodes=30:ppn=64
+#PBS -l mem=800gb
+
+python 

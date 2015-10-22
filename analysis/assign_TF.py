@@ -1,9 +1,7 @@
 import os,sys
-sys.path.append("/Users/joazofeifa/Lab/interval_searcher/")
-sys.path.append("/Users/joazofeifa/Lab/")
+sys.path.append("/Users/azofeifa/Lab/")
 from interval_searcher import intervals, node
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 import time
 def make_query(FILE, pad=1000):
@@ -87,9 +85,9 @@ def write_out(A,IDS, OUT):
 
 
 if __name__ == "__main__":
-	root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
-	query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
-	out 	= "/Users/joazofeifa/Desktop/"
+	root 	= "/Users/azofeifa/FIMO_OUT/"
+	query 	= "/Users/azofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-1_bidirectional_hits_intervals.bed"
+	out 	= "/Users/azofeifa/"
 	Q,IDS 	= make_query(query)
 	A 		= read_in_directory(root, Q)
 	write_out(A,IDS, out)
