@@ -87,9 +87,14 @@ def write_out(A,IDS, OUT):
 
 
 if __name__ == "__main__":
-	root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
-	query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
-	out 	= "/Users/joazofeifa/Desktop/"
+	if len(sys.argv)<2:
+		root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
+		query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
+		out 	= "/Users/joazofeifa/Desktop/"
+	else:
+		root 	= sys.argv[1]
+		query 	= sys.argv[2]
+		out 	= sys.argv[3]
 	Q,IDS 	= make_query(query)
 	A 		= read_in_directory(root, Q)
 	write_out(A,IDS, out)
