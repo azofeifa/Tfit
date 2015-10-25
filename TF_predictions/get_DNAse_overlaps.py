@@ -1,5 +1,5 @@
 import os
-import time
+import time,sys
 def load_motif(FILE, make_bed=""):
 	G 	= {}
 	header=True
