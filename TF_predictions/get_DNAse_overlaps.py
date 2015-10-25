@@ -69,9 +69,14 @@ def read_in_directory(root, Q):
 	return Q
 
 if __name__ == "__main__":
-	root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
-	query 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/DNAse/peak_files/wgEncodeUwDnaseHct116PkRep1.narrowPeak"
-	OUT 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/DNase_motif_matches.bed"
+	if len(sys.argv) > 1:
+		root 	= sys.argv[1]
+		query 	= sys.argv[2]
+		OUT 	= sys.argv[3]
+	else:
+		root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
+		query 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/DNAse/peak_files/wgEncodeUwDnaseHct116PkRep1.narrowPeak"
+		OUT 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/DNase_motif_matches.bed"
 	Q 		= make_query(query)
 	Q 		= read_in_directory(root, Q)
 
