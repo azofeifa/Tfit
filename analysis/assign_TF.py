@@ -62,7 +62,7 @@ def read_in_directory(root, Q):
 			A 	= make_tree(root+ DIR+ "/fimo.txt", A, Q,DIR.split("_")[0] )
 	return A
 def write_out(A,IDS, OUT):
-	FHW= open(out+ "motif_distances.tsv", "w")
+	FHW= open(out, "w")
 	for i in range(1, max(IDS.keys() ) +1):
 		ID 	= IDS[i]
 		D 	= ID + "\t"
@@ -85,11 +85,9 @@ def write_out(A,IDS, OUT):
 
 
 if __name__ == "__main__":
-<<<<<<< HEAD
 	root 	= "/Users/azofeifa/FIMO_OUT/"
 	query 	= "/Users/azofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-1_bidirectional_hits_intervals.bed"
 	out 	= "/Users/azofeifa/"
-=======
 	if len(sys.argv)<2:
 		root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
 		query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
@@ -98,7 +96,6 @@ if __name__ == "__main__":
 		root 	= sys.argv[1]
 		query 	= sys.argv[2]
 		out 	= sys.argv[3]
->>>>>>> 7925850a5cf14ff2cc17b349714cec9bf55eecc2
 	Q,IDS 	= make_query(query)
 	A 		= read_in_directory(root, Q)
 	write_out(A,IDS, out)

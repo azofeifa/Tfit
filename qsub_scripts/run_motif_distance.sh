@@ -13,4 +13,8 @@
 module load scipy_0.14.0
 module load matplotlib_1.3.1
 
-python /Users/azofeifa/Lab/EMG/analysis/assign_TF.py
+root=/Users/azofeifa/FIMO_OUT/
+query=/Users/azofeifa/Lab/gro_seq_files/Yang2013/EMG_out_files/SRR892016_Yang2013-2_bidirectional_hits_intervals.bed
+out=/Users/azofeifa/TF_predictions/SRR892016_Yang2013-2
+
+python /Users/azofeifa/Lab/EMG/analysis/assign_TF.py $root $query $out
