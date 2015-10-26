@@ -441,10 +441,86 @@ def cluster_PSSMS(D):
 			plt.tight_layout()
 			plt.show()
 
+def make_eRNA_cluster_FILE(IN, OUT):
+	thresh=2
+	G 	= {}
+	with open(IN) as FH:
+		for line in FH:
+			chrom,Start, Stop, info, TFS 	= line.strip("\n").split("\t")
+			#condense TFS
+			T 	= list()
+			if TFS:
+				for pair in TFS.strip(",").split(","):
+					tf, distance 	= pair.split(":")
+					distance 		= float(distance)
+					T.append((distance,tf))
+				T.sort()
+				j,N 	= 0,len(T)
+				OS 		= list()
+				while j < N:
+					start, stop = T[j][0]-thresh, T[j][0]+thresh
+					O 			= {}
+					while j < N and stop > (T[j][0]-thresh) and start < (T[j][0]+thresh):
+						if T[j][1] not in O:
+							O[T[j][1]] 	= T[j][0]
+						if abs(O[T[j][1]]) > abs(T[j][0]):
+							O[T[j][1]] 	= T[j][0]
+						start, stop 	= min(T[j][0]-thresh, start), max(T[j][0]+thresh, stop)
+						j+=1
+					OS.append(O)
+					j+=1
+			if chrom not in G:
+				G[chrom]=list()
+			G[chrom].append((int(Start), int(Stop), info, OS))
+	FHW	= open(OUT, "w")
+	for chrom in G:
+		for start, stop, info, OS in G[chrom]:
+			start 	= str(start)
+			stop 	= str(stop)
+			TFS 	= ":".join([ ",".join([tf for tf in O ]) + str(int(np.mean(O.values()))) for O in OS ])
+			FHW.write(chrom+"\t"+start+"\t" + stop + "\t" + TFS + "\t"+info + "\n")
+		
+		G[chrom].sort()
+	thresh=5000
+	for chrom in G:
+		g 		= G[chrom]
+		g.sort()
+		j,N 	= 0,len(G[chrom])
+
+		while j < N:
+			start, stop 	= g[j][0],g[j][1]
+			ct 				= 0
+			while j < N and stop > (g[j][0]-thresh) :
+				stop 	= max(g[j][1],stop )
+				start 	= min(start,g[j][0] )
+				ct+=1
+				j+=1
+			if ct > 1:
+				FHW.write(chrom+"\t" + str(start) + "\t" + str(stop)+  "\t" + "eRNA_cluster" + "\n")
+	FHW.close()
+
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
-	DIST 	= False
-	load 	= False
-	DENDRO 	= False
+	DIST 		= False
+	load 		= False
+	DENDRO 		= False
+	eRNA_link	= True
+
+	if eRNA_link:
+		OUT 	= "/Users/joazofeifa/Lab/TF_predictions/eRNA_clusters.bed"
+		IN 		= "/Users/joazofeifa/Lab/TF_predictions/assignments_refined/Allen2014_DMSO2_3-1_0.05"
+		make_eRNA_cluster_FILE(IN,OUT)
+
 	if DENDRO:
 		FILE 	= "/Users/joazofeifa/Lab/TF_predictions/HOCOMOCOv9_AD_MEME.txt"
 		D 		= load_PSSMs(FILE)

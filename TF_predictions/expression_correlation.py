@@ -19,6 +19,7 @@ class bidir:
 											}
 		self._parse_info(info)
 		self._parse_TFS(TFS)
+		self.DNAse 	= False
 
 	def _parse_info(self, info):
 		line_array 	= [float(x) for x in info.split("_")]
@@ -56,7 +57,7 @@ def load(FILE,test=True):
 		for line in FH:
 			line_array 	= line.strip("\n").split("\t")
 			chrom,start, stop,info 	= line_array[:4]
-			if test and t > 10000:
+			if test and t > 1000:
 				break
 			t+=1
 			if len(line_array) > 4:
@@ -66,8 +67,11 @@ def load(FILE,test=True):
 			if chrom not in G:
 				G[chrom]= list()
 			b 	= bidir(chrom,start, stop, info, TFS)
-			G[chrom].append(b)
+			G[chrom].append((int(start), b))
 	#want to collapse TF clusters...
+	for chrom in G:
+		G[chrom].sort()
+		G[chrom] 	= [y for x,y in G[chrom]]
 	return G
 def unique_motifs_per_bidir(GS,FILES):
 

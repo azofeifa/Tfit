@@ -449,8 +449,8 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 			}
 			if (k < data->XN  and j < data->XN and k!=j and N_neg > 0 and N_pos > 0 ){
 				total_density 	= (N_pos / (data->X[0][k] - data->X[0][j])) + (N_neg / (data->X[0][k] - data->X[0][j]));
-				densities[i] 	= total_density/2.;
-				densities_r[i] 	= total_density/2.;
+				densities[i] 	= (N_pos / (data->X[0][k] - data->X[0][j]));
+				densities_r[i] 	= (N_neg / (data->X[0][k] - data->X[0][j]));
 
 
 				// BIC_values[i] 	= BIC(data->X, avgLL, variances, 
