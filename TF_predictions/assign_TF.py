@@ -6,7 +6,10 @@ from interval_searcher import intervals, node
 import numpy as np
 import math,re
 import time
-import networkx as  nx
+try:
+	import networkx as  nx
+except:
+	NO_NET =True
 from scipy import stats
 import matplotlib.pyplot as plt
 import matplotlib as mpl
