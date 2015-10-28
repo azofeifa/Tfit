@@ -1,11 +1,17 @@
 import expression_correlation as ec
 import time
+import sys
 import numpy as np
 from scipy.stats import hypergeom
 from operator import mul    # or mul=lambda x,y:x*y
 from fractions import Fraction
 import math
 from math import factorial as fac
+import matplotlib.pyplot as plt
+sys.path.append("/Users/azofeifa/Lab/")
+sys.path.append("/Users/joazofeifa/Lab/")
+from interval_searcher import intervals, node
+
 from scipy import special
 class dnase:
 	def __init__(self,chrom, start, stop, info, FILTER):
@@ -187,33 +193,67 @@ def compute_pvalues(A, M, toIDS, fromIDS):
 				
 
 				time.sleep(0.1)
+def compute_overlaps(x,y):
+	T1 	= node.tree(y)
+	T2 	= node.tree(x)
+	ct1 = 0
+	ct2 = 0
+	for start, stop in x:
+		if T1.searchInterval((start, stop)):
+			ct1+=1
+	for start, stop in y:
+		if T2.searchInterval((start, stop)):
+			ct2+=1
+	return ct1, ct2
+def run_simulate():
+	N1 			= 100
+	N2 			= 200
+	window_sizes = np.linspace(1,10,10)
+	X 			 = np.random.uniform(100,10000,N1)
+	Y 			 = np.random.uniform(100,10000,N2)
+	counts 		= list()
+	for w in window_sizes:
+		ct1,ct2 	= compute_overlaps([(x-w, x+w) for x in X ],[(y-w, y+w) for y in Y ])
+		counts.append((ct1,ct2))
+	plt.scatter(window_sizes, [ct1 for ct1, ct2 in counts], color="blue", label=str(N1))
+	plt.scatter(window_sizes, [ct2 for ct1, ct2 in counts], color="red", label=str(N2))
+	plt.legend()
+	plt.show()
+
+
+
 
 if __name__ == "__main__":
+	SIMULATE 	= True
 	WRITE 		= False
-	LOAD 		= True
-	W 			= 14800
-	eRNA 		= 2872
-	eRNA_motif1_motif_2 = 6000
-	motif_1_only 		= 190
-	motif1_all 			= 1000
-	motif2_all 			= 50000
-	# hg 			= HG([motif1_all, motif2_all, W-(motif1_all+motif2_all)], eRNA)
-	# print "------------------------------"
-	# print "testing eRNA motif1 motif2 overlap"
-	# print hg.pmf((eRNA_motif1_motif_2,eRNA_motif1_motif_2,eRNA_motif1_motif_2))
+	LOAD 		= False
+	if SIMULATE:
+		run_simulate()
+
+
+	# W 			= 14800
+	# eRNA 		= 2872
+	# eRNA_motif1_motif_2 = 6000
+	# motif_1_only 		= 190
+	# motif1_all 			= 1000
+	# motif2_all 			= 50000
+	# # hg 			= HG([motif1_all, motif2_all, W-(motif1_all+motif2_all)], eRNA)
+	# # print "------------------------------"
+	# # print "testing eRNA motif1 motif2 overlap"
+	# # print hg.pmf((eRNA_motif1_motif_2,eRNA_motif1_motif_2,eRNA_motif1_motif_2))
+	# # print hg.expectation()
+	# # print "------------------------------"
+	# print "testing eRNA motif1 only"
+	# hg 			= HG([motif1_all, W-motif1_all],eRNA)
+	# print hg.pmf((motif_1_only,eRNA-motif_1_only))
 	# print hg.expectation()
 	# print "------------------------------"
-	print "testing eRNA motif1 only"
-	hg 			= HG([motif1_all, W-motif1_all],eRNA)
-	print hg.pmf((motif_1_only,eRNA-motif_1_only))
-	print hg.expectation()
-	print "------------------------------"
-	hg 			= hypergeom(W, motif1_all,eRNA)
-	print hg.pmf((motif_1_only,motif_1_only))
-	print hg.mean()
+	# hg 			= hypergeom(W, motif1_all,eRNA)
+	# print hg.pmf((motif_1_only,motif_1_only))
+	# print hg.mean()
 	
 	
-
+	
 
 	
 

@@ -35,13 +35,16 @@ def make_query(FILE, pad=1000):
 		G[chrom].sort()
 		G[chrom] 	= node.tree(G[chrom])
 	return G, IDS
-def make_tree(FILE,A,G,TF, test=False):
+def make_tree(FILE,A,M,G,TF, test=False):
 	with open(FILE) as FH:
 		header = True
 		t 		= 0
 		for line in FH:
 			if not header:
 				pattern_name, chrom, start, stop 	= line.split("\t")[:4]
+				if pattern_name not in M:
+					M[pattern_name]=0
+				M[pattern_name]+=1	
 				if test and t > 10000:
 					break
 				t+=1
@@ -62,30 +65,32 @@ def make_tree(FILE,A,G,TF, test=False):
 
 			else:
 				header=False
-	return A
+	return A,M
 def read_in_directory(root, Q):
-	A 	= {}
+	A,M 	= {},{}
 	for DIR in os.listdir(root):
 		if os.path.exists(root+ DIR+ "/fimo.txt" ):
-			A 	= make_tree(root+ DIR+ "/fimo.txt", A, Q,DIR.split("_")[0] )
-	return A
-def write_out(A,IDS, OUT):
-	FHW= open(out+ "motif_distances.tsv", "w")
+			print DIR
+			A,M 	= make_tree(root+ DIR+ "/fimo.txt", A, M,Q,DIR.split("_")[0] , test=False)
+	return A,M
+def write_out(A,M,IDS, OUT):
+	FHW= open(out, "w")
+	for tf_pattern in M:
+		FHW.write(tf_pattern+"\t"+str(M[tf_pattern])+ "\n"  )
+	FHW.write("-----------------\n")
 	for i in range(1, max(IDS.keys() ) +1):
 		ID 	= IDS[i]
 		D 	= ID + "\t"
 		if i in A:
 			for TF in A[i]:
-				D+=TF+":"
+				
 				for j,pattern_name in enumerate(A[i][TF]):
-					if j!=0:
-						D+="_" + pattern_name+ "="
-					else:
-						D+=pattern_name+ "="
-
+					D+=pattern_name+ "="
 					for d in A[i][TF][pattern_name]:
-						D+=str(d)+","
-					D.strip(",")
+						D+=str(d)+";"
+					D=D.strip(";")
+				D+=","
+			D=D.strip(",")
 		FHW.write(D+ "\n")
 	FHW.close()
 def write_out_TF_classifications(G, OUT):
@@ -511,10 +516,10 @@ def make_eRNA_cluster_FILE(IN, OUT):
 
 
 if __name__ == "__main__":
-	DIST 		= False
+	DIST 		= True
 	load 		= False
 	DENDRO 		= False
-	eRNA_link	= True
+	eRNA_link	= False
 
 	if eRNA_link:
 		OUT 	= "/Users/joazofeifa/Lab/TF_predictions/eRNA_clusters.bed"
@@ -529,15 +534,17 @@ if __name__ == "__main__":
 		if len(sys.argv)<2:
 			root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
 			query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
-			out 	= "/Users/joazofeifa/Desktop/"
+			out 	= "/Users/joazofeifa/Desktop/motif_distances.tsv"
+			pad 	= 1000
 		else:
 			root 	= sys.argv[1]
 			query 	= sys.argv[2]
 			out 	= sys.argv[3]
+			pad 	= int(sys.argv[4])
 
-		Q,IDS 	= make_query(query)
-		A 		= read_in_directory(root, Q)
-		write_out(A,IDS, out)
+		Q,IDS 	= make_query(query, pad=pad)
+		A,M 	= read_in_directory(root, Q)
+		write_out(A,M,IDS, out)
 	if load:
 		IN 	= "/Users/joazofeifa/Lab/TF_predictions/distances_crude/"
 		OUT = "/Users/joazofeifa/Lab/TF_predictions/assignments_refined/"
