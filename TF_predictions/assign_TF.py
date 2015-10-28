@@ -41,7 +41,7 @@ def make_tree(FILE,A,M,G,TF, test=False):
 		t 		= 0
 		for line in FH:
 			if not header:
-				pattern_name, chrom, start, stop 	= line.split("\t")[:4]
+				pattern_name, chrom, start, stop,strand,score,p,q 	= line.split("\t")[:8]
 				if pattern_name not in M:
 					M[pattern_name]=0
 				M[pattern_name]+=1	
@@ -61,7 +61,7 @@ def make_tree(FILE,A,M,G,TF, test=False):
 								A[i][TF] = {}
 							if pattern_name not in A[i][TF]:
 								A[i][TF][pattern_name]=list()
-							A[i][TF][pattern_name].append(x -y)
+							A[i][TF][pattern_name].append((x -y, float(p), float(q),strand))
 
 			else:
 				header=False
@@ -86,8 +86,8 @@ def write_out(A,M,IDS, OUT):
 				
 				for j,pattern_name in enumerate(A[i][TF]):
 					D+=pattern_name+ "="
-					for d in A[i][TF][pattern_name]:
-						D+=str(d)+";"
+					for d,p,q,strand in A[i][TF][pattern_name]:
+						D+=str(d)+"_" + str(p) + "_" + str(q) + "_" + strand +  ";"
 					D=D.strip(";")
 				D+=","
 			D=D.strip(",")
@@ -535,7 +535,7 @@ if __name__ == "__main__":
 			root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
 			query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
 			out 	= "/Users/joazofeifa/Desktop/motif_distances.tsv"
-			pad 	= 1000
+			pad 	= 2000
 		else:
 			root 	= sys.argv[1]
 			query 	= sys.argv[2]
