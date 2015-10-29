@@ -92,7 +92,7 @@ def write_out(A,M,IDS, OUT):
 					for d,p,q,strand in A[i][TF][pattern_name]:
 						D+=str(d)+"_" + str(p) + "_" + str(q) + "_" + strand +  ";"
 					D=D.strip(";")
-				D+=","
+					D+=","
 			D=D.strip(",")
 		FHW.write(D+ "\n")
 	FHW.close()
