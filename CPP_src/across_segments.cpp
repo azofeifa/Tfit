@@ -467,9 +467,9 @@ single_simple_c classifier_single_to_simple_c(NLR arg_clf, double maxll, segment
 		}
 	}
 	sc.st_sp[0] 	= data->start, sc.st_sp[1]=data->stop, sc.st_sp[2]=data->ID;
-	sc.ps[0] 	= arg_clf.mu, sc.ps[1] 	= arg_clf.si, sc.ps[2] = arg_clf.wn; 
-	sc.ps[3] 	= arg_clf.l, sc.ps[4] = arg_clf.r, sc.ps[5] = arg_clf.wl, sc.ps[6] = arg_clf.wr;
-	sc.ps[7] 	= maxll, sc.ps[8] 	= NN;
+	sc.ps[0] 	= arg_clf.mu, sc.ps[1] 	= arg_clf.si, sc.ps[2] = arg_clf.l; 
+	sc.ps[3] 	= arg_clf.pi, sc.ps[4] = arg_clf.wn, sc.ps[5] = arg_clf.fp, sc.ps[6] = arg_clf.wl, sc.ps[7] = arg_clf.wr;
+	sc.ps[8] 	= maxll, sc.ps[9] 	= NN;
 	return sc;
 
 }
@@ -486,68 +486,74 @@ single_simple_c classifier_single_to_simple_c_noise(segment* data, int i, double
 	}
 	sc.st_sp[0] 	= data->start, sc.st_sp[1]=data->stop, sc.st_sp[2]=data->ID;
 	sc.ps[0] 	= 0, sc.ps[1] 	= 0, sc.ps[2] = 0; 
-	sc.ps[3] 	= data->minX, sc.ps[4] = data->maxX, sc.ps[5] = 1.0, sc.ps[6] = 1.0;
-	sc.ps[7] 	= ll, sc.ps[8] = NN;
+	sc.ps[3] 	= data->minX, sc.ps[4] = data->maxX, sc.ps[5] = 1.0, sc.ps[6] = 1.0, sc.ps[7]=0;
+	sc.ps[8] 	= ll, sc.ps[9] = NN;
 	return sc;
 			
 }
 
 
-vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, params * P){
+vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
+	params * P){
+
 	int N 			= FSI.size();
-	int num_proc 	= stoi(P->p5["-np"]);
+	int num_proc 	= omp_get_max_threads();
 	int rounds 		= stoi(P->p5["-rounds"]);
 	double scale 	= stod(P->p5["-ns"]);
+	bool Pol_II 	= stoi(P->p5["-poll"]);
 	int mi 	= stod(P->p5["-mi"]);
 	double ct 	= stod(P->p5["-ct"]);
+	double alpha_1, beta_1, alpha_2, beta_2, alpha_3;
+	int fp_res 	= stoi(P->p5["-foot_res"]);
+	alpha_1=stod(P->p5["-alpha_1"]), beta_1=stod(P->p5["-beta_1"]);
+	alpha_2=stod(P->p5["-alpha_2"]), beta_2=stod(P->p5["-beta_2"]);
+	alpha_3=stod(P->p5["-alpha_3"]);
 	vector<single_simple_c> fits;
 	vector<vector<classifier_single>> clf_fits(N);
-	#pragma omp parallel for num_threads(num_proc)	
-	for (int i 	= 0; i < N;i++){
-		//want to fit four models, noise, left, right, both
-		double BIC_min 	= INF;
-
-		int arg_type;
-		double ll, best_ll;
-		classifier_single BIC_best;
+	double fp_start= 0;
+	double fp_stop = 500;
+	double fp_delta 	= (fp_stop - fp_start) / double(fp_res);
+	double foot_print;
+	for (int i = 0; i < N; i++){
 		vector<classifier_single> current;
-		for (int j = 0; j < 4; j++){
-			double maxll 	= nINF;
-			classifier_single  arg_clf;
-			if (j > 0){
-				bool SET 	= false;
-				for (int r = 0; r < rounds; r++){
-					classifier_single clf(ct, mi, 1,j, scale);
-					ll 				= clf.fit(FSI[i]);
-					if (ll > nINF){
-						maxll 		= ll;
-						arg_clf 	= clf;
-						SET 		= true;
-					}else if(r == rounds-1 and not SET){
-						maxll 		= ll;
-						arg_clf 	= clf;	
+		double BIC_min 	= INF;
+		double current_BIC, ll;
+		classifier_single BIC_best;
+		bool GOOD=false;
+		for (int k = 0; k <= FSI[i]->counts; k++){
+			if (k==0){
+				classifier_single clf(ct, mi, k,Pol_II, scale,
+					alpha_1, beta_1, alpha_2, beta_2, alpha_3);
+				ll 				= clf.fit(FSI[i], 1);
+				current_BIC 	= -2*ll + (k*3 + 2)*log(FSI[i]->N);
+				if (current_BIC < BIC_min){
+					BIC_min 	= current_BIC;
+					BIC_best 	= clf;			
+					GOOD 		= true;
+				}	
+			}else{
+				for (int f = 0; f <= fp_res; f++){
+					foot_print 	= (fp_start + fp_delta*f)/scale;
+					#pragma omp parallel for num_threads(num_proc)	
+					for (int r = 0 ; r < rounds; r++){
+
+						classifier_single clf(ct, mi, k,Pol_II, scale,
+							alpha_1, beta_1, alpha_2, beta_2, alpha_3);
+						ll 				= clf.fit(FSI[i], foot_print);
+						current_BIC 	= -2*ll + (k*3 + 2)*log(FSI[i]->N);
+						if (current_BIC < BIC_min){
+							BIC_min 	= current_BIC;
+							BIC_best 	= clf;			
+							GOOD 		= true;
+						}
 					}
 				}
-			}else{
-				classifier_single clf(ct, mi, 0,j, scale);	
-				maxll 		= clf.fit(FSI[i]);
-				arg_clf 	= clf;
 			}
-			//calc BIC score
-			current.push_back(arg_clf);
-			if (BIC_score(maxll, FSI[i]->N, j) <  BIC_min  ){
-
-				BIC_min 	= BIC_score(maxll, FSI[i]->N, j), arg_type = j;
-				BIC_best 	= arg_clf;		
-				best_ll 	= maxll;
-			}
-
 		}
-		//transform to simple_c;
-		clf_fits[i] = current;
-		
-		
+		current.push_back(BIC_best);
+		clf_fits[i] 	= current;
 	}
+	
 
 	for (int i = 0 ; i < N; i++){
 		for (int j = 0 ; j < clf_fits[i].size(); j++)

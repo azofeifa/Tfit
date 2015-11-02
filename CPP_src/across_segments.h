@@ -39,7 +39,7 @@ struct simple_c_free_mode{
 struct single_simple_c{
 	char chrom[6];
 	int st_sp[3];
-	double ps[9];
+	double ps[10];
 };
 
 vector<simple_c> run_model_accross_segments_template(vector<segment*>, 

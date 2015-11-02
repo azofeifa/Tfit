@@ -62,6 +62,7 @@ params::params(){
 
 	p4["-v"] 				= "1";
 	p4["-N"] 				= "EMG";
+	p4["-log_out"] 			= "";
 	p4["-i"] 				= "";
 	p4["-j"] 				= "";
 	p4["-k"] 				= "";
@@ -99,6 +100,11 @@ params::params(){
 
 
 	p5["-v"] 			= "1";
+	p5["-N"] 			= "EMG";
+	p5["-log_out"] 		= "";
+
+	p5["-poll"] 		= "0";
+	p5["-merge"] 		= "0";
 	p5["-i"]  			= "";
 	p5["-j"]  			= "";
 	p5["-o"] 			= "";
@@ -113,15 +119,21 @@ params::params(){
 	p5["-max_noise"] 	= "0.05";
 	p5["-np"] 			= "4";
 	p5["-chr"] 			= "all";
-	p5["-BETA_0"] 		= "1";
-	p5["-ALPHA_0"] 		= "1";
 	p5["-template"] 	= "1";
 	p5["-opt_res"] 		= "10";
 	p5["-show_seeds"] 	= "0";
 	p5["-bct"] 			= "1";
 	p5["-template"] 	= "0";
 	p5["-pad"] 			= "0";
-	
+	p5["-alpha_1"] 		= "1";
+	p5["-alpha_2"] 		= "1";
+	p5["-alpha_3"] 		= "1";
+	p5["-beta_1"] 		= "1";
+	p5["-beta_2"] 		= "1";
+	p5["-foot_res"] 	= "5";
+
+
+
 	p6["-v"] 			= "1";
 	p6["-N"] 			= "";
 	p6["-i"] 			= "";
@@ -304,10 +316,10 @@ void params::display(int nodes, int cores){
 		cout<<"-o           : "<<p5["-o"]<<endl;
 		cout<<"-ns          : "<<p5["-ns"]<<endl;
 		cout<<"-br          : "<<p5["-br"]<<endl;
-		cout<<"-bct         : "<<p5["-bct"]<<endl;
-		cout<<"-opt_res     : "<<p5["-opt_res"]<<endl;
+		cout<<"-foot_res    : "<<p5["-foot_res"]<<endl;
+		cout<<"-rounds      : "<<p5["-rounds"]<<endl;
 		cout<<"-chr         : "<<p5["-chr"]<<endl;
-		cout<<"-template    : "<<p5["-template"]<<endl;
+		cout<<"-pad         : "<<p5["-pad"]<<endl;
 		cout<<"-threads     : "<<cores<<endl;
 		cout<<"-MPI_nodes   : "<<nodes<<endl;
 		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
@@ -354,17 +366,26 @@ string params::get_header(int ID){
 
 
 	if (ID == 5){
+		header+="#----------------------------------------------------\n";
 		header+="#Date Time    : "+currentDateTime()+"\n";
+		header+="#-N           : "+p5["-N"]+"\n";	
 		header+="#-i           : "+p5["-i"]+"\n";
 		header+="#-j           : "+p5["-j"]+"\n";
 		header+="#-o           : "+p5["-o"]+"\n";
 		header+="#-ns          : "+p5["-ns"]+"\n";
 		header+="#-br          : "+p5["-br"]+"\n";
+		header+="#-foot_res    : "+p5["-foot_res"]+"\n";
 		header+="#-chr         : "+p5["-chr"]+"\n";
 		header+="#-mi          : "+p5["-mi"]+"\n";
 		header+="#-ct          : "+p5["-ct"]+"\n";
 		header+="#-rounds      : "+p5["-rounds"]+"\n";
 		header+="#-pad         : "+p5["-pad"]+"\n";	
+		header+="#-alpha_1     : "+p5["-alpha_1"]+"\n";	
+		header+="#-beta_1      : "+p5["-beta_1"]+"\n";	
+		header+="#-alpha_2     : "+p5["-alpha_2"]+"\n";	
+		header+="#-beta_2      : "+p5["-beta_2"]+"\n";	
+		header+="#-alpha_3     : "+p5["-alpha_3"]+"\n";	
+		header+="#----------------------------------------------------\n";
 	}else if (ID == 4){
 		header+="#----------------------------------------------------\n";
 		header+="#Date Time    : "+currentDateTime()+"\n";

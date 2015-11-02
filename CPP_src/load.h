@@ -90,6 +90,7 @@ class interval{
 public:
 	string chrom;
 	int ID;
+	int counts;
 	int start, stop, strand; //strand, 1 == forward, -1 == reverse
 	bool EMPTY;
 	string STRAND;
@@ -99,6 +100,7 @@ public:
 	interval(string, int, int );
 	interval(string, int, int , int );
 	interval(string, int, int, int , string,vector<vector<double>>);
+	interval(string, int, int, int , string,vector<vector<double>>, int);
 	
 	vector<double> forward_x, forward_y, reverse_x, reverse_y;
 	void insert(double, double, int);
@@ -178,6 +180,7 @@ void write_gtf_file_model_fits(vector<final_model_output>, params *);
 vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *> > , string, int);
 
 void write_out_single_simple_c(vector<single_simple_c>, map<int, string> , params * );
+void write_out_single_simple_c_marks(vector<single_simple_c>, map<int, string> , params * );
 
 void write_config_file_model_fits(vector<final_model_output> , map<int, string>, params * );
 
@@ -193,5 +196,6 @@ map<string, vector<segment *> > load_bidir_predictions( params *,
 	vector<int>, map<string, int>&, map<int, string>&  );
 vector<vector<int> > get_line_start_stops(params * , int );
 void write_bootstrap(vector<boostrap_struct> , map<int, string> , params * ,int );
+vector<segment *> merge_intervals_of_interest(vector<segment *>);
 
 #endif

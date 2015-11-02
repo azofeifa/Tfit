@@ -1,35 +1,22 @@
 #ifndef model_single_H
 #define model_single_H
 #include "load.h"
-using namespace std;
-class NORM{
-public:
-	double mu, si, w;
-	double pdf(double);
-	NORM();
-	NORM(double, double, double);
-	string print();
-};
+#include "model.h"
 
-class ELON{
-public:
-	double a,b,w;
-	ELON();
-	ELON(double, double, double);
-	double pdf(double);
-	string print();
-};
+using namespace std;
 
 class NLR{
 public:
-	double mu, si, wn, l, r, wl, wr;
-	double EX, EX2, WN, WR, WL;
-	NORM loading;
-	ELON forward;
-	ELON reverse;
+	double mu, si, l, pi, wn , wl, wr, fp;
+	double EX, EX2, EY, EPI, EPIN,   WE, WF, WR;
+	double alpha_1, beta_1, alpha_2, beta_2, alpha_3;
+	EMG bidir;
+	UNI forward;
+	UNI reverse;
 	NLR();
-	void init(int, int, segment *, double);
-	void addSS(double, double, double);
+	void init( segment *, double, int, double,
+	 double, double, double, double, double);
+	double addSS(double, double, double);
 	double pdf(double );
 	double get_all();
 	void resetSS();
@@ -45,9 +32,11 @@ public:
 	int K, type;
 	double scale;
 	NLR * components;
-	double fit(segment *);
+	double alpha_1, beta_1, alpha_2, beta_2, alpha_3;
+	double fit(segment *, double);
 	classifier_single();
-	classifier_single(double, int, int, int, double);
+	classifier_single(double, int, int, int, 
+		double, double, double, double, double, double);
 
 };
 

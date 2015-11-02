@@ -436,6 +436,25 @@ vector<vector<double> > interval_sort(vector<vector<double> > A){
 	return A;
 }
 
+vector<segment *> bubble_sort_segment(vector<segment *> A){
+	bool GOOD=false;
+	segment * cp;
+	if (not A.size()){
+		return A;
+	}
+	while (not GOOD){
+		GOOD=true;
+		for (int i =1; i < A.size(); i++){
+			if (A[i]->start < A[i-1]->start){
+				cp 		= A[i-1];
+				A[i-1] 	= A[i];
+				A[i] 	= cp;
+				GOOD=false;
+			}
+		}
+	}
+	return A;	
+}
 
 
 void BIN(vector<segment*> segments, int BINS, double scale, bool erase){
@@ -465,6 +484,12 @@ interval::interval(string chr, int st, int sp, int IDD, string str, vector<vecto
 	
 	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false, STRAND=str;
 	parameters 	= p;
+}
+interval::interval(string chr, int st, int sp, int IDD, string str, vector<vector<double>> p, int ct ){
+	
+	chrom 	= chr, start =st , stop = sp, ID = IDD, EMPTY=false, STRAND=str;
+	parameters 	= p;
+	counts 	= ct;
 }
 
 
@@ -845,7 +870,7 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 		for (int j = 0; j < i->second.size(); j++){
 			G[i->first].push_back(interval(i->second[j]->chrom, 
 				i->second[j]->start, i->second[j]->stop, 
-				i->second[j]->ID, i->second[j]->strand, i->second[j]->parameters)  );
+				i->second[j]->ID, i->second[j]->strand, i->second[j]->parameters, i->second[j]->counts)  );
 		}
 	}
 	//want to sort intervals by there ending point
@@ -1368,20 +1393,22 @@ vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS,
 		string strand; 
 		while(getline(FH, line)){
 			lineArray=splitter(line, "\t");
-			if (lineArray.size() > 3){
-				IDS[i] 		= lineArray[3];
+			if (lineArray[0].substr(0,1)!="#"){
+				if (lineArray.size() > 3){
+					IDS[i] 		= lineArray[3];
+				}
+				if (lineArray.size() > 4){
+					strand 		= lineArray[4];
+				}else{
+					strand 		= ".";
+				}
+				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]) + pad;
+				if (spec_chrom=="all" or spec_chrom==chrom){
+					segment * S 	= new segment(chrom, start, stop,i,strand);
+					G.push_back(S);
+				}
+				i++;
 			}
-			if (lineArray.size() > 4){
-				strand 		= lineArray[4];
-			}else{
-				strand 		= ".";
-			}
-			chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]);
-			if (spec_chrom=="all" or spec_chrom==chrom){
-				segment * S 	= new segment(chrom, start, stop,i,strand);
-				G.push_back(S);
-			}
-			i++;
 		}
 	}else{
 		printf("couldn't open %s for reading\n", FILE.c_str() );
@@ -1627,6 +1654,8 @@ vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *
 			interval FOUND 	= AT[c->first]->get_interval(c->second[i]->start, c->second[i]->stop );
 			if (not FOUND.EMPTY and FOUND.forward_x.size()){
 				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID);
+				S->counts 		= FOUND.counts;
+				S->parameters 	= FOUND.parameters;
 				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
 					vector<double> curr(2);
 					curr[0] 	= FOUND.forward_x[u], curr[1] 	= FOUND.forward_y[u];
@@ -1820,6 +1849,42 @@ void write_out_single_simple_c(vector<single_simple_c> fits, map<int, string> ID
 	}
 
 }
+
+void write_out_single_simple_c_marks(vector<single_simple_c> fits, map<int, string> IDS , params * P ){
+	string out_dir 	= P->p5["-o"];
+	double scale 	= stod(P->p5["-ns"]);
+	ofstream FHW;
+	
+	FHW.open(out_dir+"refined_peaks.bed");
+	FHW<<P->get_header(5);
+	string chrom;
+	int start, stop;
+	double center, sig, w;
+	string line, params;
+	for (int i = 0; i < fits.size(); i++){
+		if (fits[i].ps[0]*scale > 0 and fits[i].ps[8] > nINF  ){
+			chrom 	= fits[i].chrom;
+			center 	= fits[i].ps[0]*scale  + fits[i].st_sp[0];
+			sig 	= fits[i].ps[1]*scale;
+			start 	= center - sig;
+			stop 	= center + sig;
+
+			params 	= to_string(fits[i].ps[0]*scale) + "," + to_string(fits[i].ps[1]*scale) + "," + to_string(scale/ fits[i].ps[2] );
+			for (int u = 3; u < 10; u++){
+			
+				if (u == 5){
+					params+=(","+to_string(fits[i].ps[u]*scale));
+				}else{
+					params+=(","+to_string(fits[i].ps[u]));
+				}
+			}
+			line 	= chrom + "\t" + to_string(start) + "\t" + to_string(stop) + "\t" + params + "\n";
+			FHW<<line;
+		}
+	}
+	FHW.close();
+}
+
 
 void collect_all_tmp_files(string dir, string job_name, int nprocs, int job_ID){
 	int c 	= 0;
@@ -2153,6 +2218,8 @@ vector<vector<int> > get_line_start_stops(params * P, int nprocs){
 }
 
 
+
+
 void write_bootstrap(vector<boostrap_struct> bs, map<int, string> ID_to_chrom, params * P,int JOB_ID){
 	string out_file_dir 	= P->p6["-o"];
 	string job_name 		= P->p6["-N"];
@@ -2168,6 +2235,43 @@ void write_bootstrap(vector<boostrap_struct> bs, map<int, string> ID_to_chrom, p
 }
 
 
+vector<segment *> merge_intervals_of_interest(vector<segment *> IOI){
+	vector<segment * > FSI;
+	map<string,vector<segment * > > G;
+	typedef map<string,vector<segment * > >::iterator it_type;
+	for (int i = 0; i < IOI.size(); i++){
+		G[IOI[i]->chrom].push_back(IOI[i]);
+	}
+	for (it_type c = G.begin(); c!=G.end();c++){
+		G[c->first] = bubble_sort_segment(c->second);
+	}
+	for (it_type c = G.begin(); c!= G.end(); c++){
+		int N 	= c->second.size();
+		int j 	= 0;
+		int start, stop,ct;
+		while (j < N){
+			start=c->second[j]->start,stop=c->second[j]->stop;
+			ct = 0;
+			vector<vector<double>> centers;
+			while (j < N and stop > c->second[j]->start and start < c->second[j]->stop ){
+				start = min(start, c->second[j]->start), stop = max(stop, c->second[j]->stop);
+				vector<double> center(1);
+				center[0]=(c->second[j]->start + c->second[j]->stop)/2.;
+				centers.push_back(center);
+				ct++;
+				j++;
+			}
+			segment * current 	= new segment(c->first,start, stop);
+			current->counts 	= ct;
+			current->parameters = centers;
+
+			FSI.push_back(current);
+		}
+	}
+	return FSI;
+	
+
+}
 
 
 

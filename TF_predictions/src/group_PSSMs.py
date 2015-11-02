@@ -210,7 +210,7 @@ if __name__ == "__main__":
 	SCIPY 			= False
 	CUSTOM 			= False
 	ts, xs 			= get_counts(OUT+"thresholds_nearest_assignments.tsv", show_thresh=False)
-	threshold_as_network(xs[3])
+	threshold_as_network(xs[5])
 	if make_distance:
 		FILE 	= "/Users/joazofeifa/Lab/TF_predictions/HOCOMOCOv9_AD_MEME.txt"
 		D 		= at.load_PSSMs(FILE,test=False)

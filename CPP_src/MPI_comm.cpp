@@ -406,7 +406,7 @@ seg_and_bidir seg_to_seg_and_bidir(segment * s, vector<double> ps, int i ){
 struct simple_seg_struct{
 	char chrom[6];
 	char strand[2];
-	int st_sp[3]; //first->start, second->stop
+	int st_sp[4]; //first->start, second->stop
 };
 
 vector<segment *> segment_sort(vector<segment *> X){
@@ -557,7 +557,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 	simple_seg_struct sss;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={6,2,3};
+	int blocklens[3]={6,2,4};
 	MPI_Datatype old_types[3] = {MPI_CHAR,MPI_CHAR, MPI_INT}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(simple_seg_struct, chrom);
@@ -604,6 +604,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 				SSS.st_sp[0] 	= FSI[i]->start;
 				SSS.st_sp[1] 	= FSI[i]->stop;
 				SSS.st_sp[2] 	= FSI[i]->ID;
+				SSS.st_sp[3] 	= FSI[i]->counts;
 				if (j >0){
 					MPI_Send(&SSS, 2, mystruct, j, u, MPI_COMM_WORLD  );
 				}else{
@@ -623,6 +624,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 	//now convert to GG type
 	for (int i = 0; i < runs.size(); i++){
 		segment * ns 	= new segment(runs[i].chrom, runs[i].st_sp[0], runs[i].st_sp[1], runs[i].st_sp[2], runs[i].strand);
+		ns->counts 		= runs[i].st_sp[3];
 		GG[ns->chrom].push_back(ns) ;
 	}
 	typedef map<string, vector<segment *> >::iterator it_type;
@@ -637,7 +639,7 @@ vector<single_simple_c> gather_all_simple_c(vector<single_simple_c> fits , int r
 	single_simple_c sc;
 	MPI_Datatype mystruct;
 	
-	int blocklens[3]={6,3, 9};
+	int blocklens[3]={6,3, 10};
 	MPI_Datatype old_types[3] = {MPI_CHAR, MPI_INT, MPI_DOUBLE}; 
 	MPI_Aint displacements[3];
 	displacements[0] 	= offsetof(single_simple_c, chrom);

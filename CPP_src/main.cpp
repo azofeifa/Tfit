@@ -240,6 +240,14 @@ int main(int argc, char* argv[]){
 		int rank = MPI::COMM_WORLD.Get_rank();
 		int verbose 	= stoi(P->p3["-v"]);
 	   	int threads  	= omp_get_num_threads();
+	   	string job_name = P->p5["-N"];
+	   	cout<<P->p5["-log_out"]<<endl;
+		int job_ID 		=  get_job_ID(P->p5["-log_out"], job_name, rank, nprocs);
+		string log_out 	= P->p5["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
+		ofstream 	FHW;
+		FHW.open(log_out);
+		FHW<<"#Temp Log File for mpi process: " + to_string(rank) + "\n";
+		FHW<<P->get_header(5);
 
 		if (verbose and rank==0){//show current user parameters...
 			P->display(nprocs, threads);
@@ -249,12 +257,8 @@ int main(int argc, char* argv[]){
 		string out_file_dir 		= P->p5["-o"];
 		int BINS 					= stoi(P->p5["-br"]);
 		double scale 				= stod(P->p5["-ns"]);
-		double ct 					= stod(P->p5["-bct"]);
-		double opt_res 				= stod(P->p5["-opt_res"]);
-		int np 						= stoi(P->p5["-np"]);
 		
 		string spec_chrom 			= P->p5["-chr"];
-		bool run_template 			= bool(stoi(P->p5["-template"]));
 		vector<segment *> FSI;
 		map<string , vector<vector<double> > > G;
 		map<string, vector<segment *> > GG;
@@ -263,7 +267,11 @@ int main(int argc, char* argv[]){
 		map<int, string> IDS;
 		if (rank==0){
 			T.start_time(rank, "Loading/Converting intervals of interest:");
-			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]), spec_chrom );
+			FSI 							= load_intervals_of_interest(interval_file, 
+				IDS, stoi(P->p5["-pad"]), spec_chrom );
+			if (stoi(P->p5["-merge"]) ){
+				FSI 						= merge_intervals_of_interest(FSI);
+			}
 			if (not G.empty()){
 				vector<final_model_output> 	A 	= convert_bidir_segs_to_final_model(G);
 				combind_bidir_fits_with_intervals_of_interest( A,  FSI );		
@@ -289,10 +297,14 @@ int main(int argc, char* argv[]){
 		T.start_time(rank, "(MPI) Gathering Single Fit Info:");
 		vector<single_simple_c> all_fits 	= gather_all_simple_c(single_fits, rank, nprocs);
 		T.get_time(rank);
-		
-		if (rank == 0 and not all_fits.empty()){
-			write_out_single_simple_c(all_fits, IDS , P );
+		if (rank==0){
+			write_out_single_simple_c_marks(all_fits, IDS , P );
+			collect_all_tmp_files(P->p5["-log_out"], job_name, nprocs, job_ID);
 		}
+		
+
+		
+		
 	}else if (P->module=="MODEL"){
 		int nprocs = MPI::COMM_WORLD.Get_size();
 		int rank = MPI::COMM_WORLD.Get_rank();

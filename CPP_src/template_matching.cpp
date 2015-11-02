@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "template_matching.h"
 #include <fstream>
-#include "model_single.h"
 #include <random>
 #include "omp.h"
 using namespace std;
@@ -338,26 +337,6 @@ double BIC(double ** X,  double * avgLL, double * variances,double * lambdas,
 		avgLL[i] 		= arg_ll / N;
 		skews[i][0]  	= best_skew[0], skews[i][1]= best_skew[1];
 		score 			= arg_bic;
-	}else{
-		lambdas[i] 		= 0;
-		variances[i] 	= 0;
-		skews[i][0] = 0,skews[i][1] = 0;
-		double MU 		= mu;
-		double SI 		= sample_variance_single(X,MU, j,k);
-		variances[i] 	= SI;
-		
-		NORM clf(MU, sqrt(SI), 1);
-		double n_ll, uni_ll, N;
-		n_ll=0, uni_ll=0, N=0;
-		for (int i = k; i < j; i++ ){
-			n_ll+=(LOG(clf.pdf(X[0][i] ))*X[1][i] );
-			uni_ll+=(LOG(	1.0 / (b-a) )*X[1][i]  ); 
-			N+=(X[1][i] );
-		}
-		double BIC_score_emg 	= -2*n_ll + 5*LOG(N) ;
-		double BIC_score_uni 	= -2*uni_ll + 1*LOG(N) ;
-		avgLL[i] 				= n_ll / N;
-		score 	=  BIC_score_uni / BIC_score_emg;
 	}
 	return score;
 
