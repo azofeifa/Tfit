@@ -536,7 +536,7 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI,
 			if (k==0){
 				classifier_single clf(ct, mi, k,Pol_II, scale,
 					alpha_1, beta_1, alpha_2, beta_2, alpha_3);
-				ll 				= clf.fit(FSI[i], 1);
+				ll 				= clf.fit(FSI[i], 0);
 				current_BIC 	= -2*ll + (k*3 + 2)*log(FSI[i]->N);
 				if (current_BIC < BIC_min){
 					BIC_min 	= current_BIC;
@@ -546,16 +546,21 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI,
 			}else{
 				for (int f = 0; f <= fp_res; f++){
 					foot_print 	= (fp_start + fp_delta*f)/scale;
-					#pragma omp parallel for num_threads(num_proc)	
+					vector<classifier_single> ROUNDS(rounds);
+					#pragma omp parallel for num_threads(num_proc)				
 					for (int r = 0 ; r < rounds; r++){
 
 						classifier_single clf(ct, mi, k,Pol_II, scale,
 							alpha_1, beta_1, alpha_2, beta_2, alpha_3);
-						ll 				= clf.fit(FSI[i], foot_print);
+						clf.fit(FSI[i], foot_print/scale);
+						ROUNDS[r] 	= clf;	
+					}
+					for (int r = 0; r< rounds; r++){
+						ll 				= ROUNDS[r].ll;
 						current_BIC 	= -2*ll + (k*3 + 2)*log(FSI[i]->N);
 						if (current_BIC < BIC_min){
 							BIC_min 	= current_BIC;
-							BIC_best 	= clf;			
+							BIC_best 	= ROUNDS[r];			
 							GOOD 		= true;
 						}
 					}
