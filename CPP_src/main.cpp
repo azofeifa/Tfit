@@ -248,7 +248,7 @@ int main(int argc, char* argv[]){
 		FHW.open(log_out);
 		FHW<<"#Temp Log File for mpi process: " + to_string(rank) + "\n";
 		FHW<<P->get_header(5);
-
+		FHW.flush();
 		if (verbose and rank==0){//show current user parameters...
 			P->display(nprocs, threads);
 		}	
@@ -269,6 +269,9 @@ int main(int argc, char* argv[]){
 			T.start_time(rank, "Loading/Converting intervals of interest:");
 			FSI 							= load_intervals_of_interest(interval_file, 
 				IDS, stoi(P->p5["-pad"]), spec_chrom );
+			FHW<<"Loading/Converting intervals of interest"<<endl;
+			FHW.flush();
+
 			if (stoi(P->p5["-merge"]) ){
 				FSI 						= merge_intervals_of_interest(FSI);
 			}
@@ -288,10 +291,12 @@ int main(int argc, char* argv[]){
 			integrated_segments= insert_bedgraph_to_segment_single(GG, bed_graph_file,rank);
 			BIN(integrated_segments, stod(P->p5["-br"]), stod(P->p5["-ns"]),true);
 			T.get_time(rank);
+			FHW<<"binned and loaded intervals of integrated segments"<<endl;
+			FHW.flush();
 
 			//now running model
 			T.start_time(rank, "running model accross segments:");
-			single_fits = run_single_model_across_segments(integrated_segments, P);
+			single_fits = run_single_model_across_segments(integrated_segments, P, FHW);
 			T.get_time(rank);
 		}
 		T.start_time(rank, "(MPI) Gathering Single Fit Info:");

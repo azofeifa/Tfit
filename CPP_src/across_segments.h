@@ -48,6 +48,6 @@ vector<simple_c> run_model_accross_segments_to_simple_c(vector<segment *>, param
 string get_header(params *);
 
 vector<simple_c> move_elongation_support(vector<segment *>, params *);
-vector<single_simple_c> run_single_model_across_segments(vector<segment *> , params * );
+vector<single_simple_c> run_single_model_across_segments(vector<segment *> , params *, ofstream& );
 vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<segment *> , params *, ofstream& );
 #endif

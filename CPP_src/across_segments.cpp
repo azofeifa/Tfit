@@ -494,8 +494,13 @@ single_simple_c classifier_single_to_simple_c_noise(segment* data, int i, double
 
 
 vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI, 
-	params * P){
-
+	params * P, ofstream& log_file ){
+	log_file<<"(across_segments) model progress...";
+	log_file<<to_string(0) + "%%,";
+	log_file.flush();
+	double percent 	= 0;
+	int PP 	= 0;
+	
 	int N 			= FSI.size();
 	int num_proc 	= omp_get_max_threads();
 	int rounds 		= stoi(P->p5["-rounds"]);
@@ -515,6 +520,13 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI,
 	double fp_delta 	= (fp_stop - fp_start) / double(fp_res);
 	double foot_print;
 	for (int i = 0; i < N; i++){
+		if ((i/double(N)) > percent+ 0.1 ){
+			PP+=10;
+			log_file<<to_string(PP) + "%%,";
+			log_file.flush();
+			percent 	= i / double(N);
+		}
+		
 		vector<classifier_single> current;
 		double BIC_min 	= INF;
 		double current_BIC, ll;
@@ -566,6 +578,8 @@ vector<single_simple_c> run_single_model_across_segments(vector<segment *> FSI,
 			}
 
 	}
+	log_file<<"...done\n";
+	log_file.flush();
 	return fits;
 }
 
