@@ -646,7 +646,6 @@ void interval_tree::construct(vector<merged_interval *> D){
 		if (center + 1 < N){
 			right 	= new interval_tree();
 			vector<merged_interval *> RT(D.begin()+center, D.end()  );
-
 			right->construct(RT);
 		}else{
 			right 	= NULL;
@@ -717,10 +716,10 @@ interval interval_tree::get_interval(int start, int stop){
 	if (( stop > current->start) and ( start < current->stop) ){
 		return current->get_interval(start, stop);
 	}
-	else if (stop < current->start and left!=NULL){
+	else if (stop <= current->start and left!=NULL){
 		return left->get_interval(start, stop);
 	}
-	else if (start > current->stop and right!=NULL){
+	else if (start >= current->stop and right!=NULL){
 		return right->get_interval(start, stop);
 	}
 	return empty;
@@ -1730,7 +1729,7 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 	for(it_type_5 c = A.begin(); c != A.end(); c++) {
 		for (int i = 0; i < c->second.size(); i++){
 			center 	= (c->second[i]->stop + c->second[i]->start) /2.;
-			interval FOUND 	= AT[c->first]->get_interval(c->second[i]->start, c->second[i]->stop );
+			interval FOUND 	= AT[c->first]->get_interval(int(c->second[i]->start), int(c->second[i]->stop) );
 			if (not FOUND.EMPTY and FOUND.forward_x.size()){
 				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID, FOUND.STRAND);
 				S->parameters 	= FOUND.parameters;
@@ -1747,7 +1746,6 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 					
 				}
 				segments.push_back(S);
-
 			}
 		}
 	}
@@ -2023,12 +2021,6 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	FHW_bed.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE_bidirectionals_only.bed");
 
 	FHW<<P->get_header(0);
-	FHW<<"#Interval Number\tName from Interval File\tchromosome\tstart\tstop\tmodel complexity\tconverged\t";
-	FHW<<"forward strand data points,reverse strand data points,log-likelihood\tloading position\t";
-	FHW<<"loading variance\tloading initiation length\tloading probability\tforward strand probability";
-	FHW<<"\tforward elongation bound\tforward elognation probability\tforward elognation strand probability";
-	FHW<<"\treverse elongation bound\treverse elognation probability\treverse elognation strand probability\n";
-
 	
 	typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
 	typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
@@ -2044,6 +2036,7 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	string chrom;
 
 	for (it_type_1 s = G.begin(); s!=G.end(); s++){ //iterate over each segment
+
 		for (it_type_2 k 	= s->second.begin(); k != s->second.end(); k++){//iterate over each model_complexity
 			for (it_type_3 c = k->second.begin(); c!=k->second.end(); c++){
 				chrom 		= (*c).chrom;
@@ -2053,7 +2046,7 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 				if ( (*c).ps[3] - w_thresh > pow(10,-3) ){
 					std 	= (*c).ps[1]*scale;
 					mu 		= (*c).ps[0]*scale + start;
-					FHW_bed<<chrom+"\t" + to_string(int(mu-std))+"\t" + to_string(int(mu+std))+ "\t" + to_string((*c).ps[3])+   "\n";
+					FHW_bed<<chrom+"\t" + to_string(int(mu-std))+"\t" + to_string(int(mu+std))+ "\t" + to_string((*c).ps[3])+ "\t" + IDS[(*c).ID[3]] +  "\n";
 				}
 			}
 		}

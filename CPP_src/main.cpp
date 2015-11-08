@@ -388,7 +388,7 @@ int main(int argc, char* argv[]){
 		}
 		
 		if (rank==0){
-		//	collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
+			collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
 		}
 		TF.get_time(rank);		
 	}

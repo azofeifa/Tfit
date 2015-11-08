@@ -1543,7 +1543,6 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 		}
 		
 		if (abs(ll-prevll)<convergence_threshold){
-			printf("converged?\n");
 			converged=true;
 		}
 		if (not isfinite(ll)){

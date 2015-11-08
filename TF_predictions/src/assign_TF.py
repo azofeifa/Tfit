@@ -36,47 +36,56 @@ def make_query(FILE, pad=1000):
 				i+=1
 	for chrom in G:
 		G[chrom].sort()
-		G[chrom] 	= node.tree(G[chrom])
 	return G, IDS
-def make_tree(FILE,A,M,G,TF, test=False):
+def make_tree(FILE,Q,A, M, TF, test=False):
+	U 	= {}
 	with open(FILE) as FH:
 		header = True
 		t 		= 0
 		for line in FH:
 			if not header:
 				pattern_name, chrom, start, stop,strand,score,p,q 	= line.split("\t")[:8]
-
-				if float(p) < pow(10,-5.5):
-					if pattern_name not in M:
-						M[pattern_name]=0
-					M[pattern_name]+=1	
-					if test and t > 10000:
-						break
-					t+=1
-					if chrom in G:
-						start, stop 	= int(start), int(stop)
-						FINDS 	= G[chrom].searchInterval(( start, stop))
-						if len(FINDS):
-							y 	= (start + stop) / 2.
-							for st, sp, i in FINDS:
-								x 	= (sp+st) /2.  
-								if i not in A:
-									A[i] 	= {}
-								if TF not in A[i]:
-									A[i][TF] = {}
-								if pattern_name not in A[i][TF]:
-									A[i][TF][pattern_name]=list()
-								A[i][TF][pattern_name].append((x -y, float(p), float(q),strand))
-
+				if chrom not in U:
+					U[chrom]=list()
+				U[chrom].append((int(start), int(stop), float(p), float(q),strand, pattern_name   ))
+				if pattern_name not in M:
+					M[pattern_name]=0
+				M[pattern_name]+=1	
+				
 			else:
 				header=False
+	for chrom in U:
+		U[chrom].sort()
+		if chrom in Q:
+			q 	= Q[chrom]
+			b 	= U[chrom]
+			j,N = 0,len(b)
+			for q_st, q_sp, q_i in q:
+				while j < N and b[j][1] < q_st:
+					j+=1
+				k=j
+				while k < N and b[k][0] < q_sp:
+					x 	= (q_sp+ q_st)/2.
+					y 	= (b[k][1] + b[k][0])/2.
+					p,q,strand, pattern_name 	= b[k][2],b[k][3],b[k][4],b[k][5]
+					if q_i not in A:
+						A[q_i]={}
+					if TF not in A[q_i]:
+						A[q_i][TF] = {}
+					if pattern_name not in A[q_i][TF]:
+						A[q_i][TF][pattern_name]=list()
+					A[q_i][TF][pattern_name].append((x -y, p, q,strand))
+					k+=1
+				
+				
+			
 	return A,M
 def read_in_directory(root, Q):
 	A,M 	= {},{}
 	for DIR in os.listdir(root):
 		if os.path.exists(root+ DIR+ "/fimo.txt" ):
 			print DIR
-			A,M 	= make_tree(root+ DIR+ "/fimo.txt", A, M,Q,DIR.split("_")[0] , test=False)
+			A,M 	= make_tree(root+ DIR+ "/fimo.txt", Q, A, M, DIR.split("_")[0] , test=False)
 	return A,M
 def write_out(A,M,IDS, OUT):
 	FHW= open(out, "w")
@@ -541,10 +550,10 @@ if __name__ == "__main__":
 		cluster_PSSMS(D)
 	if DIST:
 		if len(sys.argv)<2:
-			root 	= "/Users/joazofeifa/Lab/ENCODE/HCT116/"
-			query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-4_bidirectional_hits_intervals.bed"
-			out 	= "/Users/joazofeifa/Desktop/motif_distances.tsv"
-			pad 	= 2000
+			root 	= "/Users/joazofeifa/Lab/TF_predictions/FIMO_OUT/"
+			query 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/Allen2014_DMSO2_3-1_bidirectional_hits_intervals.bed"
+			out 	= "/Users/joazofeifa/Lab/TF_predictions/distances_crude/Allen2014_motif_distances.tsv"
+			pad 	=1500
 		else:
 			root 	= sys.argv[1]
 			query 	= sys.argv[2]
