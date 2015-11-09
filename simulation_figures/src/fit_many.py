@@ -194,6 +194,38 @@ def make_many_simulations(BG_pos="", BG_neg="", INT="", N=10,KS=3):
 	FHW_bg_pos.close()
 	FHW_bg_neg.close()
 	FHW_int.close()
+def check_FILE(int_FILE, pos_file, neg_file):
+	G 	= {}
+	with open(int_FILE) as FH:
+		for line in FH:
+			chrom,start, stop, ID 	= line.strip("\n").split("\t")
+			if chrom not in G:
+				G[chrom]=list()
+			G[chrom].append((float(start), float(stop) , list(), list()  ))
+	for i,FILE in enumerate((pos_file, neg_file)):
+		with open(FILE) as FH:
+			j 	= 0
+			for line in FH:
+				chrom,start, stop,cov 	= line.strip("\n").split("\t")
+				x,cov 					= (float(stop)+float(start))/2., float(cov)
+
+				while j < len(G[chrom]) and G[chrom][j][1] < x:
+					j+=1
+				if j < len(G[chrom]) and G[chrom][j][0] < x:
+					G[chrom][j][i+2].append((x,cov))
+	for chrom in G:
+		for start, stop, pos,neg in G[chrom]:
+			pcounts,pedges 	= np.histogram([x for x,y in pos],weights=[y for x,y in pos],bins=len(pos))
+			ncounts,nedges 	= np.histogram([x for x,y in neg],weights=[y for x,y in neg],bins=len(neg))
+			plt.bar(pedges[1:], pcounts)
+			plt.bar(nedges[1:], -ncounts)
+			plt.show()
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -204,7 +236,8 @@ if __name__ == "__main__":
 	bg_k_sim_neg 					= "/Users/joazofeifa/Lab/EMG/TF_predictions/files/many_k.neg.bedgraph"
 	
 	int_k_sim 	= "/Users/joazofeifa/Lab/EMG/TF_predictions/files/many_k_intervals.bed"
-	make_many_simulations(BG_pos=bg_k_sim_pos, BG_neg=bg_k_sim_neg, INT=int_k_sim)
+	#make_many_simulations(BG_pos=bg_k_sim_pos, BG_neg=bg_k_sim_neg, INT=int_k_sim)
+	#check_FILE(int_k_sim, bg_k_sim_pos, bg_k_sim_neg)
 	#draw_fig(no_prior, prior,gmu,gsi, gl, gw, gpi)
 
 

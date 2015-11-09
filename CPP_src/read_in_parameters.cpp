@@ -38,12 +38,14 @@ params::params(){
 	p["-BETA_1"] 	= "1";
 	p["-ALPHA_2"] 	= "1";
 	p["-ALPHA_3"] 	= "1";
-	p["-template"] 	= "1";
+	p["-template"] 	= "0";
 	p["-bct"] 		= "0.95";
 	p["-window_res"]= "10";
 	p["-log_out"] 	= "";
 	p["-ms_pen"] 	= "1";
 	p["-topology"] 	= "1";
+	p["-foot_res"] 	= "5";
+
 
 	p2["-v"] 		= "1";
 	p2["-i"] 		= "";
@@ -190,52 +192,33 @@ void params::help(){
 }
 void params::display(int nodes, int cores){
 	if (module=="MODEL"){
-		if (p["-template"]!="1"){
-			cout<<"----------------------------------------------------------------"<<endl;
-			cout<<"              User Provided EMGU Parameters                     "<<endl;
-			cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
-			cout<<"-i        : "<<p["-i"]<<endl;
-			cout<<"-o        : "<<p["-o"]<<endl;
-			cout<<"-chr      : "<<p["-chr"]<<endl;
-			cout<<"-br       : "<<p["-br"]<<endl;
-			cout<<"-ns       : "<<p["-ns"]<<endl;
-			cout<<"-minK     : "<<p["-minK"]<<endl;
-			cout<<"-maxK     : "<<p["-maxK"]<<endl;
-			cout<<"-rounds   : "<<p["-rounds"]<<endl;
-			cout<<"-ct       : "<<p["-ct"]<<endl;
-			cout<<"-mi       : "<<p["-mi"]<<endl;
-			cout<<"-max_noise: "<<p["-max_noise"]<<endl;
-			cout<<"-r_mu     : "<<p["-r_mu"]<<endl;
-			cout<<"-threads  : "<<cores<<endl;
-			cout<<"-MPI_nodes: "<<nodes<<endl;
-			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-			cout<<"----------------------------------------------------------------"<<endl;
-		}
-		else{
-			cout<<"----------------------------------------------------------------"<<endl;
-			cout<<"              User Provided EMGU Parameters                     "<<endl;
-			cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
-			cout<<"            ...coupled to template matching...                  "<<endl;	
-			cout<<"-i         : "<<p["-i"]<<endl;
-			cout<<"-j         : "<<p["-j"]<<endl;
-			cout<<"-k         : "<<p["-k"]<<endl;
-			cout<<"-o         : "<<p["-o"]<<endl;
-			cout<<"-log_out   : "<<p["-log_out"]<<endl;
-			cout<<"-chr       : "<<p["-chr"]<<endl;
-			cout<<"-br        : "<<p["-br"]<<endl;
-			cout<<"-ns        : "<<p["-ns"]<<endl;
-			cout<<"-rounds    : "<<p["-rounds"]<<endl;
-			cout<<"-ct        : "<<p["-ct"]<<endl;
-			cout<<"-mi        : "<<p["-mi"]<<endl;
-			cout<<"-bct       : "<<p["-bct"]<<endl;
-			cout<<"-window_res: "<<p["-window_res"]<<endl;
-			cout<<"-minK      : "<<p["-minK"]<<endl;
-			cout<<"-maxK      : "<<p["-maxK"]<<endl;			
-			cout<<"-threads   : "<<cores<<endl;
-			cout<<"-MPI_nodes : "<<nodes<<endl;
-			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-			cout<<"----------------------------------------------------------------"<<endl;
-		}
+		cout<<"----------------------------------------------------------------"<<endl;
+		cout<<"              User Provided EMGU Parameters                     "<<endl;
+		cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
+		cout<<"-N         : "<<p["-N"]<<endl;
+		cout<<"-i         : "<<p["-i"]<<endl;
+		cout<<"-j         : "<<p["-j"]<<endl;
+		cout<<"-k         : "<<p["-k"]<<endl;
+		cout<<"-o         : "<<p["-o"]<<endl;
+		cout<<"-log_out   : "<<p["-log_out"]<<endl;
+		cout<<"-chr       : "<<p["-chr"]<<endl;
+		cout<<"-br        : "<<p["-br"]<<endl;
+		cout<<"-ns        : "<<p["-ns"]<<endl;
+		cout<<"-rounds    : "<<p["-rounds"]<<endl;
+		cout<<"-elon      : "<<p["-elon"]<<endl;
+		cout<<"-foot_res  : "<<p["-foot_res"]<<endl;
+		cout<<"-template  : "<<p["-template"]<<endl;
+		cout<<"-ct        : "<<p["-ct"]<<endl;
+		cout<<"-mi        : "<<p["-mi"]<<endl;
+		cout<<"-bct       : "<<p["-bct"]<<endl;
+		cout<<"-window_res: "<<p["-window_res"]<<endl;
+		cout<<"-minK      : "<<p["-minK"]<<endl;
+		cout<<"-maxK      : "<<p["-maxK"]<<endl;			
+		cout<<"-threads   : "<<cores<<endl;
+		cout<<"-MPI_nodes : "<<nodes<<endl;
+		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
+		cout<<"----------------------------------------------------------------"<<endl;
+	
 	}else if (module=="FORMAT"){
 		cout<<"----------------------------------------------------------------"<<endl;
 		cout<<"              User Provided EMGU Parameters                     "<<endl;
@@ -422,7 +405,12 @@ string params::get_header(int ID){
 		header+="#-ns          : "+p["-ns"]+"\n";
 		header+="#-br          : "+p["-br"]+"\n";
 		header+="#-bct         : "+p["-bct"]+"\n";
+		header+="#-template    : "+p["-template"]+"\n";		
+		header+="#-elon        : "+p["-elon"]+"\n";
+		header+="#-foot_res    : "+p["-foot_res"]+"\n";
+		
 		header+="#-window_res  : "+p["-window_res"]+"\n";
+
 		header+="#-minK        : "+p["-minK"]+"\n";
 		header+="#-maxK        : "+p["-maxK"]+"\n";
 		header+="#-ms_pen      : "+p["-ms_pen"]+"\n";

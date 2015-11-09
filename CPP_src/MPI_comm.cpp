@@ -627,6 +627,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 		ns->counts 		= runs[i].st_sp[3];
 		GG[ns->chrom].push_back(ns) ;
 	}
+
 	typedef map<string, vector<segment *> >::iterator it_type;
 	
 
@@ -755,7 +756,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 	simple_c_free_mode sc_fm;
 	MPI_Datatype mystruct;
 	
-	int blocklens[4]={3,5, 6, 11};
+	int blocklens[4]={3,5, 6, 12};
 	MPI_Datatype old_types[4] = {MPI_DOUBLE, MPI_INT, MPI_CHAR, MPI_DOUBLE}; 
 	MPI_Aint displacements[4];
 	displacements[0] 	= offsetof(simple_c_free_mode, SS);
@@ -808,6 +809,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 		for (int s = 0; s < FITS.size(); s++){
 			for (model_it k = FITS[s].begin(); k!=FITS[s].end(); k++){
 				for (int sc= 0; sc < k->second.size();sc++ ){
+
 					MPI_Send(&k->second[sc], 1, mystruct, 0, S+1, MPI_COMM_WORLD);	
 					S++;
 				}
@@ -818,6 +820,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 	//printf("Rank: %d,%d\n",rank, recieved.size());
 	map<int, map<int, vector<simple_c_free_mode>  > > G;
 	typedef vector<simple_c_free_mode>::iterator it_type_fm;
+
 	for (it_type_fm sc = recieved.begin(); sc!=recieved.end(); sc++){
 		G[(*sc).ID[0]][(*sc).ID[3]].push_back(*sc);
 	}

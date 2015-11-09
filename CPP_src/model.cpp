@@ -348,7 +348,7 @@ void component::initialize_bounds(double mu, segment * data , int K, double scal
 		}else if (data->strand=="-") {
 			pi 				= 0.;
 		}
-		forward 			= UNI(mu+(1.0/lambda), forward_bound, 1.0 / (complexity*K), 1, j, pi);
+		forward 			= UNI(mu+(1.0/lambda), data->maxX, 1.0 / (complexity*K), 1, j, pi);
 		forward.j=j, forward.k=k;
 		
 
@@ -357,7 +357,7 @@ void component::initialize_bounds(double mu, segment * data , int K, double scal
 		dist 				=  -(1.0/lambda);
 		j 					= get_nearest_position(  data, mu, dist);
 		k 					= get_nearest_position(data, mu, reverse_bound-mu);
-		reverse 			= UNI(reverse_bound, mu-(1.0/lambda),  1.0 / (complexity*K) , -1, j,1-pi);
+		reverse 			= UNI(data->minX, mu-(1.0/lambda),  1.0 / (complexity*K) , -1, j,1-pi);
 		reverse.j=k, reverse.k=j;
 		termination 		= (termination > 1);
 		
@@ -1398,6 +1398,31 @@ void sort_vector(double X[], int N){
 
 int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	 int elon_move ){
+
+
+	if (K == 0){
+		ll 			= 0;
+		double 	l 	= (data->maxX-data->minX);
+		double pos 	= 0;
+		double neg 	= 0;
+		for (int i = 0; i < data->XN; i++){
+			pos+=data->X[1][i];
+			neg+=data->X[2][i];
+		}
+		double pi 	= pos / (pos + neg);
+		for (int i = 0; i < data->XN; i++){
+			if (pi > 0){
+				ll+=log(pi / l)*data->X[1][i];
+			}
+			if (pi < 1){
+				ll+=log((1-pi) / l)*data->X[2][i];		
+			}
+		}
+
+		components 	= new component[1];
+
+		return 1;
+	}
 	//=========================================================================
 	//for resets
 	random_device rd;
@@ -1475,7 +1500,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	if (add){
 		components[K].initialize_bounds(0., data, 0., 0. , noise_max, pi, foot_print, data->minX, data->maxX);
 	}
-	if (topology<2 ){
+	if (topology<2 and elon_move ){
 		update_l(components, data, K);
 	}
 	//===========================================================================
@@ -1527,6 +1552,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 				if (norm_reverse){
 					components[k].add_stats(data->X[0][i], data->X[2][i], -1, norm_reverse);
 				}
+				//components[k].print();
 			}
 		}
 

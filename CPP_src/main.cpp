@@ -321,7 +321,6 @@ int main(int argc, char* argv[]){
 		string job_name = P->p["-N"];
 
 		int job_ID 		=  get_job_ID(P->p["-log_out"], job_name, rank, nprocs);
-		job_ID 			= 1;
 		
 		string log_out 	= P->p["-log_out"] + "tmp_" + job_name+ "-"+ to_string(job_ID)+ "_" + to_string(rank) + ".log"  ;
 		ofstream 	FHW;

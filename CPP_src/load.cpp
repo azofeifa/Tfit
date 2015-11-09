@@ -2017,9 +2017,6 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	string out_dir 	= P->p["-o"];
 	ofstream FHW;
 	FHW.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv");
-	ofstream FHW_bed;
-	FHW_bed.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE_bidirectionals_only.bed");
-
 	FHW<<P->get_header(0);
 	
 	typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
@@ -2031,24 +2028,80 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 	string mus="", sis="", ls="", wEMs="", wPIs="",forward_bs="", forward_ws="",forward_PIs="",reverse_as="", reverse_ws="",reverse_PIs="";
 	double w_thresh 	= 0.;
 	double ALPHA_2 	= stof(P->p["-ALPHA_2"]);
-	double mu, std,N;
+	string mu, sigma, lambda, pos, neg, ll, pi, w,ra,fb,rw,fw,fp;
 	int start;
 	string chrom;
 
+	string INFO 	= "";
+			
+	FHW<<"#ID|chromosome:start-stop|forward strand coverage, reverse strand coverage"<<endl;
+	FHW<<"#model complexity,log-likelihood"<<endl;
+	FHW<<"#mu_k\tsigma_k\tlambda_k\tpi_k\tfp_k\tw_[p,k],w_[f,k],w_[r,k]\tb_[f,k]\ta_[r,k]"<<endl;
+	
 	for (it_type_1 s = G.begin(); s!=G.end(); s++){ //iterate over each segment
-
+		FHW<<">" + IDS[s->first]+ "|";
 		for (it_type_2 k 	= s->second.begin(); k != s->second.end(); k++){//iterate over each model_complexity
 			for (it_type_3 c = k->second.begin(); c!=k->second.end(); c++){
 				chrom 		= (*c).chrom;
-				start 		= (*c).ID[1];
-				N 			= (*c).SS[1] + (*c).SS[2];
-				w_thresh= ( ALPHA_2 ) / (N + ALPHA_2*k->first*3 + k->first*3 );
-				if ( (*c).ps[3] - w_thresh > pow(10,-3) ){
-					std 	= (*c).ps[1]*scale;
-					mu 		= (*c).ps[0]*scale + start;
-					FHW_bed<<chrom+"\t" + to_string(int(mu-std))+"\t" + to_string(int(mu+std))+ "\t" + to_string((*c).ps[3])+ "\t" + IDS[(*c).ID[3]] +  "\n";
-				}
+				INFO 		= chrom + ":" + to_string((*c).ID[1])+"-"+to_string((*c).ID[2]);
+				pos 		= to_string((*c).SS[1]);
+				neg 		= to_string((*c).SS[2]);
+				
 			}
+		}
+		FHW<<INFO<<"|"<<pos+","+neg<<endl;
+
+
+		for (it_type_2 k 	= s->second.begin(); k != s->second.end(); k++){//iterate over each model_complexity
+			string mus 		= "", sigmas="", lambdas="",pis="", ws= ""  ,fbs="",ras="", fws="", rws="", fps="";
+			string pos 		= "", neg="";
+			string k_header = "~"+ to_string(k->first)+",";
+			int NN 			= k->second.size();
+			int ii 			= 0;
+			for (it_type_3 c = k->second.begin(); c!=k->second.end(); c++){
+				chrom 		= (*c).chrom;
+				start 		= (*c).ID[1];
+				mu 			= to_string((*c).ps[0]*scale + (*c).ID[1] );
+				sigma 		= to_string((*c).ps[1]*scale);
+				lambda 		= to_string(scale/(*c).ps[2]);
+				pi 			= to_string( (*c).ps[4]);
+				w  			= to_string( (*c).ps[3]);
+				fw 			= to_string( (*c).ps[6]); 
+				rw 			= to_string( (*c).ps[9]);
+				ra 			= to_string( scale*(*c).ps[8]   + (*c).ID[1] );
+				fb 			= to_string( scale*(*c).ps[5]  + (*c).ID[1]);
+				fp 			= to_string( scale*(*c).ps[11]  );
+				ll 			= to_string((*c).SS[0]);
+				if (ii +1 < NN){
+
+
+					mus+=mu+",";
+					sigmas+=sigma+",";
+					lambdas+=lambda+",";
+					pis+=pi+",";
+					ws+=w+ "," + fw+ "," + rw + "|";
+					ras+=ra+",";
+					fbs+=fb+",";
+					fps+=fp+",";
+				}else{
+					mus+=mu ;
+					sigmas+=sigma ;
+					lambdas+=lambda ;
+					pis+=pi ;
+					ws+=w+ "," + fw+ "," + rw ;	
+					fbs+=fb;
+					ras+=ra;
+					fps+=fp ;
+				}
+				ii++;
+			}
+			k_header 		+=ll+ "\t";
+			FHW<<k_header;
+		
+			if (k->first>0){
+				FHW<<mus+"\t"+sigmas+"\t"+lambdas+"\t" + pi+"\t" + fps+ "\t" + ws + "\t" + fbs+"\t" +ras ;
+			}
+			FHW<<endl;
 		}
 	}
 	

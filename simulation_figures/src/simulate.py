@@ -52,6 +52,8 @@ def runMany(K=1, RGE=(0,500), N=1000, SHOW=False, bins=500):
 	X[:,0]-=X[0,0]	
 	if SHOW:
 		plt.figure(figsize=(15,10))
+		X[:,0]*=100
+
 		plt.bar(X[:,0], X[:,1], width = (X[-1,0]- X[0,0]) / bins)
 		plt.bar(X[:,0], -X[:,2], color="red", width = (X[-1,0]- X[0,0]) / bins)
 		plt.show()

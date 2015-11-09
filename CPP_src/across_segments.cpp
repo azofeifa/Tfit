@@ -595,11 +595,32 @@ map<int, vector<classifier> > make_classifier_struct_free_model(params * P, segm
 	int rounds 	= stoi(P->p["-rounds"]);
 	int BDS 	= int(data->centers.size());
 	map<int, vector<classifier> > A;
-	for (int k =max(min_k, BDS/2); k < BDS; k++){
-		for (int r = 0; r < rounds; r++){
-			A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
+	A[0].push_back( classifier(0, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
 			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
 			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 ));
+	if (stoi(P->p["-template"])  ){	
+		for (int k =max(min_k, BDS/2); k < BDS; k++){
+			for (int r = 0; r < rounds; r++){
+				A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
+				stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
+				stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 ));
+			}
+		}
+	}else{
+		double fp_start =0, fp_end=500;
+		double fp_res 	= stod(P->p["-foot_res"]);
+		double delta 	= (fp_end-fp_start)/fp_res;
+		double fp;
+		double scale 	= stod(P->p["-ns"]);
+		for (int k =min_k; k <= max_k; k++){
+			for (int f =0 ; f < fp_res; f++){
+				fp 	= (f*delta)/scale;
+				for (int r = 0; r < rounds; r++){
+					A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
+					stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
+					stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),fp ));
+				}
+			}
 		}
 	}
 	return A;
@@ -625,23 +646,26 @@ simple_c_free_mode::simple_c_free_mode(bool FOUND, double ll,
 	}
 	chrom[5]='\0';
 	if (not FOUND){
-		for (int i = 0; i < 11; i++ ){
+		for (int i = 0; i < 12; i++ ){
 			ps[i] 	= 0;
 		}
 	}else{
 		ps[0]=C.bidir.mu,ps[1]=C.bidir.si,ps[2]=C.bidir.l, ps[3]=C.bidir.w, ps[4]=C.bidir.pi;
 		ps[5]=C.forward.b, ps[6]=C.forward.w, ps[7]=C.forward.pi;
 		ps[8]=C.reverse.a, ps[9]=C.reverse.w, ps[10]=C.reverse.pi;
+		ps[11]=C.foot_print;
 	}
 }
 simple_c_free_mode::simple_c_free_mode(){}
 
 vector<simple_c_free_mode> transform_free_mode(bool FOUND, double ll, component * components, 
 	int K, segment * data, int i, double forward_N, double reverse_N) {
-	vector<simple_c_free_mode> SC(K);
-	
+	vector<simple_c_free_mode> SC ;
+	if (K==0){
+		SC.push_back(simple_c_free_mode(false, ll, components[0], K, data, i, forward_N, reverse_N));
+	}
 	for (int k = 0 ; k < K; k++){
-		SC[k]=simple_c_free_mode(FOUND, ll, components[k], K, data, i,forward_N, reverse_N);
+		SC.push_back(simple_c_free_mode(FOUND, ll, components[k], K, data, i,forward_N, reverse_N));
 	}
 	return SC;
 
@@ -702,7 +726,7 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 			center/=2.;
 			center-=FSI[i]->start;
 			center/=scale;
-			 FSI[i]->centers.push_back(center);
+			FSI[i]->centers.push_back(center);
 		}
 		segment * data 	= FSI[i];
 		map<int, vector<classifier> > A 	= make_classifier_struct_free_model(P, FSI[i]);

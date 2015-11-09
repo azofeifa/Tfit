@@ -38,108 +38,106 @@ def draw_background(ax,l, N):
 	Spdf 	= sum(pdfs)
 	ax.plot(ks, [ sum(pdfs[:i])/ Spdf for i in range(len(pdfs)) ] )
 	ax.set_xscale("log")
-
-
-def plot_ROC(A,B, compares=tuple()):
-	AG, AB 	= A
-	BG , BB = B
-
-	F 	= plt.figure(figsize=(15,10))
+class scanner:
+	def __init__(self, chrom,start, stop, params, CHIP, sc):
+		self.chrom,self.start, self.stop=chrom,start, stop
+		self.center 	= (self.start + self.stop) / 2.
+		self.CHIP, self.sc 	="",""
+		if CHIP:
+			self.CHIP 	= dict([ (x.split(":")[0],float(x.split(":")[1] )) for x in CHIP.split(",")])
+		if sc:
+			self.sc 	= [ [ float(y) if i < 2 else y for i,y in enumerate(x.split(":")) ] for x in sc.split(",")]
+			for i in range(len(self.sc)):
+				self.sc[i][1]=(self.sc[i][1]+self.start) - self.center
+		mu,si,l,w,pi,N,fp,nll 	= [float(x) for x in params.split("_")]
+		self.mu,self.si,self.l,self.w,self.pi,self.N,self.fp,self.ll 	= mu,si,l,w,pi,N,fp,nll
+	def get_density(self):
+		return self.N / (self.stop - self.start)
 	
-	#=========================
-	#comparing three things
-	#1. Bidir and Motif location < D
-	#2. Bidir and Motif location > D
-	#3. Just Motif 
+	def get_max_motif(self, D=500):
+		results 	= [ ll for ll,i,strand in self.sc if abs(i) < D]
+		if results:
+			return max(results)
+		return None
+	def get_min_distance(self, D=1500, PSSM=-13):
+		results 	= [ abs(i) for ll,i,strand in self.sc if abs(i) < D and ll > PSSM]
+		if results:
+			return min(results)
+		return None
+	def is_hit(self, ChIP, mu, si):
+		if ChIP in self.CHIP:
+			return int(normal_cdf(self.CHIP[ChIP], mu,si)   )
+		return 0
+	def get_BIC_ratio(self, penality=7, window=2000):
+		A 	=   self.ll / self.N
+		return  A 
 
-	BM_T 	 	= list()
-	JM  		= list()
-	w 		= 1500
-	l,n 	= AB[compares[0]]
 
-	p 		= float(2*w) / float(l- 2*w)
-	mu 		= n*p
-	si  	= 400
+
+def load_scanner_out(FILE,test=True):
+	S 	= list()
+	i 	= 0
+	with open(FILE) as FH:
+		for line in FH:
+			i+=1
+			if test and i > 2500:
+				break
+			header, scanner_info 		= line.strip("\n").split("\t")
+			chrom,stsp, params, CHIP 	= header.split("|")
+			start, stop 				= [float(x) for x in stsp.split("-")]
+			s 							= scanner(chrom,start, stop, params, CHIP, scanner_info)
+			S.append(s)
+	return S
+
+def ROC(S):
+	l 	= 2951343224.0
+	n 	= 1417281200.0
+	w 	= 1500.0 
+	p 	= float(2*w) / float(l- 2*w)
+	mu 	= n*p
+
+	si  = math.sqrt(mu*(1-p))
+	si 	= 10
+	print mu, math.log(mu,10)
+	F 	= plt.figure()
+	ax 	= F.add_subplot(1,2,1)
+	ax2 = F.add_subplot(1,2,2)
+	ax.set_title("Significant ChIP Peaks\nhave a smaller motif-i distance")
 	
-	for chrom in AG:
-		for a in AG[chrom]:
-			if a.get_density()>100:
-				TF_CT 		= 0
-				if compares[0] in a.raw:
-					TF_CT 	= a.raw[compares[0]]
-				if compares[1] in a.TFS:
-					d 	= min([(abs(t),x,y) for t,x,y,z in a.TFS[compares[1]]])
-
-					BM_T.append((math.log(TF_CT+1,10), d[0],  int(1.0-normal_cdf(TF_CT, mu, si) < pow(10,-2) ), d[1], d[2]     )  )
-				else:
-					d 	= 5000
-
-					BM_T.append((math.log(TF_CT+1,10), d,  int( normal_cdf(TF_CT, mu, si) > 0.999999999 ), 1.0, 1.0     )  )
-					
-	ax 			= F.add_subplot(2,2,1)
-	ax2 		= F.add_subplot(2,2,2)
-	ax3 		= F.add_subplot(2,2,3)
-
-	pvs 		= [math.log(pv,10) for x,y,z,pv,q in BM_T if pv]
-	min_pv 		= min(pvs)
-	max_pv 		= max(pvs)
-	ax.set_title("Significant ChIP-seq Signal correlates with smaller i and motif distance")
+	ax.hist([ s.get_min_distance() for s  in S if s.is_hit("SP1",mu,si) if s.get_density()>3 and s.get_min_distance() is not None  ],alpha=0.4, bins=100, label="ChIP, " + r'$p<10^{-4}$' )
+	ax.hist([ s.get_min_distance() for s  in S if not s.is_hit("SP1",mu,si) if s.get_density()>2 and s.get_min_distance() is not None ],alpha=0.4, bins=100, label="ChIP, " + r'$p>10^{-4}$' )
 	
-	ax.hist([y for x,y,z,pv,q in BM_T if z==1 and y!=5000 ], bins=100 ,alpha=0.25, label="Significant\nChIP Signal"  )
+	# ax.hist([math.log(s.CHIP["SP1"]+1,10) for s in S if "SP1" in s.CHIP and s.is_hit("SP1", mu,si ) and s.CHIP and math.log(s.CHIP["SP1"]+1)  < 10], alpha=0.5, label="sig")
+	# ax.hist([math.log(s.CHIP["SP1"]+1,10) for s in S if "SP1" in s.CHIP and not s.is_hit("SP1", mu,si  ) and  s.CHIP and math.log(s.CHIP["SP1"]+1)  < 10 ],alpha=0.5, label="not sig")
 
-	ax.hist([y for x,y,z,pv,q in BM_T if z==0 and y!=5000 ], bins=100 ,alpha=0.25, label="Insignificant\nChIP Signal" )
-	ax.grid()
+	#ax.set_xlim(0,1400)
 	ax.legend()
-	
-	DS 	= np.linspace(0,5050,1000)
-	TPS,FPS = list(),list()
+	ax.grid()
+	S 				= [(s,  s.is_hit("SP1", mu, si)) for s in S if s.get_min_distance(D=1500, PSSM=-9 )  ]
+ 	penality  		= np.linspace(0,1000)
+ 	P 				= float(len([ 1 for s,z in S if z    ]))
+ 	N 				= float(len([1 for s,z in S if not z  ]))
+ 	TPS,FPS 		= list(),list()
+	##======
+	for p in penality:
+		TP,TN 	= 0.0,0.0
+		for s, z in S:
 
-	P 	= float(sum([ 1 for ct, d, ct_p, pv, qv in BM_T if ct_p==1 ]))
-	N 	= float(sum([ 1 for ct, d, ct_p, pv, qv in BM_T if ct_p==0 ]))
-	
-	for D in DS:
-		TP 	= 0.0
-		FP 	= 0.0
-		for ct, d, ct_p, pv, qv in BM_T :
-			if d < D and ct_p==1:
+			d 	= s.get_min_distance(D=p, PSSM=-9 )
+			if d is None and not z:
+				TN+=1
+			elif d and z:
 				TP+=1
-			elif d > D and ct_p==0:
-				FP+=1
 
 		TPS.append(TP/P)
-		FPS.append(1-(FP/N))
+		FPS.append(1-(TN / N))
+		print TPS[-1], FPS[-1]
 
-	print 1.0 / len(TPS)
-	print 
-	print FPS
-	
+	ax2.plot(FPS, TPS)
 
-	ax2.plot(FPS, TPS, label="AUC: " + str(sum([TPS[i+1]*(  (FPS[i+1]-FPS[i]))  for i,(x,y) in enumerate(zip(FPS, TPS)) if i +1 < len(TPS) ]) )[:5])
-	ax2.plot([0,1],[0,1])
-	ax2.legend(loc=(0.8,0.1))
-	ax2.set_xlim([0,1])
-	ax2.set_ylim([0,1])
+	#ax2.set_xlim(0,1.1)
+	#ax2.set_ylim(0,1.1)
 
-
-
-
-	# for D in DS:
-	# 	TPS, FPS 	= list(),list()
-
-	# 	pos, pos2, neg 	= 0.0,0.0,0.0
-		
-
-	# 	for tf_ct, d, hit in BM_T:
-	# 		if d <= D and hit:
-	# 			pos+=1.0
-	# 		elif d > D and not hit:
-	# 			neg+=1
-	# 	TPS.append(pos/POSITIVES)
-	# 	FPS.append( 1-(neg/NEGATIVES ))
-	# 	ax2.plot(FPS, TPS)
-
-
-	#ax2.plot([0,1],[0,1])
 
 	plt.show()
 
@@ -148,20 +146,7 @@ def plot_ROC(A,B, compares=tuple()):
 
 
 
-
-
-
-
-
-
 if __name__ == "__main__":
-	OUT1 		= "/Users/joazofeifa/Lab/TF_predictions/distances_crude/Allen2014_rawCHIP_motif_distances.tsv"	
-	OUT2 		= "/Users/joazofeifa/Lab/TF_predictions/FIMO_OUT/MAX/fimo_rawCHIP.txt"
-	OUT3 		= "/Users/joazofeifa/Lab/TF_predictions/FIMO_OUT/Sp1/fimo_rawCHIP.txt"
-	TEST 		= False
-	DMSO2_3 	= load.load_bidir(OUT1, RAW=True, test=TEST)
-#	MAX 		= load.read_in_motifs(OUT2, RAW=True, test=TEST)
-	SP1 		= load.read_in_motifs(OUT3, RAW=True, test=TEST)
-
-
-	plot_ROC(DMSO2_3,SP1 , compares=("SP1","SP1_f1"  ) )
+	FILE = "/Users/joazofeifa/Lab/TF_predictions/HOMMER_OUT_FILES/sp1_sites.bed"
+	S 	= load_scanner_out(FILE)
+	ROC(S)

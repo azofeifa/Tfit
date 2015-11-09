@@ -1,4 +1,5 @@
 import time
+import math
 class bidir:
 	def __init__(self, line,chrom,start, stop, params, TFS, raw):
 		self.line 		= line

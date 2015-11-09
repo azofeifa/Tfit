@@ -31,7 +31,7 @@ struct simple_c_free_mode{
 	double SS[3];	//log-likelihood, N_forward, N_reverse
 	int ID[5] ;  //index of the segment that this belongs,start, stop, converged?
 	char chrom[6];
-	double ps[11]; //parameters for the component
+	double ps[12]; //parameters for the component
 	simple_c_free_mode(bool , double, component ,
 		int, segment *, int, double, double);
 	simple_c_free_mode();
