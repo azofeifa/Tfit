@@ -335,6 +335,8 @@ int main(int argc, char* argv[]){
 		if (rank==0){
 			FHW<<P->get_header(0);
 		}
+		FHW.flush();
+		
 		string forward_bed_graph_file 	= P->p["-i"];
 		string reverse_bed_graph_file 	= P->p["-j"];
 
