@@ -376,7 +376,7 @@ int main(int argc, char* argv[]){
 
 		T.start_time(rank, "Running Template Matching on individual segments:");
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
-				0.8,scale,ct, 64,0. ,0, FHW );	
+				0.1,scale,ct, 64,0. ,0, FHW );	
 		T.get_time(rank);
 		T.start_time(rank, "Running Model on individual segments:");
 		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,

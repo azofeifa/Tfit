@@ -653,7 +653,7 @@ simple_c_free_mode::simple_c_free_mode(bool FOUND, double ll,
 		ps[0]=C.bidir.mu,ps[1]=C.bidir.si,ps[2]=C.bidir.l, ps[3]=C.bidir.w, ps[4]=C.bidir.pi;
 		ps[5]=C.forward.b, ps[6]=C.forward.w, ps[7]=C.forward.pi;
 		ps[8]=C.reverse.a, ps[9]=C.reverse.w, ps[10]=C.reverse.pi;
-		ps[11]=C.foot_print;
+		ps[11]=C.bidir.foot_print;
 	}
 }
 simple_c_free_mode::simple_c_free_mode(){}
@@ -688,6 +688,7 @@ map<int, vector<simple_c_free_mode> > get_max_from_free_mode(map<int, vector<cla
 		double best_ll 	= nINF;
 		bool FOUND 		= false;
 		for (int r = 0; r < a->second.size(); r++){
+
 			if (A[a->first][r].ll > best_ll){
 				best_ll 			= A[a->first][r].ll;
 				best_components 	= A[a->first][r].components;

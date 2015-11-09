@@ -353,7 +353,7 @@ void component::initialize_bounds(double mu, segment * data , int K, double scal
 		
 
 		bidir 				= EMG(mu, sigma, lambda, 1.0 / (complexity*K), 0.5);
-		bidir.foot_print 	= 0;
+		bidir.foot_print 	= fp;
 		dist 				=  -(1.0/lambda);
 		j 					= get_nearest_position(  data, mu, dist);
 		k 					= get_nearest_position(data, mu, reverse_bound-mu);
@@ -1478,7 +1478,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 			forward_bound=data->maxX;
 		}
 
-		components[k].initialize_bounds(mus[k], data, K, data->SCALE , 0., topology,0, forward_bound, reverse_bound);
+		components[k].initialize_bounds(mus[k], data, K, data->SCALE , 0., topology,foot_print, forward_bound, reverse_bound);
 		
 	}
 	sort_components(components, K);

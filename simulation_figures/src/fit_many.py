@@ -236,7 +236,7 @@ if __name__ == "__main__":
 	bg_k_sim_neg 					= "/Users/joazofeifa/Lab/EMG/TF_predictions/files/many_k.neg.bedgraph"
 	
 	int_k_sim 	= "/Users/joazofeifa/Lab/EMG/TF_predictions/files/many_k_intervals.bed"
-	#make_many_simulations(BG_pos=bg_k_sim_pos, BG_neg=bg_k_sim_neg, INT=int_k_sim)
+	make_many_simulations(BG_pos=bg_k_sim_pos, BG_neg=bg_k_sim_neg, INT=int_k_sim)
 	#check_FILE(int_k_sim, bg_k_sim_pos, bg_k_sim_neg)
 	#draw_fig(no_prior, prior,gmu,gsi, gl, gw, gpi)
 
