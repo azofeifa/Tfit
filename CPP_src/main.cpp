@@ -359,8 +359,12 @@ int main(int argc, char* argv[]){
 			FHW.flush();
 		}
 		T.start_time(rank, "(MPI) sending out segment assignments:");
+		FHW<<"(main) waiting to receive elongation assignments"<<endl;
+		FHW.flush();
 		GG 	= send_out_single_fit_assignments(FSI, rank, nprocs);
 		vector<segment*> integrated_segments;
+		FHW<<"(main) received elongation assignments"<<endl;
+		FHW.flush();
 
 		T.get_time(rank);
 		FHW<<"(main) Loading bedgraph files into intervals of interest: ";
@@ -368,17 +372,25 @@ int main(int argc, char* argv[]){
 			forward_bed_graph_file, reverse_bed_graph_file, rank);
 		FHW<<to_string(int(integrated_segments.size()))<<endl;
 		FHW.flush();
+		FHW<<"(main) binning integrated segments: ";
+		FHW.flush();
 		BIN(integrated_segments, stod(P->p["-br"]), stod(P->p["-ns"]),true);
+		FHW<<"DONE"<<endl;
+		FHW.flush();
 			
 		double window 				= stod(P->p["-window_res"]);
 		double ct 					= stod(P->p["-bct"]);
 		double scale 				= stod(P->p["-ns"]);
 
 		T.start_time(rank, "Running Template Matching on individual segments:");
+		FHW<<"(main) running tmeplate matching: ";
+		FHW.flush();
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
 				0.1,scale,ct, 64,0. ,0, FHW );	
 		T.get_time(rank);
 		T.start_time(rank, "Running Model on individual segments:");
+		FHW<<"(main) About to run model"<<endl;
+		FHW.flush();
 		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,
 		 P,FHW);
 		T.get_time(rank);

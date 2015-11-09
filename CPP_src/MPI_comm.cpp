@@ -629,7 +629,6 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 	}
 
 	typedef map<string, vector<segment *> >::iterator it_type;
-	
 
 
 	return GG;
