@@ -19,7 +19,7 @@ params::params(){
 	p["-i"] 		= "";
 	p["-j"] 		= "";
 	p["-k"] 		= "";
-	
+	p["-pad"] 		= "0";
 	p["-o"] 		= "";
 	p["-br"] 		= "300";
 	p["-ns"] 		= "100";
@@ -207,6 +207,8 @@ void params::display(int nodes, int cores){
 		cout<<"-rounds    : "<<p["-rounds"]<<endl;
 		cout<<"-elon      : "<<p["-elon"]<<endl;
 		cout<<"-foot_res  : "<<p["-foot_res"]<<endl;
+		cout<<"-pad       : "<<p["-pad"]<<endl;
+		
 		cout<<"-template  : "<<p["-template"]<<endl;
 		cout<<"-ct        : "<<p["-ct"]<<endl;
 		cout<<"-mi        : "<<p["-mi"]<<endl;
@@ -408,6 +410,7 @@ string params::get_header(int ID){
 		header+="#-template    : "+p["-template"]+"\n";		
 		header+="#-elon        : "+p["-elon"]+"\n";
 		header+="#-foot_res    : "+p["-foot_res"]+"\n";
+		header+="#-pad         : "+p["-pad"]+"\n";
 		
 		header+="#-window_res  : "+p["-window_res"]+"\n";
 

@@ -353,7 +353,7 @@ int main(int argc, char* argv[]){
 		if (rank==0){
 			FHW<<"(main) Loading/Converting intervals of interest"<<endl;
 			T.start_time(rank, "Loading/Converting intervals of interest:");
-			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p5["-pad"]), spec_chrom );
+			FSI 							= load_intervals_of_interest(interval_file, IDS, stoi(P->p["-pad"]), spec_chrom );
 			T.get_time(rank);					
 			FHW.flush();
 		}
