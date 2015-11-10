@@ -29,7 +29,7 @@ class segment:
 		
 		return False
 	def get_BIC_model(self, penality):
-		noise 	= -2*self.K[0] + math.log(self.N)
+		noise 	= -2*self.K[0] + 3*math.log(self.N)
 		alt 	= -2*self.K[1] + penality*7*math.log(self.N)
 		if alt < noise:
 			return 1
@@ -57,6 +57,8 @@ def ROC(G):
 	TPS, FPS 	= list(),list()
 	OPT 		= None
 	prev 		= 0-7
+	MAX 		= None
+	ARGMAX 		= None
 	for p in penalities:
 		TN,TP 	= 0.0,0.0
 		for s in G:
@@ -68,9 +70,12 @@ def ROC(G):
 			elif (z==c and c):
 				TP+=1
 		
-		if pow(10,p)-7 > 0 and OPT is None:
+		if pow(10,p)-250 > 0 and OPT is None:
 			OPT 	= 1.0-(TN/N),TP/P
-			print OPT
+		if MAX is None or math.sqrt(pow((TP/P) -(1-(TN/N)),2) +  pow((1-(TN/N)) -(TP/P),2)) > MAX:
+			MAX  	= math.sqrt(pow((TP/P) -0.5,2) +  pow((1-TN/N) -0.5,2))
+			ARGMAX 	= 1.0-(TN/N),TP/P
+
 		TPS.append(TP/P)
 		FPS.append(1.0-(TN/N))
 		prev=pow(10,p)-7
@@ -78,8 +83,10 @@ def ROC(G):
 	L 		= sum([ (FPS[i-1] - FPS[i] )   for i in range(1, len(FPS)) ])
 	AUC 	= sum([ (FPS[i-1] - FPS[i])*TPS[i]  for i in range(1, len(FPS)) ])+(1-L)
 	ax.plot(FPS, TPS, linewidth=3., label="AUC: "+str(AUC)[:5])
-	ax.plot([0,1],[0,1], linewidth=3., linestyle="--")
-	ax.plot([OPT[0] ,OPT[0]  ], [0, OPT[1]] )
+
+	ax.plot([0,1],[0,1], linewidth=3., linestyle="--" )
+	ax.plot([OPT[0] ,OPT[0]  ], [OPT[0], OPT[1]],linewidth=3., label="theoretical BIC penality, k=7" )
+	
 	ax.set_xlim(0,1)
 	ax.set_ylim(0,1)
 	ax.grid()

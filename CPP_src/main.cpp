@@ -369,7 +369,7 @@ int main(int argc, char* argv[]){
 		T.get_time(rank);
 		FHW<<"(main) Loading bedgraph files into intervals of interest: ";
 		integrated_segments= insert_bedgraph_to_segment_joint(GG, 
-			forward_bed_graph_file, reverse_bed_graph_file, rank);
+			forward_bed_graph_file, reverse_bed_graph_file, rank, FHW);
 		FHW<<to_string(int(integrated_segments.size()))<<endl;
 		FHW.flush();
 		FHW<<"(main) binning integrated segments: ";
@@ -447,7 +447,7 @@ int main(int argc, char* argv[]){
 			printf("inserting bedgraph data\n");
 		}
 		vector<segment *> integrated_segments= insert_bedgraph_to_segment_joint(GG, 
-			P->p6["-j"], P->p6["-k"], rank);
+			P->p6["-j"], P->p6["-k"], rank, FHW);
 		if (rank==0){
 			printf("binning\n");
 		}

@@ -1671,16 +1671,20 @@ vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *
 }
 
 vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> > A , 
-	string forward, string reverse, int rank){
+	string forward, string reverse, int rank, ofstream& FHW){
 	
 	//want instead to make this interval tree
 	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
+	FHW<<"(load) made merged intervals"<<endl;
+	FHW.flush();
 	map<string, interval_tree *> AT;
 	typedef map<string, vector<merged_interval*>>::iterator it_type_4;
 	for(it_type_4 c = merged_FSI.begin(); c != merged_FSI.end(); c++) {
 		AT[c->first] 	= new interval_tree();
 		AT[c->first]->construct(c->second);
 	}
+	FHW<<"(load) interval tree"<<endl;
+	FHW.flush();
 	
 
 	int start, stop, N, j;
@@ -1724,6 +1728,8 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 		}
 	}
 
+	FHW<<"read in file"<<endl;
+	FHW.flush();
 	//now we want to get all the intervals and make a vector<segment *> again...
 	typedef 	map<string, vector<segment *> >::iterator it_type_5;
 	for(it_type_5 c = A.begin(); c != A.end(); c++) {
@@ -1749,6 +1755,8 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 			}
 		}
 	}
+	FHW<<"made segments"<<endl;
+	FHW.flush();
 	return segments;
 }
 
