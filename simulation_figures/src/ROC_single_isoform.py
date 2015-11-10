@@ -8,23 +8,23 @@ class segment:
 		self.type 	= int(line[1:].split("|")[0]!="NOISE")
 		self.N 		= sum([float(x) for x in line[1:].split("|")[2].split(",")])
 		self.K 		= {}
-		self.w 	= None
+		self.w 		= None
 		self.remove = False
 	def add_model(self, line):
 		k,ll 		= line[1:].split("\t")[0].split(",")
 		k,ll 		= float(k), float(ll)
 		if k == 1:
 			self.w 	= float(line.split("\t")[6].split(",")[0])
-		
+			self.si = float(line.split("\t")[2])
 		self.K[k] 	= ll
 	def check(self):
 		if self.K[0] > self.K[1]:
 			return False
 		if self.K[1] == -np.inf or self.K[0] == -np.inf:
 			return False
-		if self.type == 0 and self.w < 0.3:
+		if self.type == 0 and self.w < 0.2 and self.si < 100 :
 			return True
-		if self.type == 1 and self.w > 0.6:
+		if self.type == 1 and self.w > 0.8 and self.si < 100:
 			return True
 		
 		return False
@@ -55,6 +55,8 @@ def ROC(G):
 	penalities  = np.linspace(0,5.5, 200)
 	P,N 		= float(len([1 for s in G if s.type ])),float(len([1 for s in G if not s.type ]))
 	TPS, FPS 	= list(),list()
+	OPT 		= None
+	prev 		= 0-7
 	for p in penalities:
 		TN,TP 	= 0.0,0.0
 		for s in G:
@@ -65,10 +67,19 @@ def ROC(G):
 				TN+=1
 			elif (z==c and c):
 				TP+=1
+		
+		if pow(10,p)-7 > 0 and OPT is None:
+			OPT 	= 1.0-(TN/N),TP/P
+			print OPT
 		TPS.append(TP/P)
 		FPS.append(1.0-(TN/N))
-	AUC 	= sum([ (FPS[i-1] - FPS[i])*TPS[i]  for i in range(1, len(FPS)) ])
+		prev=pow(10,p)-7
+	
+	L 		= sum([ (FPS[i-1] - FPS[i] )   for i in range(1, len(FPS)) ])
+	AUC 	= sum([ (FPS[i-1] - FPS[i])*TPS[i]  for i in range(1, len(FPS)) ])+(1-L)
 	ax.plot(FPS, TPS, linewidth=3., label="AUC: "+str(AUC)[:5])
+	ax.plot([0,1],[0,1], linewidth=3., linestyle="--")
+	ax.plot([OPT[0] ,OPT[0]  ], [0, OPT[1]] )
 	ax.set_xlim(0,1)
 	ax.set_ylim(0,1)
 	ax.grid()

@@ -383,7 +383,6 @@ int main(int argc, char* argv[]){
 		double scale 				= stod(P->p["-ns"]);
 
 		T.start_time(rank, "Running Template Matching on individual segments:");
-		FHW<<"(main) running tmeplate matching: ";
 		FHW.flush();
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
 				0.1,scale,ct, 64,0. ,0, FHW );	
@@ -394,10 +393,14 @@ int main(int argc, char* argv[]){
 		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,
 		 P,FHW);
 		T.get_time(rank);
+		FHW<<"(main) Gathering all simple c free model"<<endl;		
+		FHW.flush();
 		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
 		if (rank==0){//write_out_to_MLE
 			write_out_models_from_free_mode(GGG, P, job_ID, IDS);
 		}
+		FHW<<"(main) gathered all simple c free model"<<endl;		
+		FHW.flush();
 		
 		if (rank==0){
 			collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
