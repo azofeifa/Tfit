@@ -888,7 +888,10 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 		    i 				= 1;
 		    bool inserted 	= false;
 		    FHW<<"merging..."<<i<<","<<N<<endl;
+
 		    while (i < N and not inserted){
+		    	FHW<<i<<" "<<N<<endl;
+		    	FHW.flush();
 		    	while (i<N and G[c->first][i].start < I->stop and G[c->first][i].stop > I->start ){
 		    		I->update(G[c->first][i]);
 		    		i++;
