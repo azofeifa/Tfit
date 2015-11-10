@@ -393,7 +393,7 @@ int main(int argc, char* argv[]){
 		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,
 		 P,FHW);
 		T.get_time(rank);
-		FHW<<"(main) Gathering all simple c free model"<<endl;		
+		FHW<<"\n(main) Gathering all simple c free model"<<endl;		
 		FHW.flush();
 		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
 		if (rank==0){//write_out_to_MLE
