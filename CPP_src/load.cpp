@@ -1674,6 +1674,9 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 	string forward, string reverse, int rank, ofstream& FHW){
 	
 	//want instead to make this interval tree
+	FHW<<"(load) making merged intervals: "<<A.size()<<endl;
+	FHW.flush();
+	
 	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
 	FHW<<"(load) made merged intervals"<<endl;
 	FHW.flush();
