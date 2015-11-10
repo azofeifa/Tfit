@@ -882,26 +882,31 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 		    G[c->first] 	= bubble_sort(G[c->first]);
 
 		    j 				= 0;
+		    merged_interval * I = new  merged_interval(G[c->first][0].start, G[c->first][0].stop, G[c->first][0], j);
+		    I->parameters 	= G[c->first][0].parameters;
 		    N 				= G[c->first].size();
 		    i 				= 1;
 		    bool inserted 	= false;
-	    	merged_interval * I = new  merged_interval(G[c->first][0].start, G[c->first][0].stop, G[c->first][0], j);
-	    	I->parameters 	= G[c->first][0].parameters;
-	    	if (i==N){
-	    		A[c->first].push_back(I);
-	    	}
-		    while (i < N ){
-		    	
-		    	while (i<N and G[c->first][i].start < I->stop and G[c->first][i].stop > I->start ){
+
+		    while (i < N and not inserted){
+		    	while (i<N and G[c->first][i].start <= I->stop and G[c->first][i].stop >= I->start ){
 		    		I->update(G[c->first][i]);
 		    		i++;
 		    	}
 		    	A[c->first].push_back(I);
-				merged_interval * I = new  merged_interval(G[c->first][i].start, G[c->first][i].stop, G[c->first][i], j);
-		    	I->parameters 	= G[c->first][0].parameters;
-		    
-		    	i++;
+		    	inserted=true;
+		    	if (i < N){
+		    		I 	= new merged_interval(G[c->first][i].start, G[c->first][i].stop, G[c->first][i], j);
+				    I->parameters 	= G[c->first][i].parameters;
+
+		    		inserted=false;
+		    		j++;
+		    	}
+		    //	i++;
 		    }
+			if (not inserted){
+				A[c->first].push_back(I);		    	
+			}
 		}
 	}
 	return A;
