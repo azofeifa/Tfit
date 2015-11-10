@@ -862,7 +862,7 @@ vector<segment*> load_bedgraphs_single(string forward_strand,
 	return segments;
 }
 
-map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, vector<segment *> > FSI){
+map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, vector<segment *> > FSI, ofstream& FHW){
 	map<string, vector<interval>> G;	
 	typedef map<string, vector<segment *> >::iterator it_type_2;
 	for (it_type_2 i = FSI.begin(); i != FSI.end(); i++){
@@ -880,13 +880,14 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 	for(it_type c = G.begin(); c != G.end(); c++) {
 		if (G[c->first].size()>0){
 		    G[c->first] 	= bubble_sort(G[c->first]);
-
+		    FHW<<"bubble sort"<<endl;
 		    j 				= 0;
 		    merged_interval * I = new  merged_interval(G[c->first][0].start, G[c->first][0].stop, G[c->first][0], j);
 		    I->parameters 	= G[c->first][0].parameters;
 		    N 				= G[c->first].size();
 		    i 				= 1;
 		    bool inserted 	= false;
+		    FHW<<"merging..."<<i<<","<<N<<endl;
 		    while (i < N){
 		    	while (i<N and G[c->first][i].start < I->stop and G[c->first][i].stop > I->start ){
 		    		I->update(G[c->first][i]);
@@ -903,6 +904,7 @@ map<string, vector<merged_interval*> > segments_to_merged_intervals(map<string, 
 		    	}
 		    //	i++;
 		    }
+		    FHW<<"merged"<<endl;
 			if (not inserted){
 				A[c->first].push_back(I);		    	
 			}
@@ -1607,7 +1609,8 @@ void write_gtf_file_model_fits(vector<final_model_output> A, params * P){
 vector<segment* > insert_bedgraph_to_segment_single(map<string, vector<segment *> > A , string FILE, int rank){
 	
 	//want instead to make this interval tree
-	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
+	ofstream FHW;
+	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A, FHW);
 	map<string, interval_tree *> AT;
 	typedef map<string, vector<merged_interval*>>::iterator it_type_4;
 	for(it_type_4 c = merged_FSI.begin(); c != merged_FSI.end(); c++) {
@@ -1677,7 +1680,7 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 	FHW<<"(load) making merged intervals: "<<A.size()<<endl;
 	FHW.flush();
 	
-	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A);
+	map<string, vector<merged_interval*> > merged_FSI 	= segments_to_merged_intervals( A, FHW);
 	FHW<<"(load) made merged intervals"<<endl;
 	FHW.flush();
 	map<string, interval_tree *> AT;
