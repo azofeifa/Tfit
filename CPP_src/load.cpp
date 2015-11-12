@@ -12,6 +12,13 @@
 #include "across_segments.h"
 #include "model_selection.h"
 #include <cmath>
+#include <math.h> 
+#include <limits>
+#include <iostream>
+#include <algorithm>
+#include <unistd.h>
+#include <random>
+
 #include <stdio.h>
 #include <time.h>
 #include <math.h> 
@@ -1345,13 +1352,50 @@ void write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir,
 	ofstream FHW;
 	FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
 	FHW<<P->get_header(4);
+	int ID 	= 0;
 	for (it_type c = G.begin(); c!=G.end(); c++){
 		for (int i = 0; i < c->second.size(); i++){
-			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<endl;
+			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<"\tME_"<<to_string(ID)<<endl;
+			ID++;
 		}
 	}
 	FHW.close();
 }
+
+void append_noise_intervals(string noise_bed_file, string bidir_file){
+	ofstream bidir_pred;	
+	ifstream FH(noise_bed_file);
+  	random_device rd;
+	mt19937 mt(rd());
+	
+	uniform_real_distribution<double> dist(0, 1);
+	
+  	bidir_pred.open (bidir_file,  ofstream::out |  ofstream::app);
+	if (FH){
+		string chrom, line;
+		vector<string> lineArray;
+		double start, stop,l, center;
+		while(getline(FH, line)){
+			lineArray=splitter(line, "\t");
+			chrom 	= lineArray[0];
+			start, stop 	= stod(lineArray[1]), stod(lineArray[2]);
+			l 				= stop - start;
+			center 	= (stop+start)/2.;
+			if (chrom.size()==4  and l > 10000 and dist(mt)<0.05 ){
+				bidir_pred<<chrom+"\t"+to_string(int(center-1000))	+"\t"+ to_string(int(center+1000))+"\tNOISE"<<endl;
+			}
+		}
+	}else{
+		printf("COULDNT OPEN NOISE FILE\n");
+	}
+	FH.close();
+	bidir_pred.close();
+}
+
+
+
+
+
 
 string getp4_param_header(params * P){
 	string header 	= "";
@@ -2025,10 +2069,14 @@ void get_noise_mean_var(string noise_file, string bedgraph, double * mean, doubl
 
 void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > > G, 
 	params * P, int job_ID,map<int, string> IDS){
+	//========================================================================================
+	//write out each model parameter estimates
 	double scale 	= stof(P->p["-ns"]);
 	double penality = stof(P->p["-ms_pen"]) ;
 	string out_dir 	= P->p["-o"];
 	ofstream FHW;
+
+
 	FHW.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv");
 	FHW<<P->get_header(0);
 	
@@ -2112,11 +2160,67 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 			FHW<<k_header;
 		
 			if (k->first>0){
-				FHW<<mus+"\t"+sigmas+"\t"+lambdas+"\t" + pi+"\t" + fps+ "\t" + ws + "\t" + fbs+"\t" +ras ;
+				FHW<<mus+"\t"+sigmas+"\t"+lambdas+"\t" + pis+"\t" + fps+ "\t" + ws + "\t" + fbs+"\t" +ras ;
 			}
 			FHW<<endl;
 		}
 	}
+
+	//========================================================================================
+	//perform model selection, write out bed files
+	ofstream FHW_bed;
+
+
+	FHW_bed.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidirectional_hits_intervals.bed");
+	FHW_bed<<P->get_header(0);
+	double Penality 	= 100;
+	double BIC_score;
+	string M,S,L,PI, W,FW, RW, FP, LL, POS,NEG;
+	for (it_type_1 s = G.begin(); s!=G.end(); s++){ //iterate over each segment
+		double BIC_MAX 		= INF;
+		int arg_K 		= 0;
+		for (it_type_2 k 	= s->second.begin(); k != s->second.end(); k++){//iterate over each model_complexity
+			for (it_type_3 c = k->second.begin(); c!=k->second.end(); c++){
+			
+				BIC_score 	= -2*(*c).SS[0] + (k->first+1)*(Penality)*log((*c).SS[1] + (*c).SS[2]);
+				if (BIC_score < BIC_MAX){
+					arg_K 	= k->first;
+					BIC_MAX = BIC_score;
+				}
+			}
+		}
+		if (arg_K!=0){
+			for (it_type_3 c 	= s->second[arg_K].begin(); c!= s->second[arg_K].end(); c++   ){
+				string chrom 		= (*c).chrom;
+				int start 		= (*c).ID[1];
+				double mu 			= ((*c).ps[0]*scale + (*c).ID[1] );
+				double sigma 		= ((*c).ps[1]*scale);
+				double lambda 		= scale/(*c).ps[2];
+				if (sigma < 1000 and lambda < 1000 and (*c).ps[3] > 0.1 ){
+					M  			= to_string((*c).ps[0]*scale + (*c).ID[1] );
+					S 			= to_string((*c).ps[1]*scale);
+					L 			= to_string(scale/(*c).ps[2]);
+					PI 			= to_string( (*c).ps[4]);
+					W 			= to_string( (*c).ps[3]);
+					FW 			= to_string( (*c).ps[6]); 
+					RW 			= to_string( (*c).ps[9]);
+					FP 			= to_string( scale*(*c).ps[11]  );
+					LL 			= to_string((*c).SS[0]);
+					POS 		= to_string((*c).SS[1]);
+					NEG 		= to_string((*c).SS[2]);
+
+					INFO 		= IDS[s->first]+ "|" + M + "," + S + ","+ L +","+PI+","+W+","+FW+","+RW + ","+LL+ "," +POS+ ","+NEG  ;
+
+					FHW_bed<<chrom+"\t"+to_string(int(mu-sigma-lambda))+"\t"+to_string(int(mu+sigma+lambda))<<"\t"<<INFO<<endl;
+				}
+			}
+		}
+	}
+	
+
+
+
+
 	
 
 }

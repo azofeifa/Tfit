@@ -172,63 +172,79 @@ int main(int argc, char* argv[]){
 		}
 		FHW<<"done\n";
 		FHW.flush();
-		
-		T.get_time(rank);
-		if (P->p4["-MLE"] == "1"){
-			vector<segment *> bidir_segments;
-			if (not G.empty()  ){
-				T.start_time(rank, "loading BG files:");
-				FHW<<"(main) loading bidir prediction files...";
-				FHW.flush();
 
-				bidir_segments 	= bidir_to_segment( G, 
-					forward_bedgraph,reverse_bedgraph, stoi(P->p4["-pad"]),P->p4["-chr"],chrom_to_ID   );
-				T.get_time(rank);
-				FHW<<"done\n";
 
-				FHW.flush();
+		string bidir_predictions 	= out_file_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed";
+		append_noise_intervals(noise_bed_file, bidir_predictions);
+		map<int, string> IDS;
+		vector<segment *> FSI;
 
-			}
-			vector<simple_c> fits;
-			if (not bidir_segments.empty()){
-				FHW<<"(main) bining bidir segments...";
-				BIN(bidir_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true );
-				FHW<<"done\n";
-				FHW.flush();
-				FHW<< "MLE fit on " + node_name + ", going to process " + to_string(int(bidir_segments.size())) + " segments"<<endl;
-				FHW.flush();
+		map<string, vector<segment *> > GG;
 
-				T.start_time(0, "MLE fit on " + node_name + ", going to process " + to_string(int(bidir_segments.size())) + " segments: ");
-				fits 			= run_model_accross_segments_to_simple_c(bidir_segments, P,FHW);
-				T.get_time(0);
-			}
-			FHW<<"(main) (MPI) gathering MLE results...";
-				
-			T.start_time(rank, "(MPI) gathering MLE results:");
-			map<string, map<int, vector<rsimple_c> > > rcG 	= gather_all_simple_c_fits(bidir_segments, 
-				fits, rank, nprocs,ID_to_chrom);
-			FHW<<"done";
-			FHW.flush();
-			T.get_time(rank);
-			
-			vector<segment *> FSI;
-			map<int, string> IDS;	
-					
-			if (rank==0 and not rcG.empty() ){//perform and optimize model selection based on number of bidir counts
-				T.start_time(rank, "opt model selection:");
-				vector<final_model_output> 	A  				= optimize_model_selection_bidirs(rcG, P, FHW,ID_to_chrom);
-				T.get_time(rank);
-				T.start_time(rank, "writing out bidir model selection:");
-				write_out_MLE_model_info(A, P, job_name, job_ID);
-				T.get_time(rank);
-				
-
-			}
-			fits.clear();
-			
-		}
 		if (rank==0){
-			collect_all_tmp_files(P->p4["-log_out"], job_name, nprocs, job_ID);
+			FHW<<"(main) Loading/Converting intervals of interest"<<endl;
+			T.start_time(rank, "Loading/Converting intervals of interest:");
+			FSI 							= load_intervals_of_interest(bidir_predictions, IDS, stoi(P->p4["-pad"]), spec_chrom );
+			T.get_time(rank);					
+			FHW.flush();
+		}
+		//===
+		//want to add the input parameters into P->p
+		typedef map<string, string>::iterator it_type;
+		for (it_type i = P->p4.begin(); i!=P->p4.end();i++){
+			if (P->p.find(i->first)!=P->p.end()){
+				P->p[i->first] 	= i->second;
+			}
+		}
+
+		string forward_bed_graph_file 	= P->p["-i"];
+		string reverse_bed_graph_file 	= P->p["-j"];
+
+
+
+		T.start_time(rank, "(MPI) sending out segment assignments:");
+		FHW<<"(main) waiting to receive elongation assignments"<<endl;
+		FHW.flush();
+		GG 	= send_out_single_fit_assignments(FSI, rank, nprocs);
+		vector<segment*> integrated_segments;
+		FHW<<"(main) received elongation assignments"<<endl;
+		FHW.flush();
+
+		T.get_time(rank);
+		FHW<<"(main) Loading bedgraph files into intervals of interest: ";
+		integrated_segments= insert_bedgraph_to_segment_joint(GG, 
+			forward_bed_graph_file, reverse_bed_graph_file, rank, FHW);
+		FHW<<to_string(int(integrated_segments.size()))<<endl;
+		FHW.flush();
+		FHW<<"(main) binning integrated segments: ";
+		FHW.flush();
+		BIN(integrated_segments, stod(P->p4["-br"]), stod(P->p4["-ns"]),true);
+		FHW<<"DONE"<<endl;
+		FHW.flush();
+			
+
+		T.start_time(rank, "Running Template Matching on individual segments:");
+		FHW.flush();
+		run_global_template_matching(integrated_segments, out_file_dir, window, 
+				0.1,scale,ct, 64,0. ,0, FHW );	
+		T.get_time(rank);
+		T.start_time(rank, "Running Model on individual segments:");
+		FHW<<"(main) About to run model"<<endl;
+		FHW.flush();
+		vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,
+		 P,FHW);
+		T.get_time(rank);
+		FHW<<"\n(main) Gathering all simple c free model"<<endl;		
+		FHW.flush();
+		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
+		if (rank==0){//write_out_to_MLE
+			write_out_models_from_free_mode(GGG, P, job_ID, IDS);
+		}
+		FHW<<"(main) gathered all simple c free model"<<endl;		
+		FHW.flush();
+
+		if (rank==0){
+			collect_all_tmp_files(P->p["-log_out"], job_name, nprocs, job_ID);
 		}
 		
 
@@ -236,7 +252,9 @@ int main(int argc, char* argv[]){
 			free_segments(segments);
 		}
 		MPI::Finalize();
-		TF.get_time(rank);
+		if (rank==0){
+			TF.get_time(rank);
+		}
 
 		return 0;
 	}else if (P->module=="SINGLE"){

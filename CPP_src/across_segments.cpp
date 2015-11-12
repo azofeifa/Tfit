@@ -599,14 +599,12 @@ map<int, vector<classifier> > make_classifier_struct_free_model(params * P, segm
 		double fp;
 		double scale 	= stod(P->p["-ns"]);
 		for (int k =min_k; k <= max_k; k++){
-			for (int f =0 ; f < fp_res; f++){
-				fp 	= (f*delta)/scale;
-				for (int r = 0; r < rounds; r++){
-					A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
-					stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
-					stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),fp ));
-				}
+			for (int r = 0; r < rounds; r++){
+				A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
+				stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
+				stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 ));
 			}
+		
 		}
 	}
 	return A;

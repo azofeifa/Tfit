@@ -5,13 +5,13 @@
 -v 		= 1
 -i 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
 -j 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
--k 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/single_isoform.bed
+-k 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
 -o 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -log_out	= /Users/joazofeifa/Lab/EMG_logs/
 -br 		= 100 #binning resolution
 -ns 		= 100 #normalizing scale
 -minK 		= 1  #min number of models to consider
--maxK		= 1 #max number of models to consider
+-maxK		= 2 #max number of models to consider
 -rounds 	= 1 #number of random EM initializations
 -ct 		= 0.0001 #EM convergence threshold difference
 -mi 		= 2000 #Number of EM iterations before it is aborted

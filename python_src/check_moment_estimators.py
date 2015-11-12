@@ -174,7 +174,8 @@ if __name__ == "__main__":
 	#62,182,362-62,198,443
 	#8,246,915-8,255,824
 	#chr1:3,233,790-3,239,961
-	X 	= load.grab_specific_region("chr1",3233790,3239961, SHOW=False, bins=100, 
+	#chr1:1,013,872-1,017,272
+	X 	= load.grab_specific_region("chr1",1013872,1017272, SHOW=False, bins=500, 
 		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100

@@ -198,4 +198,8 @@ vector<vector<int> > get_line_start_stops(params * , int );
 void write_bootstrap(vector<boostrap_struct> , map<int, string> , params * ,int );
 vector<segment *> merge_intervals_of_interest(vector<segment *>);
 
+void append_noise_intervals(string, string);
+
+
+
 #endif

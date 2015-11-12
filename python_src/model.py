@@ -327,7 +327,7 @@ class EMGU:
 			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-		mus 		= [30]
+		mus 		= [15]
 		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
@@ -424,16 +424,17 @@ if __name__ == "__main__":
 	#==================================
 	#testing MAP-EM procedure
 
-	X 	= simulate.runOne(mu=0, s=1, l=10, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-		N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
+	# X 	= simulate.runOne(mu=0, s=1, l=10, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
+	# 	N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
 	# chr1:20,984,647-20,991,448
 	#chr1:836,835-843,549
- 	# X 		=  load.grab_specific_region("chr1",836835, 843549, 
-		# 	pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
-		# 	neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
-		# 	SHOW 	=False, bins=300)
- 	# X[:,0]-=X[0,0]
-# 	X[:,0]/=100.
+	#chr1:539,399-542,484
+ 	X 		=  load.grab_specific_region("chr1",539399, 542484, 
+			pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
+			neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
+			SHOW 	=False, bins=300)
+ 	X[:,0]-=X[0,0]
+	X[:,0]/=100.
 	clf = EMGU(noise=True, K=1,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
 		seed=True )
 	clf.fit(X)
