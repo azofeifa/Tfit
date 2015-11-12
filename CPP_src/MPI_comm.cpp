@@ -589,7 +589,7 @@ map<string, vector<segment *> > send_out_single_fit_assignments(vector<segment *
 			}
 			//now send out structs
 			int u 	= 0;
-			for (int i =start; i<stop; i++){
+			for (int i =start; i< stop; i++){
 				simple_seg_struct SSS;
 				for (int c = 0; c < 6; c++){
 					if (c <FSI[i]->chrom.size() ){

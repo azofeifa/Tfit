@@ -1437,7 +1437,7 @@ vector<segment*> load_intervals_of_interest(string FILE, map<int, string>&  IDS,
 		string strand; 
 		while(getline(FH, line)){
 			lineArray=splitter(line, "\t");
-			if (lineArray[0].substr(0,1)!="#"){
+			if (lineArray[0].substr(0,1)!="#" and lineArray.size()==4){
 				if (lineArray.size() > 3){
 					IDS[i] 		= lineArray[3];
 				}

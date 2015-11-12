@@ -175,7 +175,9 @@ int main(int argc, char* argv[]){
 
 
 		string bidir_predictions 	= out_file_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed";
-		append_noise_intervals(noise_bed_file, bidir_predictions);
+		if (rank==0){
+			append_noise_intervals(noise_bed_file, bidir_predictions);
+		}
 		map<int, string> IDS;
 		vector<segment *> FSI;
 
