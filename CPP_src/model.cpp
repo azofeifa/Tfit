@@ -279,7 +279,7 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		gamma_distribution<double> dist_lambda(alpha_1,beta_1);
 		uniform_real_distribution<double> dist_lambda_2(1, 500);
 		uniform_real_distribution<double> dist_sigma_2(1, 50);
-		uniform_real_distribution<double> dist_footprint(0, 500);
+		uniform_real_distribution<double> dist_footprint(0, 100);
 		
 		gamma_distribution<double> dist_lengths(1,( (data->maxX-data->minX)/(K)));
 		
@@ -636,11 +636,11 @@ void component::update_parameters(double N, int K){
 		
 		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
-		if (bidir.si > 20){
+		if (bidir.si > 10){
 			EXIT 	= true;
 			bidir.w = 0;
 		}
-		if ((r / N) < pow(10,-3) ){
+		if ((r / N) < pow(10,-5) ){
 			EXIT 	= true;
 		}
 		bidir.l 	= min((r+ALPHA_1) / (bidir.ey + BETA_1), 5.);
@@ -649,7 +649,7 @@ void component::update_parameters(double N, int K){
 			EXIT 	= true;
 			bidir.w = 0;
 		}
-		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 5.0);
+		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 2.0);
 
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);

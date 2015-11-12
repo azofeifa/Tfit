@@ -92,6 +92,7 @@ int main(int argc, char* argv[]){
 		}
 		FHW<<"#Temp Log File for mpi process: " + to_string(rank) + "\n";
 		FHW<<P->get_header(4);
+		FHW.flush();
 
 
 		//load bed graph files into map<string, double **>;
@@ -131,11 +132,13 @@ int main(int argc, char* argv[]){
 		
 		T.start_time(rank, "loading BG files:");
 		FHW<<"(main) loaded begraph files...";
+		FHW.flush();
 		map<string, int> chrom_to_ID;
 		map<int, string> ID_to_chrom;
 		vector<segment*> segments 	= load_bedgraphs_total(forward_bedgraph, 
 			reverse_bedgraph, BINS, scale, spec_chrom, chrom_to_ID, ID_to_chrom );
 		FHW<<"done\n";
+		FHW.flush();
 		T.get_time(rank);
 		if (segments.empty()){
 			printf("segments not populated, exiting...\n");
@@ -155,9 +158,11 @@ int main(int argc, char* argv[]){
 			FHW<<"ran template matching algorithm\n";
 			
 		}
+		FHW.flush();
 		map<string , vector<vector<double> > > G;
 		T.start_time(rank, "(MPI) gathering bidir predictions:");	
 		FHW<<"(main) gathering all bidir predictions...";
+		FHW.flush();
 		if (P->p4["-show_seeds"] == "1"){
 			G = gather_all_bidir_predicitions(all_segments, 
 				segments , rank, nprocs, out_file_dir, job_name, job_ID,P,FHW);

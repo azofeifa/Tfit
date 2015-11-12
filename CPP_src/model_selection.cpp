@@ -465,38 +465,9 @@ vector<final_model_output> optimize_model_selection_bidirs(map<string, map<int, 
 	int error;
 	double best_error 	= INF;
 	double best_penality 	= lower_bound;
-	if (delta==0){
-		delta 	= 1;
-	}
 	vector <int > counts,scores;
 	log_file<<"(optimize_model_selection_bidirs) getting counts...";
-	for (it_type B=G.begin(); B!=G.end(); B++){//segment of data
-		count 		= 1;
-		for (it_type_2 C = B->second.begin(); C!=B->second.end(); C++){ //complexity
-			for (it_type_3 m = C->second.begin(); m != C->second.end(); m++){ //components...
-				if ( (*m).st_sp[4] > count){
-					count 	= (*m).st_sp[4];
-				}
-			}
-		}
-		counts.push_back(count);
-	}	
 	log_file<<"done\n";
-	while (penality <= upper_bound){
-		error 			= 0;
-		scores 			= get_scores(G, penality);
-		if (scores.size()!=counts.size()){
-			log_file<<"(optimize_model_selection_bidirs) ERROR: scores.size()!=counts.size()\n";
-		}else{
-			for (int i =0; i < scores.size(); i++){
-				error+=abs(scores[i]-counts[i]);
-			}
-		}
-		if (error < best_error){
-			best_error 	= error, best_penality 	= penality;
-		}
-		penality+=delta;
-	}
 	
 	//now we have the "best" BIC penailty score
 	//we want to return a data structure for each segment of data, the corrent model

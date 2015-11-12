@@ -143,7 +143,7 @@ def run_MM(X, window=500, scale=100):
 		ax2.scatter(ratio_x, ratio_y,c=colors[i])
 		ax2.set_xlim(X[0,0],X[-1,0])
 		ax2.grid()
-		ax3.scatter(ratio_x, densities,c=colors[i])
+		ax3.scatter(ratio_x, [d/1000. for d in densities],c=colors[i])
 		ax3.set_xlim(X[0,0],X[-1,0])
 		ax3.grid()
 		
@@ -173,7 +173,8 @@ if __name__ == "__main__":
 	#92,308,146-92,315,100
 	#62,182,362-62,198,443
 	#8,246,915-8,255,824
-	X 	= load.grab_specific_region("chr1",8249196,8256106, SHOW=False, bins=100, 
+	#chr1:3,233,790-3,239,961
+	X 	= load.grab_specific_region("chr1",3233790,3239961, SHOW=False, bins=100, 
 		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100
