@@ -16,6 +16,8 @@
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -opt_res 		= 5 #grid search resolution
 -r_mu 			= 1 #seed EM randomally from the peak finder
+-minK 			= 1
+-maxK 			= 2
 -ALPHA_0 		= 1 #prior for sigma
 -BETA_0 		= 1 #prior for sigma
 -ALPHA_1 		= 500 #prior for lambda

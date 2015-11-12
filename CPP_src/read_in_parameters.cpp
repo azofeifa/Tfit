@@ -76,6 +76,8 @@ params::params(){
 	p4["-density"] 			= "1000";
 	p4["-window_res"] 		= "100";
 	p4["-bct"] 				= "0.9";
+	p4["-minK"] 		= "1";
+	p4["-maxK"] 		= "1";
 	
 	p4["-chr"] 				= "all";
 	p4["-opt_res"] 			= "5";
