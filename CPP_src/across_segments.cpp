@@ -214,7 +214,7 @@ vector<simple_c> get_max(vector<classifier> clfs,
 	vector<simple_c> scs;
 	simple_c sc;
 	for (int i = 0; i < clfs.size(); i++){
-		if (clfs[i].ll > max and clfs[i].converged){
+		if (clfs[i].ll > max  ){
 			max=clfs[i].ll, argmax=clfs[i];	
 		}
 	}

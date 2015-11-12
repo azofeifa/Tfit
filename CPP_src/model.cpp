@@ -23,7 +23,7 @@ double IC(double x){ //Standard Normal CDF
 
 
 double R(double x){ //Mills Ratio
-	if (x > 8){
+	if (x > 4){
 		return 1.0 / x;
 	}
 	double N = IC(x);
@@ -636,7 +636,7 @@ void component::update_parameters(double N, int K){
 		
 		bidir.si 	= pow(abs((1. /(r + 3 + ALPHA_0 ))*(bidir.ex2-2*bidir.mu*bidir.ex + 
 			r*pow(bidir.mu,2) + 2*BETA_0  )), 0.5) ;
-		if (bidir.si > 10){
+		if (bidir.si > 50){
 			EXIT 	= true;
 			bidir.w = 0;
 		}
@@ -650,7 +650,8 @@ void component::update_parameters(double N, int K){
 			bidir.w = 0;
 		}
 		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 2.0);
-
+		bidir.foot_print 	= floor((bidir.foot_print*10000.0))/10000.0;
+		//bidir.foot_print 	= 0.0;
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
@@ -1133,6 +1134,8 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 	double l 	= data->maxX - data->minX;
 	pi 	= sum(data->X[1], data->XN)/ data->N;
 	double vl 	= 1.0 / l;
+	double center 	= (data->start + data->stop) / 2.;
+	
 	if (K==0){
 		//calc_likeihood coming from uniform model, only
 		ll 	= 0;
@@ -1169,6 +1172,10 @@ int classifier::fit(segment * data, vector<double> mu_seeds ){
 		if (mu_seeds.size()>0){
 			i 	= sample_centers(mu_seeds ,  p);
 			mu 	= mu_seeds[i];
+			uniform_real_distribution<double> dist_uni2(mu-3,mu+3);
+	
+			mu 	= dist_uni2(mt);
+
 		}else{
 			mu 			= dist_uni(mt);
 		}
