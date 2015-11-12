@@ -106,6 +106,8 @@ class component_bidir:
 		self.EY_f,self.EY_r 		= 0.,0. #running total
 		self.E_X2 					= 0. #running total 
 		self.C 						= 0.
+		self.Cf 					= 0.
+		self.Cr 					= 0.
 
 
 		self.type 					= "EMGU"
@@ -190,6 +192,7 @@ class component_bidir:
 			self.E_X2+=(pow(E_X, 2) + self.EY2(z,1) - pow(E_Y, 2))*r
 			self.r[1]+=r
 			self.C+=max( ((z-self.mu) -E_Y) *r,0)
+			self.Cf+=z*r
 		if reverse_ct and norm_reverse:
 			r 	= reverse_ct*(self.ri[-1]/norm_reverse)
 			E_Y = self.EY(z,-1)
@@ -201,7 +204,7 @@ class component_bidir:
 			self.r[-1]+=r
 
 			self.C+=max((-(z-self.mu) -E_Y)   *r ,0)
-			
+			self.Cr+=z*r
 
 	def eval(self, z,forward_ct, reverse_ct):
 		if forward_ct:
@@ -229,13 +232,13 @@ class component_bidir:
 		self.l 							= 1.0 /(((self.EY_f+self.EY_r) + self.c.beta_2) / (r + self.c.alpha_2))
 		self.l 							= min(2,self.l)
 		self.foot_print 				= min((self.C / (r+0.1)), 20)
-
+		print self.foot_print, "****"
 		#====================================================
 		self.r[1], self.r[-1] 			= 0,0
 		self.ri[1], self.ri[-1] 		= 0,0
 		#====================================================
 		self.EX_f,self.EX_r, self.EY_f,self.EY_r, self.E_X2,self.C 	= 0.,0.,0.,0.0,0.0,0.0
-		
+		self.Cf, self.Cr 	= 0,0
 	def reset(self):
 		#=======================================
 		#new parameters for the Bidirectional
@@ -317,7 +320,7 @@ class EMGU:
 			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-		mus 		= [30]
+		mus 		= [0]
 		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
@@ -416,16 +419,16 @@ if __name__ == "__main__":
 	#==================================
 	#testing MAP-EM procedure
 
-	#X 	= simulate.runOne(mu=0, s=1, l=10, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-#		N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
+	X 	= simulate.runOne(mu=0, s=1, l=10, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
+		N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
 	# chr1:20,984,647-20,991,448
 	#chr1:836,835-843,549
- 	X 		=  load.grab_specific_region("chr1",836835, 843549, 
-			pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
-			neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
-			SHOW 	=False, bins=300)
- 	X[:,0]-=X[0,0]
- 	X[:,0]/=100.
+ 	# X 		=  load.grab_specific_region("chr1",836835, 843549, 
+		# 	pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
+		# 	neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
+		# 	SHOW 	=False, bins=300)
+ 	# X[:,0]-=X[0,0]
+# 	X[:,0]/=100.
 	clf = EMGU(noise=True, K=1,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
 		seed=True )
 	clf.fit(X)

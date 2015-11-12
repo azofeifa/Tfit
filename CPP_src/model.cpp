@@ -649,7 +649,7 @@ void component::update_parameters(double N, int K){
 			EXIT 	= true;
 			bidir.w = 0;
 		}
-		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 2.0);
+		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 5.0);
 		bidir.foot_print 	= floor((bidir.foot_print*10000.0))/10000.0;
 		//bidir.foot_print 	= 0.0;
 		//now for the forward and reverse strand elongation components

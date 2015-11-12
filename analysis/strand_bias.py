@@ -137,11 +137,11 @@ if __name__ == "__main__":
 	# print f(50)
 	# print g(50)
 	DIR 			="/Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/"
-#	DIR 			= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/"
+	DIR 			= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_files/"
 		
 	REF 						= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
-	DMSO2_3 						="DMSO2_3-1_bidirectional_hits_intervals.bed"
-	DMSO2_3 						= "DMSO2_3-1_bidirectional_hits_intervals.bed"
+	DMSO2_3 						="DMSO2_3-2_bidirectional_hits_intervals.bed"
+	DMSO2_3 						= "DMSO2_3-2_bidirectional_hits_intervals.bed"
 	DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_bed_file(DIR+DMSO2_3)
 		
 	R 					= refseq(REF)
