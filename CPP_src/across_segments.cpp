@@ -177,26 +177,12 @@ vector<classifier> get_vector_classifiers(params * P, int K){
 
 vector<classifier> get_vector_classifiers2(params * P, int K){
 
-	int res 	= stoi(P->p4["-foot_res"]);
-	double lower, upper;
-	lower=0, upper=1000;
-
-	double delta; 
-	if (res==0){
-		delta 		= 0;
-	}else{
-		delta 	= (upper-lower) / float(res);
-	}
-	vector<classifier> clfs(stoi(P->p4["-rounds"])*res   );
+	vector<classifier> clfs(stoi(P->p4["-rounds"])    );
 	double foot_print;
 	int i 	= 0;
 	int r 	= 0;
 	double scale 	= stod(P->p4["-ns"]);
 	while (i < clfs.size()){
-		if (r > res){
-			r=0;
-		}
-		foot_print 	= (delta*r + lower)/scale;
 		clfs[i] 	= classifier(K, stod(P->p4["-ct"]), stoi(P->p4["-mi"]), stod(P->p4["-max_noise"]), 
 			stod(P->p4["-r_mu"]), stod(P->p4["-ALPHA_0"]), stod(P->p4["-BETA_0"]), stod(P->p4["-ALPHA_1"]), 
 			stod(P->p4["-BETA_1"]), stod(P->p4["-ALPHA_2"]) , stod(P->p4["-ALPHA_3"]), false,foot_print );
@@ -329,7 +315,7 @@ vector<simple_c> wrapper_pp_just_segments(segment * s , params * P, int seg, int
 	noise_clf.fit(s, s->centers);
 	
 	double noise_ll 	= noise_clf.ll;
-	for (int k = s->counts; k<= s->counts+1;k++){
+	for (int k = s->counts; k<= s->counts;k++){
 		vector<classifier> 	clfs 			= get_vector_classifiers2(P,k);
 		#pragma omp parallel for num_threads(np)
 		for (int t = 0; t <  clfs.size(); t++){

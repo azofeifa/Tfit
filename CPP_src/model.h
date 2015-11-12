@@ -31,6 +31,7 @@ public:
 	double ri_forward, ri_reverse; //current responsibility
 	double ey, ex, ex2, r_forward, r_reverse;//running total
 	double ex_r;
+	double C;
 	double foot_print;
 	EMG();
 	EMG(double, double, double, double, double);

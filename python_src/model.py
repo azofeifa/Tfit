@@ -51,6 +51,7 @@ class component_elongation:
 		self.pi, self.w =(self.r[1] + self.c.beta_0) / (r+ self.c.beta_0*2), (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
 		if self.type=="noise":
 			self.w 		= min(self.c.noise_max, self.w)
+			print "HERE", self.w
 		#====================================================
 		self.r[1], self.r[-1] 			= 0,0
 		self.ri[1], self.ri[-1] 		= 0,0
@@ -101,9 +102,12 @@ class component_bidir:
 		self.r 						= {1:0., -1:0.} #running total
 		self.ri 					= {1:0., -1:0.} #current
 		#============================
-		self.E_X 					= 0. #running total
-		self.E_Y 					= 0. #running total
+		self.EX_f,self.EX_r 		= 0.,0. #running total
+		self.EY_f,self.EY_r 		= 0.,0. #running total
 		self.E_X2 					= 0. #running total 
+		self.C 						= 0.
+
+
 		self.type 					= "EMGU"
 		self.c 						= classifier #larger classifier wrapper, which has the hyperparameters
 		self.remove 				= False
@@ -124,7 +128,7 @@ class component_bidir:
 		return 0.5*(1+erf(x/m.sqrt(2.)))
 
 	def R(self, x):
-		if x > 8:
+		if x > 5:
 			return 1.0 / x
 		N,D 	= self.IC(x), self.IN(x)
 		if D < m.pow(10,-15): #python machine epsilon
@@ -181,19 +185,22 @@ class component_bidir:
 			E_Y = self.EY(z,1)
 			E_X = z-E_Y -self.foot_print 
 
-			self.E_X+=E_X *r
-			self.E_Y+=E_Y*r
+			self.EX_f+=E_X *r
+			self.EY_f+=E_Y*r
 			self.E_X2+=(pow(E_X, 2) + self.EY2(z,1) - pow(E_Y, 2))*r
 			self.r[1]+=r
+			self.C+=max( ((z-self.mu) -E_Y) *r,0)
 		if reverse_ct and norm_reverse:
 			r 	= reverse_ct*(self.ri[-1]/norm_reverse)
 			E_Y = self.EY(z,-1)
 			E_X = z+E_Y + self.foot_print
 
-			self.E_X+=E_X*r
-			self.E_Y+=E_Y*r
+			self.EX_r+=E_X*r
+			self.EY_r+=E_Y*r
 			self.E_X2+=(pow(E_X, 2) + self.EY2(z,-1) - pow(E_Y, 2))*r
 			self.r[-1]+=r
+
+			self.C+=max((-(z-self.mu) -E_Y)   *r ,0)
 			
 
 	def eval(self, z,forward_ct, reverse_ct):
@@ -213,17 +220,21 @@ class component_bidir:
 
 		
 	def set_new_parameters(self, N): #M-step
+		print self.c.alpha_1
+
 		r  								= self.r[1] + self.r[-1]
 		self.pi, self.w 				=(self.r[1] + self.c.beta_0) / (r+ self.c.beta_0*2), (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
-		self.mu 						= self.E_X  / (r+ 0.1)
-		self.si 						= pow(abs((1./ (r + 3 + self.c.alpha_1)  )*(self.E_X2 - 2*self.mu*self.E_X + r*pow(self.mu, 2) + 2*self.c.beta_1 + self.c.tau*pow(self.mu-self.c.m_0, 2)   )),0.5)
-		self.l 							= 1.0 /((self.E_Y + self.c.beta_2) / (r + self.c.alpha_2))
+		self.mu 						= (self.EX_f+self.EX_r)  / (r+ 0.1)
+		self.si 						= pow(abs((1./ (r + 3 + self.c.alpha_1)  )*(self.E_X2 - 2*self.mu*(self.EX_f+self.EX_r) + r*pow(self.mu, 2) + 2*self.c.beta_1 + self.c.tau*pow(self.mu-self.c.m_0, 2)   )),0.5)
+		self.l 							= 1.0 /(((self.EY_f+self.EY_r) + self.c.beta_2) / (r + self.c.alpha_2))
 		self.l 							= min(2,self.l)
+		self.foot_print 				= min((self.C / (r+0.1)), 20)
+		print self.foot_print
 		#====================================================
 		self.r[1], self.r[-1] 			= 0,0
 		self.ri[1], self.ri[-1] 		= 0,0
 		#====================================================
-		self.E_X, self.E_Y,self.E_X2 	= 0.,0.,0.
+		self.EX_f,self.EX_r, self.EY_f,self.EY_r, self.E_X2,self.C 	= 0.,0.,0.,0.0,0.0,0.0
 		
 	def reset(self):
 		#=======================================
@@ -287,92 +298,10 @@ class EMGU:
 		if x == 0:
 			return -np.inf
 		return m.log(x)
-	def compute_log_likelihood(self, X, components,  move_as=None, move_bs=None):
-		forward, reverse 	= 0. , 0.
-		if move_as is None:
-			move_as 		= np.zeros((len(components, )))
-		if move_bs is None:
-			move_bs 		= np.zeros((len(components, )))
-		
-		st 	= time.clock()
-		for i in range(X.shape[0]):
-			x,forward_ct, reverse_ct 	= X[i,:]
-			forward+=self.LOG(sum([c.pdf(x,1, move_a=move_as[i], move_b=move_bs[i]) for i,c in enumerate(components)]))*forward_ct
-
-		for i in range(X.shape[0]):
-			x,forward_ct, reverse_ct 	= X[i,:]
-			reverse+=self.LOG(sum([c.pdf(x,-1, move_a=move_as[i], move_b=move_bs[i]) for i,c in enumerate(components)]))*reverse_ct
-		return forward + reverse
-	def moveLs(self, X, ll, components):
-		#lets parrallelize this....
-		output_a 			= mp.Queue()
-		output_b 			= mp.Queue()
-		move 				= np.random.normal(0, self.move)
-		move_bs 			= np.array([[move if c.type=="forward" else 0. for c in components ]  ] + [[-move if c.type=="forward" else 0. for c in components ]   ])
-		move_as 			= np.array([[move if c.type=="reverse" else 0. for c in components ]  ] + [[-move if c.type=="reverse" else 0. for c in components ]   ])
-		keepers_a, keepers_b= list(),list()
-		def likelihoodWrapper(X, components, output, move_as=None, move_bs=None):
-			newll 			= self.compute_log_likelihood(X, components,move_as=move_as, move_bs=move_bs)
-			if newll > ll:
-				if move_as is not None:
-					output.put((newll, move_as ))
-				else:
-					output.put((newll, move_bs ))
-			output.put((-np.inf, np.zeros(len(components)) ))
-		processes_a 		= [mp.Process(target=likelihoodWrapper, args=(X, components,output_a),kwargs={'move_as':move_as[i]}) for i in range(len(move_as))]
-		processes_b 		= [mp.Process(target=likelihoodWrapper, args=(X, components,output_b),kwargs={'move_bs':move_bs[i]}) for i in range(len(move_bs))]
-		
-
-		for p in processes_a:
-		    p.start()
-		for p in processes_b:
-			p.start()
-
-		# Exit the completed processes
-		for p in processes_a:
-		    p.join()
-		for p in processes_b:
-		    p.join()
-		keepers_a 	= [ output_a.get() for p in processes_a]
-		keepers_b 	= [ output_b.get() for p in processes_a]
-		
-		for i,c in enumerate(components):
-			if c.type=="forward" or c.type=="reverse":
-				c.a 	+= sum([move_a[i] for ell, move_a in keepers_a ])
-				c.b 	+= sum([move_b[i] for ell, move_b in keepers_b ])
-		newll 	= self.compute_log_likelihood(X, components,move_as=None,move_bs=None)
-		return newll			
-	def moveLS_not_pp(self, X, ll, components):
-		move 				= np.random.normal(0, self.move)
-		move_bs 			= np.array([[move if c.type=="forward" else 0. for c in components ]  ] + [[-move if c.type=="forward" else 0. for c in components ]   ])
-		move_as 			= np.array([[move if c.type=="reverse" else 0. for c in components ]  ] + [[-move if c.type=="reverse" else 0. for c in components ]   ])
-		keepers_a, keepers_b= list(),list()
-		def likelihoodWrapper(X, components, output, move_as=None, move_bs=None):
-			newll 			= self.compute_log_likelihood(X, components,move_as=move_as, move_bs=move_bs)
-			if newll > ll:
-				if move_as is not None:
-					output.append((newll, move_as ))
-				else:
-					output.append((newll, move_bs ))
-			output.append((-np.inf, np.zeros(len(components)) ))
-		for i in range(len(move_as)):
-			likelihoodWrapper(X, components, keepers_a, move_as=move_as[i])
-		for i in range(len(move_bs)):
-			likelihoodWrapper(X, components, keepers_b, move_bs=move_bs[i])
-		for i,c in enumerate(components):
-			if c.type=="forward" or c.type=="reverse":
-				c.a 	+= sum([move_a[i] for ell, move_a in keepers_a ])
-				c.b 	+= sum([move_b[i] for ell, move_b in keepers_b ])
-		newll 	= self.compute_log_likelihood(X, components,move_as=None,move_bs=None)
-		return newll
-
 
 
 
 	def fit(self, X):
-		if self.seed:
-			self.peaks 	= twm.sample(X, self.K,std=1, lam=.1)
-		FHW=open("iterates.tsv", "w")
 
 
 
@@ -380,15 +309,6 @@ class EMGU:
 		#randomally initialize parameters
 		minX, maxX 	= X[0,0], X[-1,0]
 		self.minX, self.maxX 	= minX, maxX
-		if self.K==0: #testing if the data fits a uniform distribution only
-			pi 			= np.sum(X[:,1]) / np.sum(X[:,1:])
-			noise_w 	= 0.001
-			reg_w 		= 0.999
-			vl 			= 1.0 / float(maxX-minX)
-			self.ll 	= sum([self.LOG(vl*pi  ) * y for y in X[:,1]]) + sum([self.LOG(vl*(1-pi)  )*y for y in X[:,2]])
-			
-			self.rvs 	= [component_elongation(minX, maxX, 1.0, pi, None, "uniform_model", self, X.shape[0])]
-			return self.rvs, self.ll
 
 
 		ws 			= np.random.dirichlet([self.alpha_0]*self.K*3).reshape(self.K, 3)
@@ -397,23 +317,22 @@ class EMGU:
 			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-		mus 		= [110]
+		mus 		= [0,0]
 		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
 		#assign to components
 
 		self.uniform_rate= (maxX-minX)/(1*self.K)
-
-		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self, foot_print=self.foot_print) for k in range(self.K)] 
-		if self.move != 0:
-			uniforms    = [component_elongation(max(mus[k]-np.random.gamma(self.uniform_rate, 1), minX), mus[k], ws[k][1], 0., bidirs[k], "reverse",self ,0 ) for k in range(self.K)]
-			uniforms   += [component_elongation(mus[k],min(mus[k]+np.random.gamma(self.uniform_rate, 1), maxX), ws[k][2], 1., bidirs[k], "forward",self, X.shape[0] ) for k in range(self.K)]
-		else:
-			uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0.5, bidirs[k], "reverse",self ,0 , foot_print=self.foot_print) for k in range(self.K)]
-			uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 0.5, bidirs[k], "forward",self, X.shape[0] , foot_print=self.foot_print) for k in range(self.K)]
-			
+		fp 			= np.random.uniform(0,2)
+		print "*********", fp
+		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self, foot_print=fp) for k in range(self.K)] 
+	
+		uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0.5, bidirs[k], "reverse",self ,0 , foot_print=fp) for k in range(self.K)]
+		uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 0.5, bidirs[k], "forward",self, X.shape[0] , foot_print=fp) for k in range(self.K)]
+		
 		if self.noise:
+			print "HERE?"
 			uniforms+=[component_elongation(minX, maxX, 0.1, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
 		N_f, N_r 			= sum(X[:,1]), sum(X[:,2])
@@ -421,9 +340,7 @@ class EMGU:
 		ll, prevll 			= 0., -np.inf
 		st 					= time.clock()
 		iter_parameters 	= list()
-		FHW.write("#Data\n")
-		for i in range(X.shape[0]):
-			FHW.write(str(X[i,0])+"\t" + str(X[i,1]) + "\t" + str(X[i,2]) + "\n")
+		
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
 			self.draw(X)
@@ -447,25 +364,23 @@ class EMGU:
 				#add sufficient stats
 				for c in components: #add sufficient stats
 					c.add_stats(X[i,0],X[i,1],X[i,2], norm_forward, norm_reverse)
-			
+				if norm_forward:
+					ll+=math.log(norm_forward)*X[i,1]
+				if norm_reverse:
+					ll+=math.log(norm_reverse)*X[i,2]
+			print ll
 			#######
 			#M-step
 			#######
 			
 			N 	= sum([sum(c.r.values()) for c in components])
-			FHW.write("#" + str(t) + "," + str(ll) +"\n" )
-			for k,c in enumerate(components):
-
-				FHW.write(c.__str__()+ "\n")
+			for c in components:
 				c.set_new_parameters(N)
-				
-				
 				
 			#check which components blew up and reset
 			i  	= 0
 			
 			st 	= time.clock()
-			ll 					= self.compute_log_likelihood(X, components)
 			#check for convergence
 			if abs(ll-prevll) < self.max_ct:
 				converged=True
@@ -487,127 +402,34 @@ class EMGU:
 		ax.bar(X[:,0],  X[:,1] / float(np.sum(X[:,1:]) ), color="blue", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		ax.bar(X[:,0], -X[:,2] / float(np.sum(X[:,1:])), color="red", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
 		xs 			= np.linspace(X[0,0], X[-1,0], 1000)
-		ys_forward 	= map(lambda x: self.pdf(x, 1) , xs) 
-		ys_reverse 	= map(lambda x: -self.pdf(x, -1) , xs)
+		ys_forward 	= map(lambda x: sum([rv.pdf(x, 1) for rv in self.rvs if rv.type == "EMGU"]) , xs) 
+		ys_reverse 	= map(lambda x: -sum([rv.pdf(x, -1) for rv in self.rvs if rv.type == "EMGU"]) , xs)
 		
 		ax.plot(xs, ys_forward, linewidth=3.5,  color="blue")
 		ax.plot(xs, ys_reverse, linewidth=3.5,  color="red")
 		ax.grid()
 		plt.show()
 	
-def display(X):
-	# a,b, w, pi, bidir_component, ty, classifier, j, foot_print=0):
-	#self, mu, si, l, w,pi , classifier,foot_print=0):
-	E 	= component_bidir(0,1,0.15,0.4,0.5, None)
-	UF 	= component_elongation(2/0.15,150,0.3,1,None, None, None,None)
-	UR 	= component_elongation(-150,-2/0.15,0.3,0,None, None, None, None)
-
-	RE 		= component_bidir(158,1.1,0.15,0.31,0.5, None)
-	RUF 	= component_elongation(168,355,0.427,1,None, None, None,None)
-	RUR 	= component_elongation(0,152,0.26,0,None, None, None, None)
-	
-	N 	= 1000
-	F 	= [x for x in np.random.normal(0,1,int(N*0.4)) + np.random.exponential(1/0.15,int(N*0.4))] + [x for x in np.random.uniform(2/0.15,150, int(N*0.4) )  ]
-	R 	= [x for x in np.random.normal(0,1,int(N*0.4)) - np.random.exponential(1/0.15,int(N*0.4))] + [x for x in np.random.uniform(-150,-2/0.15, int(N*0.4) )]
-	NO 	= [x for x in np.random.uniform(-175,175,20)]
-	NO2 = [x for x in np.random.uniform(-175,175,20)]
-	F_cts, F_edges 	= np.histogram(F, bins=100, normed=1)	
-	R_cts, R_edges 	= np.histogram(R, bins=100, normed=1)	
-	N_cts, N_edges 	= np.histogram(NO, bins=100, normed=1)	
-	N2_cts, N2_edges = np.histogram(NO2, bins=100, normed=1)	
-	
-	F_edges 		= (F_edges[:-1]+F_edges[1:])/2.
-	R_edges 		= (R_edges[:-1]+R_edges[1:])/2.
-	N_edges 		= (N_edges[:-1]+N_edges[1:])/2.
-	N2_edges 		= (N2_edges[:-1]+N2_edges[1:])/2.
-
-
-
-	F 	= plt.figure(figsize=(10,5))
-	ax 	= F.add_subplot(1,2,1)
-	xs 	= np.linspace(-220,220,10000)
-	ysf = [E.pdf(x,1) for x in xs]
-	ysr = [-E.pdf(x,-1) for x in xs]
-	ysef = [UF.pdf(x,1) for x in xs]
-	yser = [-UR.pdf(x,-1) for x in xs]
-	
-	lw 	= 3
-	ax.set_title("Simulated Data")
-	ax.plot(xs, ysf,linewidth=lw, color="blue",label="Paused")
-	ax.plot(xs, ysr,linewidth=lw, color="blue")
-	ax.plot(xs, ysef,linewidth=lw, color="red", label="Forward")
-	ax.plot(xs, yser,linewidth=lw, color="green", label="Reverse")
-	ax.bar(F_edges, F_cts*0.5,alpha=0.2)
-	ax.bar(R_edges, -R_cts*0.5,alpha=0.2)
-	ax.bar(N_edges, -N_cts*0.1, alpha=0.2)
-	ax.bar(N2_edges, N_cts*0.1, alpha=0.2)
-	ax.set_ylim(-0.025,0.025)
-	ax.set_ylabel("Probability Density")
-	ax.legend()
-
-	ax.grid()
-	ax.set_xlim(-220,200)
-	ax.legend(loc=(0.6,0.2))
-
-	ax.set_xlabel("Simulated Genomic Coordinate (kb)")
-
-	ax2 = F.add_subplot(1,2,2)
-	ax2.set_title("Divergent Promoter (Fitted MLE Estimates)")
-	ax2.bar(X[:,0], 0.7*X[:,1]/np.sum(X[:,1:]), alpha=0.3)
-	ax2.bar(X[:,0], -0.7*X[:,2]/np.sum(X[:,1:]), alpha=0.3)
-	xs 	= np.linspace(min(X[:,0]), max(X[:,0]), 1000)
-	ysf = [RE.pdf(x,1) for x in xs]
-	ysr = [-RE.pdf(x,-1) for x in xs]
-	ysef= [RUF.pdf(x,1) for x in xs]
-	yser= [-RUR.pdf(x,-1) for x in xs]
-	ax2.plot(xs, ysf,linewidth=lw, color="blue",label="Paused",alpha=1)
-	ax2.plot(xs, ysr,linewidth=lw, color="blue",alpha=1)
-	ax2.plot(xs, ysef,linewidth=lw, color="red", label="Forward",alpha=1)
-	ax2.plot(xs, yser,linewidth=lw, color="green", label="Reverse",alpha=1)
-	ax2.set_ylim(-0.025,0.025)
-	ax2.set_ylabel("Probability Density")
-	ax2.set_xticklabels([str(int(i/1000)) for i in np.linspace(3757936,3793447,10) ])
-	ax2.grid()
-	ax2.legend(loc=(0.6,0.2))
-	ax2.annotate("",
-            xy=(10, 0.012), xycoords='data',
-            xytext=(120, 0.012), textcoords='offset points',
-            arrowprops=dict(arrowstyle="->"
-                            ),
-            )
-	ax2.annotate("",
-            xy=(350, 0.012), xycoords='data',
-            xytext=(-150, 0.012), textcoords='offset points',
-            arrowprops=dict(arrowstyle="->"),
-            )
-	ax2.text(200,0.0123, "Gene: DFFB")
-	ax2.text(30,0.0123, "Gene: CEP104")
-	ax2.set_xlabel("Genomic Coordinate (kb)")
-	plt.tight_layout()
-	plt.savefig("/Users/joazofeifa/Lab/Talks/2015/CSHL/GeneFig")
-	plt.show()
-	pass
 
 
 if __name__ == "__main__":
-	X 	= load.grab_specific_region("chr1",3757936,3793447, SHOW=False, bins=200 )
-	X[:,0]-=min(X[:,0])
-	X[:,0]/=100.
-# 	N: 158.069236368,6.81693059347,0.25561583127,0.310244224912,0.480576958276
-# U: 0.0,158.069236368,0.426535423252,2.83473394126e-05
-# U: 158.069236368,355.54,0.263184077474,0.999954058985
-# U: 0.0,355.54,0.0,0.5
-	display(X)
-	#-124020.007205
-	#-120376.261402
-	# 29692.0
-	# N 	= 29692.0
-	# #==================================
-	# #testing MAP-EM procedure
-	# X 	= simulate.runOne(mu=0, s=1, l=3, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
-	# 	N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
-	# # X[:,0]*=100
-	# # X[:,0]+=abs(X[0,0])
+	#==================================
+	#testing MAP-EM procedure
+
+	X 	= simulate.runOne(mu=0, s=1, l=10, lr=100, ll=-50, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, 
+		N=1000, SHOW=False, bins=300, noise=False, foot_print=10 )
+	# chr1:20,984,647-20,991,448
+ 	# X 		=  load.grab_specific_region("chr1",20984647, 20991448, 
+		# 	pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
+		# 	neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
+		# 	SHOW 	=False, bins=300)
+ 	# X[:,0]-=X[0,0]
+ 	# X[:,0]/=100.
+	clf = EMGU(noise=True, K=1,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
+		seed=True )
+	clf.fit(X)
+
+
 	# # #make test_file
 	# FHW_f 	= open("three_prime_forward.bedgraph", "w")
 	# FHW_r 	= open("three_prime_reverse.bedgraph", "w")
@@ -631,9 +453,6 @@ if __name__ == "__main__":
 	
 	# print max(X[:,0])
 
-	# clf = EMGU(noise=True, K=1,noise_max=0.,moveUniformSupport=0,max_it=200, cores=1, 
-	# 	seed=True,foot_print=0)
-	# clf.fit(X)
 
 
 	# clf.draw(X)

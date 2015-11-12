@@ -105,10 +105,9 @@ def run_MM(X, window=500, scale=100):
 				sv_f = math.sqrt(var_f/N_pos);
 				sv_r = math.sqrt(var_r/N_neg);
 				si 	= 0.5*(sv_f + sv_r) - (1. / lam);
-				
 				if (lam!= None and si!= None and lam >0 and si > 0 and np.sum(X[j:k,1:]) ):
 					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, 0.5,foot_print=0)
-					EMG_BIC = -2*EMG_ll + 3*math.log(np.sum(X[j:k,1:]))
+					EMG_BIC = -2*EMG_ll + 1*math.log(np.sum(X[j:k,1:]))
 
 					vl 		= 1.0 / (X[k,0]-X[j,0])
 					pi 		= np.sum(X[j:k, 1])/ np.sum(X[j:k, 1:])
@@ -168,16 +167,17 @@ def quick(X,Y):
 
 
 if __name__ == "__main__":
-	IN  = "/Users/joazofeifa/Downloads/"
+	IN  = "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/"
 	#chr1:87,691,254-87,695,004
 	#88,319,575-88320266
 	#92,308,146-92,315,100
 	#62,182,362-62,198,443
-	X 	= load.grab_specific_region("chr1",62182362,62198443, SHOW=False, bins=100, 
-		pos_file=IN+"SRR1192053.fastqbowtie2.sorted.pos.BedGraph", neg_file=IN+"SRR1192053.fastqbowtie2.sorted.neg.BedGraph" )
+	#8,246,915-8,255,824
+	X 	= load.grab_specific_region("chr1",8249196,8256106, SHOW=False, bins=100, 
+		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100
-	window = 1500
+	window = 500
 	X[:,0]/=scale
 	run_MM(X, window=window, scale=scale )
 	

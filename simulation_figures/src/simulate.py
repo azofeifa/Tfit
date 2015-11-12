@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math as m
-def runOne(mu=0, s=1, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=1000, SHOW=False , bins=200, noise=False, foot_print = 0 ):
+def runOne(mu=0, s=1, l=5, lr=100, ll=-100, 
+	we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=10000, SHOW=False , bins=200, noise=False, foot_print = 0 ):
 
-	forward 	 = list(np.random.normal(mu+foot_print, s, int(N*we*pie)) + np.random.exponential(l, int(N*we*pie) )) + 1
+	forward 	 = list(np.random.normal(mu+foot_print, s, int(N*we*pie)) + np.random.exponential(l, int(N*we*pie) ))  
 	forward 	+= list(np.random.uniform(mu+foot_print, lr, int(N*wr)))
 	
-	reverse 	 = list(np.random.normal(mu-foot_print, s, int(N*we*(1-pie))) - np.random.exponential(l, int(N*we*(1-pie) ))) - 1
+	reverse 	 = list(np.random.normal(mu-foot_print, s, int(N*we*(1-pie))) - np.random.exponential(l, int(N*we*(1-pie) ))) 
 	reverse 	+= list(np.random.uniform(ll, mu-foot_print, int(N*wl)))
 
 	#simulate noise?
@@ -31,18 +32,26 @@ def runOne(mu=0, s=1, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pi
 		plt.show()
 	return X
 
-def runMany(K=1, RGE=(0,500), N=1000, SHOW=False, bins=500):
+def runMany(K=1, RGE=(0,1000), N=1000, si=3, l=10, wp=0.5, fp=1,
+	SHOW=False, bins=500, NOISE=True, INT=False):
 	delta 	= float(RGE[1]-RGE[0])/float(K)
 	forward, reverse 	= list(), list()
 	for k in range(K):
 		mu 			 = delta*k
-		forward 	+= list(np.random.normal(mu ,3, int(N*0.5)) + np.random.exponential(10, int(N*0.5)))
-		reverse 	+= list(np.random.normal(mu , 3, int(N*0.5)) - np.random.exponential(10, int(N*0.5)))
+		forward 	+= list(np.random.normal(mu ,si, int(wp*N*0.5+1)) + np.random.exponential(l, int(wp*N*0.5+1)) + fp  )
+		reverse 	+= list(np.random.normal(mu , si, int(wp*N*0.5+1)) - np.random.exponential(l, int(wp*N*0.5+1))  - fp)
+	if NOISE:
+		forward += list(np.random.uniform(RGE[0], RGE[1], int(N*0.15) ))
+		reverse += list(np.random.uniform(RGE[0], RGE[1], int(N*0.15) ))
+	if not INT:
+		X 			= np.zeros((bins, 3))
 
-	forward += list(np.random.uniform(RGE[0], RGE[1], int(N*0.15) ))
-	reverse += list(np.random.uniform(RGE[0], RGE[1], int(N*0.15) ))
-	X 			= np.zeros((bins, 3))
-	X[:,0] 		= np.linspace(min(reverse), max(forward) ,bins)
+		X[:,0] 		= np.linspace(min(reverse), max(forward) ,bins)
+	else:
+		X 			= np.zeros((int(max(forward))-int(min(reverse)) , 3))
+
+		X[:,0] 		= np.arange(int(min(reverse)),int(max(forward)), 1)
+
 	for j,f in enumerate((forward, reverse)):
 		for x in f:
 			i=0

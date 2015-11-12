@@ -169,7 +169,6 @@ int main(int argc, char* argv[]){
 		FHW.flush();
 		
 		T.get_time(rank);
-
 		if (P->p4["-MLE"] == "1"){
 			vector<segment *> bidir_segments;
 			if (not G.empty()  ){

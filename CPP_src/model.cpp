@@ -279,6 +279,8 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		gamma_distribution<double> dist_lambda(alpha_1,beta_1);
 		uniform_real_distribution<double> dist_lambda_2(1, 500);
 		uniform_real_distribution<double> dist_sigma_2(1, 50);
+		uniform_real_distribution<double> dist_footprint(0, 500);
+		
 		gamma_distribution<double> dist_lengths(1,( (data->maxX-data->minX)/(K)));
 		
 		sigma 		= dist_sigma_2(mt)/scale;
@@ -294,13 +296,10 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		a_reverse 			= data->X[0][j];
 
 		bidir 				= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
-		bidir.foot_print 	= foot_print;
+		bidir.foot_print 	= dist_footprint(mt)/scale;
 		reverse 	= UNI(data->minX, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
 		type 		= 1;
-		// cout<<K<<endl;
-		// cout<<bidir.print()<<endl;
-		// cout<<forward.print()<<endl;
-		// cout<<reverse.print()<<endl;
+		
 	}
 
 } 
@@ -469,7 +468,10 @@ void component::add_stats(double x, double y, int st, double normalize){
 		if (vl > 0 and y > 0){
 			double current_EY 	= bidir.EY(x, st);
 			double current_EY2 	= bidir.EY2(x, st);
-			double current_EX 	= x-(st*current_EY)-foot_print*st;
+			double current_EX 	= x-(st*current_EY)-bidir.foot_print*st;
+			//	self.C+=max( ((z-self.mu) -E_Y) *r,0)
+			// 	self.C+=max((-(z-self.mu) -E_Y)   *r ,0)
+			bidir.C+=max((st*(x-bidir.mu) - current_EY  )*vl*y,0.0);
 			bidir.ey+=current_EY*vl*y;
 			bidir.ex+=current_EX*vl*y;
 			bidir.ex2+=(pow(current_EX,2) + current_EY2 - pow(current_EY,2))*vl*y;	
@@ -480,6 +482,7 @@ void component::add_stats(double x, double y, int st, double normalize){
 
 void component::reset(){
 	if (type){
+		bidir.C=0;
 		bidir.ey=0, bidir.ex=0, bidir.ex2=0, bidir.r_reverse=0, bidir.r_forward=0;
 		bidir.ri_forward=0, forward.ri_forward=0, forward.ri_reverse=0;
 		bidir.ri_reverse=0, reverse.ri_reverse=0, reverse.ri_forward=0;
@@ -646,6 +649,8 @@ void component::update_parameters(double N, int K){
 			EXIT 	= true;
 			bidir.w = 0;
 		}
+		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 5.0);
+
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
 		reverse.w 	= (reverse.r_reverse + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);
