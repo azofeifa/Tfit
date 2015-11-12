@@ -33,6 +33,8 @@ public:
 	double ex_r;
 	double C;
 	double foot_print;
+	bool move_fp;
+	double prev_mu;
 	EMG();
 	EMG(double, double, double, double, double);
 	double pdf(double,int);

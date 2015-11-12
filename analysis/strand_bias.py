@@ -94,7 +94,6 @@ def run(L,R):
 	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
 		xy=(1.8,550+2), zorder=300,fontsize=12)
 	ax.set_ylim(-100,650)
-
 	axes.append(ax)
 	bps.append(bp)
 	## change outline color, fill color and linewidth of the boxes
@@ -141,7 +140,7 @@ if __name__ == "__main__":
 		
 	REF 						= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.txt"
 	DMSO2_3 						="DMSO2_3-2_bidirectional_hits_intervals.bed"
-	DMSO2_3 						= "DMSO2_3-2_bidirectional_hits_intervals.bed"
+	DMSO2_3 						= "DMSO2_3-3_bidirectional_hits_intervals.bed"
 	DMSO2_3_L,DMSO2_3_G 			= load.load_model_fits_bed_file(DIR+DMSO2_3)
 		
 	R 					= refseq(REF)

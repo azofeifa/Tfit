@@ -296,7 +296,8 @@ void component::initialize(double mu, segment * data , int K, double scale, doub
 		a_reverse 			= data->X[0][j];
 
 		bidir 				= EMG(mu, sigma, lambda, 1.0 / (3*K), 0.5);
-		bidir.foot_print 	= dist_footprint(mt)/scale;
+		bidir.foot_print 	= 50/100.;
+		bidir.prev_mu 		= mu;
 		reverse 	= UNI(data->minX, mu-(1.0/lambda), 1.0 / (3*K), -1, j,0.5);
 		type 		= 1;
 		
@@ -649,8 +650,17 @@ void component::update_parameters(double N, int K){
 			EXIT 	= true;
 			bidir.w = 0;
 		}
-		bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 5.0);
-		bidir.foot_print 	= floor((bidir.foot_print*10000.0))/10000.0;
+		if (abs(bidir.mu-bidir.prev_mu)< 0.001 ){
+			bidir.move_fp 	= true;
+		}
+		else{
+			bidir.prev_mu 	= bidir.mu;
+		}
+		if (bidir.move_fp){
+
+			bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 5.0);
+			bidir.foot_print 	= floor((bidir.foot_print*10000.0))/10000.0;
+		}
 		//bidir.foot_print 	= 0.0;
 		//now for the forward and reverse strand elongation components
 		forward.w 	= (forward.r_forward + ALPHA_2) / (N+ ALPHA_2*K*3 + K*3);

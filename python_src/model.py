@@ -116,8 +116,8 @@ class component_bidir:
 		self.forward  				= None #elongation component to the right
 		self.reverse 		 		= None #elongation component to the left
 		self.foot_print 			= foot_print
-
-
+		self.prev_mu 				= self.mu
+		self.move_fp 				= False
 	def __str__(self):
 		return "N: " + str(self.mu) + "," +str(self.si) + "," +str(self.l) + "," + str(self.w) + "," + str(self.pi) 
 		return ("N: " + str(self.mu) + "," +str(self.si) + "," +str(self.l) + "," + str(self.w) + "," + str(self.pi) + "\n" +
@@ -227,18 +227,25 @@ class component_bidir:
 
 		r  								= self.r[1] + self.r[-1]
 		self.pi, self.w 				=(self.r[1] + self.c.beta_0) / (r+ self.c.beta_0*2), (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
+		mu 								= (self.EX_f+self.EX_r)  / (r+ 0.1)
+		if abs(mu-self.prev_mu)<0.1:
+			self.move_fp 				= True
 		self.mu 						= (self.EX_f+self.EX_r)  / (r+ 0.1)
 		self.si 						= pow(abs((1./ (r + 3 + self.c.alpha_1)  )*(self.E_X2 - 2*self.mu*(self.EX_f+self.EX_r) + r*pow(self.mu, 2) + 2*self.c.beta_1 + self.c.tau*pow(self.mu-self.c.m_0, 2)   )),0.5)
 		self.l 							= 1.0 /(((self.EY_f+self.EY_r) + self.c.beta_2) / (r + self.c.alpha_2))
 		self.l 							= min(2,self.l)
-		self.foot_print 				= min((self.C / (r+0.1)), 20)
-		print self.foot_print, "****"
+		if self.move_fp:
+			self.foot_print 				= min((self.C / (r+0.1)), 20)
+		else:
+			self.foot_print 				= 0
+		print self.foot_print, "****", abs(mu-self.prev_mu)
 		#====================================================
 		self.r[1], self.r[-1] 			= 0,0
 		self.ri[1], self.ri[-1] 		= 0,0
 		#====================================================
 		self.EX_f,self.EX_r, self.EY_f,self.EY_r, self.E_X2,self.C 	= 0.,0.,0.,0.0,0.0,0.0
 		self.Cf, self.Cr 	= 0,0
+		self.prev_mu 		= mu
 	def reset(self):
 		#=======================================
 		#new parameters for the Bidirectional
@@ -282,7 +289,7 @@ class EMGU:
 		#=================================
 		#prior parameters
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
-		self.beta_0 				= 1. #symmetric prior for strand probabilities
+		self.beta_0 				= 100000. #symmetric prior for strand probabilities
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
 		self.alpha_1, self.beta_1 	= 1, 1 #priors for component sigmas
 		self.alpha_2, self.beta_2 	= 1, 1 #priors for component 
@@ -320,22 +327,20 @@ class EMGU:
 			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-		mus 		= [0]
+		mus 		= [30]
 		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
 		#assign to components
 
 		self.uniform_rate= (maxX-minX)/(1*self.K)
-		fp 			= np.random.uniform(0,2)
-		print "*********", fp
-		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], pis[k][0],self, foot_print=fp) for k in range(self.K)] 
+		fp 			= 0
+		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], 0.5,self, foot_print=fp) for k in range(self.K)] 
 	
 		uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0.5, bidirs[k], "reverse",self ,0 , foot_print=fp) for k in range(self.K)]
 		uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 0.5, bidirs[k], "forward",self, X.shape[0] , foot_print=fp) for k in range(self.K)]
 		
 		if self.noise:
-			print "HERE?"
 			uniforms+=[component_elongation(minX, maxX, 0.1, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
 		components 			= bidirs + uniforms
 		N_f, N_r 			= sum(X[:,1]), sum(X[:,2])
@@ -346,7 +351,8 @@ class EMGU:
 		
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
-			self.draw(X)
+			if np.random.uniform(0,1) <0.1:
+				self.draw(X)
 			
 			# for rv in self.rvs:
 			# 	if rv.type=="EMGU":
@@ -371,7 +377,6 @@ class EMGU:
 					ll+=math.log(norm_forward)*X[i,1]
 				if norm_reverse:
 					ll+=math.log(norm_reverse)*X[i,2]
-			print ll
 			#######
 			#M-step
 			#######
