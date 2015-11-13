@@ -45,6 +45,7 @@ params::params(){
 	p["-ms_pen"] 	= "1";
 	p["-topology"] 	= "1";
 	p["-foot_res"] 	= "5";
+	p["-nf"] 		= "";
 
 
 	p2["-v"] 		= "1";

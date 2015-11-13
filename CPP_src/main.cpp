@@ -341,6 +341,7 @@ int main(int argc, char* argv[]){
 	   	int threads  	= omp_get_max_threads();
 		char processor_name[MPI_MAX_PROCESSOR_NAME];
 		int namelen;  
+
 		MPI_Get_processor_name(processor_name, &namelen); 
 		string job_name = P->p["-N"];
 
@@ -360,20 +361,29 @@ int main(int argc, char* argv[]){
 			FHW<<P->get_header(0);
 		}
 		FHW.flush();
+
 		
 		string forward_bed_graph_file 	= P->p["-i"];
 		string reverse_bed_graph_file 	= P->p["-j"];
 
 		string interval_file 			= P->p["-k"];
 		string out_file_dir 			= P->p["-o"];
+		string noise_bed_file 		= P->p["-nf"];
 		string spec_chrom 			= P->p["-chr"];
 		bool run_template 			= bool(stoi(P->p["-template"]));
 		vector<segment *> FSI;
 		map<string , vector<vector<double> > > G;
 		map<string, vector<segment *> > GG;
 		timer T(50);
-		
-
+		double window 				= stod(P->p["-window_res"]);
+		double ct 					= stod(P->p["-bct"]);
+		double scale 				= stod(P->p["-ns"]);
+		double mean;
+		if (rank==0){
+		  	//get_noise_mean_var(noise_bed_file, forward_bedgraph, &mean, &var);
+		  	mean 	=  get_table_mean_var(noise_bed_file, forward_bed_graph_file, window, stof(P->p["-br"]), scale );
+		}
+		double density 		= send_density_val((mean  )*scale , rank, nprocs );
 		map<int, string> IDS;
 		if (rank==0){
 			FHW<<"(main) Loading/Converting intervals of interest"<<endl;
@@ -402,14 +412,11 @@ int main(int argc, char* argv[]){
 		FHW<<"DONE"<<endl;
 		FHW.flush();
 			
-		double window 				= stod(P->p["-window_res"]);
-		double ct 					= stod(P->p["-bct"]);
-		double scale 				= stod(P->p["-ns"]);
-
+		
 		T.start_time(rank, "Running Template Matching on individual segments:");
 		FHW.flush();
 		run_global_template_matching(integrated_segments, out_file_dir, window, 
-				0.1,scale,ct, 64,0. ,0, FHW );	
+				density,scale,ct, 64,0. ,0, FHW );	
 		T.get_time(rank);
 		T.start_time(rank, "Running Model on individual segments:");
 		FHW<<"(main) About to run model"<<endl;
