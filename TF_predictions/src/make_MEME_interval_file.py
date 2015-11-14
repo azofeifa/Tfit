@@ -49,4 +49,4 @@ def iterate(root, out):
 if __name__ == "__main__":
 	root 	= sys.argv[1]
 	out 	= sys.argv[2]
-	iterate(root)
+	iterate(root, out)
