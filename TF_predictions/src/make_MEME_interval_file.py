@@ -1,7 +1,7 @@
 import sys, numpy as np 
 import node, os
 def collect_all_ChIP_motif_hits(FILES, FHW,i):
-	for CM in FILES:
+	for CM,MODEL in FILES:
 		G 	= {}
 		T 	= 0
 		header 	= True
@@ -11,7 +11,7 @@ def collect_all_ChIP_motif_hits(FILES, FHW,i):
 					line_array 	= line.strip("\n").split("\t")
 					chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
 					start, stop 		= int(start),int(stop)
-					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_"+ CM +","+ str(i)+"\n" )
+					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_"+ MODEL +","+ str(i)+"\n" )
 					if chrom not in G:
 						G[chrom]=list()
 					G[chrom].append((start-1000, stop+1000))
@@ -30,7 +30,7 @@ def collect_all_ChIP_motif_hits(FILES, FHW,i):
 def write_filter_etc(MO,FHW, i, MODEL, G):
 	t=0
 	header=True
-	T 		= 10000
+	T 		= 1000
 	with open(MO) as FH:
 		for line in FH:
 			if not header:
@@ -55,8 +55,8 @@ def iterate(root, out):
 		FHW 	= open(out+TF_DIR, "w")
 		i 		= 1
 		if os.path.exists(PATH):
-			CM_FILES 	= [PATH+"/" +fimo_dir + "/fimo.txt" for fimo_dir in os.listdir(PATH) if fimo_dir[:8]=="fimo_out" ]
-			G,i 			= collect_all_ChIP_motif_hits(CM_FILES, FHW,i)
+			CM_FILES 	= [(PATH+"/" +fimo_dir + "/fimo.txt", fimo_dir)  for fimo_dir in os.listdir(PATH) if fimo_dir[:8]=="fimo_out" ]
+			G,i 			= collect_all_ChIP_motif_hits(CM_FILES, FHW,i, )
 			print TF_DIR
 			for fimo_dir in os.listdir(PATH):
 				if  os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
