@@ -27,7 +27,7 @@ def collect_all_ChIP_motif_hits(FILES, FHW,i):
 
 
 
-def write_filter_etc(CM, MO,FHW, i, MODEL, G):
+def write_filter_etc(MO,FHW, i, MODEL, G):
 	t=0
 	header=True
 	with open(MO) as FH:
@@ -61,7 +61,7 @@ def iterate(root, out):
 				if  os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
 					MODEL 		= fimo_dir.split("_")[-1]
-					i 			= write_filter_etc(ChIP_MOTIF, MOITF_ONLY , FHW, i, MODEL, G)
+					i 			= write_filter_etc(MOITF_ONLY , FHW, i, MODEL, G)
 		FHW.close()
 
 
