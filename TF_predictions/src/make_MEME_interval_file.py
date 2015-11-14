@@ -56,7 +56,7 @@ def iterate(root, out):
 		if os.path.exists(PATH):
 			CM_FILES 	= [PATH+"/" +fimo_dir + "/fimo.txt" for fimo_dir in os.listdir(PATH) if fimo_dir[:8]=="fimo_out" ]
 			G 			= collect_all_ChIP_motif_hits(CM_FILES)
-			for fimo_dir in os.listdir(PATH)]:
+			for fimo_dir in os.listdir(PATH):
 				if  os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
 					MODEL 		= fimo_dir.split("_")[-1]
