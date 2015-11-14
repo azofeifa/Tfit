@@ -33,12 +33,11 @@ def write_filter_etc(CM, MO,FHW, i):
 
 def iterate(root, out):
 	for TF_DIR in os.listdir(root):
-		PATH 	= TF_DIR+"/peak_files/outfiles/MEME/"
+		PATH 	= root+"/"+TF_DIR+"/peak_files/outfiles/MEME/"
 		FHW 	= open(out+TF_DIR, "w")
 		i 		= 1
 		if os.path.exists(PATH):
 			for fimo_dir in os.listdir(PATH):
-				print fimo_dir
 				if fimo_dir[:8]=="fimo_out" and os.path.exists(fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					ChIP_MOTIF 	= PATH+"/" +fimo_dir + "/fimo.txt"
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
