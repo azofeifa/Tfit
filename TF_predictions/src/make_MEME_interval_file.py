@@ -1,6 +1,6 @@
 import sys, numpy as np 
 import node, os
-def write_filter_etc(CM, MO,FHW, i):
+def write_filter_etc(CM, MO,FHW, i, MODEL):
 	G 	= {}
 	T 	= 0
 	header 	= True
@@ -10,7 +10,7 @@ def write_filter_etc(CM, MO,FHW, i):
 				line_array 	= line.strip("\n").split("\t")
 				chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
 				start, stop 		= int(start),int(stop)
-				FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" + str(i)+"\n" )
+				FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" +MODEL+","+ str(i)+"\n" )
 				if chrom not in G:
 					G[chrom]=list()
 				G[chrom].append((start-1000, stop+1000))
@@ -31,9 +31,11 @@ def write_filter_etc(CM, MO,FHW, i):
 				start, stop 		= int(start),int(stop)
 				U 					= np.random.uniform(0,1)
 				if U < 0.1 and chrom in G and not G[chrom].searchInterval((start, stop)) and t <T :
-					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tMO_" + str(i)+"\n")
+					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tMO_" + MODEL+","+str(i)+"\n")
 					t+=1
 					i+=1
+				if t > T:
+					break
 			else:
 				header=False
 	return i
@@ -50,8 +52,9 @@ def iterate(root, out):
 				if fimo_dir[:8]=="fimo_out" and os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					ChIP_MOTIF 	= PATH+"/" +fimo_dir + "/fimo.txt"
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
+					MODEL 		= fimo_dir.split("_")[-1]
 					print ChIP_MOTIF, MOITF_ONLY
-					i 			= write_filter_etc(ChIP_MOTIF, MOITF_ONLY , FHW, i)
+					i 			= write_filter_etc(ChIP_MOTIF, MOITF_ONLY , FHW, i, MODEL)
 		FHW.close()
 
 
