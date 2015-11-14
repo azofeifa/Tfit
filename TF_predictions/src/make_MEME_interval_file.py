@@ -30,7 +30,7 @@ def write_filter_etc(CM, MO,FHW, i):
 				chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
 				start, stop 		= int(start),int(stop)
 				U 					= np.random.uniform(0,1)
-				if U < 0.1 and not G[chrom].searchInterval((start, stop)) and t <T :
+				if U < 0.1 and chrom in G and not G[chrom].searchInterval((start, stop)) and t <T :
 					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tMO_" + str(i)+"\n")
 					t+=1
 					i+=1
