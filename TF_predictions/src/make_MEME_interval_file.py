@@ -1,26 +1,33 @@
 import sys, numpy as np 
 import node, os
-def write_filter_etc(CM, MO,FHW, i, MODEL):
-	G 	= {}
-	T 	= 0
-	header 	= True
-	with open(CM) as FH :
-		for line in FH:
-			if not header:
-				line_array 	= line.strip("\n").split("\t")
-				chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
-				start, stop 		= int(start),int(stop)
-				FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" +MODEL+","+ str(i)+"\n" )
-				if chrom not in G:
-					G[chrom]=list()
-				G[chrom].append((start-1000, stop+1000))
-				T+=1
-				i+=1
-			else:
-				header=False
-	for chrom in G:
-		G[chrom].sort()
-		G[chrom]=node.tree(G[chrom])
+def collect_all_ChIP_motif_hits(FILES, FHW):
+	for CM in FILES:
+		G 	= {}
+		T 	= 0
+		header 	= True
+		with open(CM) as FH :
+			for line in FH:
+				if not header:
+					line_array 	= line.strip("\n").split("\t")
+					chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
+					start, stop 		= int(start),int(stop)
+					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" CM +","+ str(i)+"\n" )
+					if chrom not in G:
+						G[chrom]=list()
+					G[chrom].append((start-1000, stop+1000))
+
+					T+=1
+					i+=1
+				else:
+					header=False
+		for chrom in G:
+			G[chrom].sort()
+			G[chrom]=node.tree(G[chrom])
+	return G
+
+
+
+def write_filter_etc(CM, MO,FHW, i, MODEL, G):
 	t=0
 	header=True
 	with open(MO) as FH:
@@ -47,14 +54,14 @@ def iterate(root, out):
 		FHW 	= open(out+TF_DIR, "w")
 		i 		= 1
 		if os.path.exists(PATH):
-
-			for fimo_dir in os.listdir(PATH):
-				if fimo_dir[:8]=="fimo_out" and os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
-					ChIP_MOTIF 	= PATH+"/" +fimo_dir + "/fimo.txt"
+			CM_FILES 	= [PATH+"/" +fimo_dir + "/fimo.txt" for fimo_dir in os.listdir(PATH) if fimo_dir[:8]=="fimo_out" ]
+			G 			= collect_all_ChIP_motif_hits(CM_FILES)
+			for fimo_dir in os.listdir(PATH)]:
+				if  os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
 					MODEL 		= fimo_dir.split("_")[-1]
 					print ChIP_MOTIF, MOITF_ONLY
-					i 			= write_filter_etc(ChIP_MOTIF, MOITF_ONLY , FHW, i, MODEL)
+					i 			= write_filter_etc(ChIP_MOTIF, MOITF_ONLY , FHW, i, MODEL, G)
 		FHW.close()
 
 
