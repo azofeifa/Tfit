@@ -30,7 +30,7 @@ def collect_all_ChIP_motif_hits(FILES, FHW,i):
 def write_filter_etc(MO,FHW, i, MODEL, G):
 	t=0
 	header=True
-	T 		= 5000
+	T 		= 10000
 	with open(MO) as FH:
 		for line in FH:
 			if not header:
