@@ -5,7 +5,7 @@
 -v 		= 1
 -i 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
 -j 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
--k 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
+-k 		= /Users/joazofeifa/Downloads/ENCFF001UDL.bed
 -o 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -nf            	= /Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed
 -log_out	= /Users/joazofeifa/Lab/EMG_logs/
