@@ -36,7 +36,9 @@ def iterate(root, out):
 		PATH 	= root+"/"+TF_DIR+"/peak_files/outfiles/MEME/"
 		FHW 	= open(out+TF_DIR, "w")
 		i 		= 1
+		print os.path.exists(PATH), PATH
 		if os.path.exists(PATH):
+
 			for fimo_dir in os.listdir(PATH):
 				if fimo_dir[:8]=="fimo_out" and os.path.exists(fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					ChIP_MOTIF 	= PATH+"/" +fimo_dir + "/fimo.txt"
