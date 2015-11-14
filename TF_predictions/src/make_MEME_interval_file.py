@@ -1,6 +1,6 @@
 import sys, numpy as np 
 import node, os
-def collect_all_ChIP_motif_hits(FILES, FHW):
+def collect_all_ChIP_motif_hits(FILES, FHW,i):
 	for CM in FILES:
 		G 	= {}
 		T 	= 0
@@ -23,7 +23,7 @@ def collect_all_ChIP_motif_hits(FILES, FHW):
 		for chrom in G:
 			G[chrom].sort()
 			G[chrom]=node.tree(G[chrom])
-	return G
+	return G,i
 
 
 
@@ -55,7 +55,7 @@ def iterate(root, out):
 		i 		= 1
 		if os.path.exists(PATH):
 			CM_FILES 	= [PATH+"/" +fimo_dir + "/fimo.txt" for fimo_dir in os.listdir(PATH) if fimo_dir[:8]=="fimo_out" ]
-			G 			= collect_all_ChIP_motif_hits(CM_FILES, FHW)
+			G,i 			= collect_all_ChIP_motif_hits(CM_FILES, FHW,i)
 			for fimo_dir in os.listdir(PATH):
 				if  os.path.exists(PATH+fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
