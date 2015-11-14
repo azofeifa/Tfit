@@ -11,7 +11,7 @@ def collect_all_ChIP_motif_hits(FILES, FHW):
 					line_array 	= line.strip("\n").split("\t")
 					chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
 					start, stop 		= int(start),int(stop)
-					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" CM +","+ str(i)+"\n" )
+					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_"+ CM +","+ str(i)+"\n" )
 					if chrom not in G:
 						G[chrom]=list()
 					G[chrom].append((start-1000, stop+1000))
