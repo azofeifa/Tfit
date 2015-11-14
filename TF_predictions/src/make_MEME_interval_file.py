@@ -1,5 +1,5 @@
 import sys, numpy as np 
-import node
+import node, os
 def write_filter_etc(CM, MO,FHW, i):
 	G 	= {}
 	T 	= 0
