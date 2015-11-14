@@ -3,31 +3,39 @@ import node, os
 def write_filter_etc(CM, MO,FHW, i):
 	G 	= {}
 	T 	= 0
+	header 	= True
 	with open(CM) as FH :
 		for line in FH:
-			line_array 	= line.strip("\n").split("\t")
-			chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
-			start, stop 		= int(start),int(stop)
-			FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" + str(i)+"\n" )
-			if chrom not in G:
-				G[chrom]=list()
-			G[chrom].append((start-1000, stop+1000))
-			T+=1
-			i+=1
+			if not header:
+				line_array 	= line.strip("\n").split("\t")
+				chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
+				start, stop 		= int(start),int(stop)
+				FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tCM_" + str(i)+"\n" )
+				if chrom not in G:
+					G[chrom]=list()
+				G[chrom].append((start-1000, stop+1000))
+				T+=1
+				i+=1
+			else:
+				header=False
 	for chrom in G:
 		G[chrom].sort()
 		G[chrom]=node.tree(G[chrom])
 	t=0
+	header=True
 	with open(MO) as FH:
 		for line in FH:
-			line_array 	= line.strip("\n").split("\t")
-			chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
-			start, stop 		= int(start),int(stop)
-			U 					= np.random.uniform(0,1)
-			if U < 0.1 and not G[chrom].searchInterval((start, stop)) and t <T :
-				FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tMO_" + str(i)+"\n")
-				t+=1
-				i+=1
+			if not header:
+				line_array 	= line.strip("\n").split("\t")
+				chrom,start, stop 	= line_array[1],line_array[2],line_array[3]
+				start, stop 		= int(start),int(stop)
+				U 					= np.random.uniform(0,1)
+				if U < 0.1 and not G[chrom].searchInterval((start, stop)) and t <T :
+					FHW.write(line_array[1]+"\t" +line_array[2]+"\t"+line_array[3]+"\tMO_" + str(i)+"\n")
+					t+=1
+					i+=1
+			else:
+				header=False
 	return i
 
 
