@@ -38,6 +38,7 @@ def iterate(root, out):
 		i 		= 1
 		if os.path.exists(PATH):
 			for fimo_dir in os.listdir(PATH):
+				print fimo_dir
 				if fimo_dir[:8]=="fimo_out" and os.path.exists(fimo_dir.split("_")[-1]+ "_fimo_out"): 
 					ChIP_MOTIF 	= PATH+"/" +fimo_dir + "/fimo.txt"
 					MOITF_ONLY 	= PATH+"/" +fimo_dir.split("_")[-1]+ "_fimo_out/fimo.txt"
