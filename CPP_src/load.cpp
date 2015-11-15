@@ -1785,7 +1785,7 @@ vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *>
 		for (int i = 0; i < c->second.size(); i++){
 			center 	= (c->second[i]->stop + c->second[i]->start) /2.;
 			interval FOUND 	= AT[c->first]->get_interval(int(c->second[i]->start), int(c->second[i]->stop) );
-			if (not FOUND.EMPTY and FOUND.forward_x.size()){
+			if (not FOUND.EMPTY ){
 				segment * S 	= new segment(c->first, FOUND.start, FOUND.stop, FOUND.ID, FOUND.STRAND);
 				S->parameters 	= FOUND.parameters;
 				for (int u = 0 ; u < FOUND.forward_x.size(); u++){
