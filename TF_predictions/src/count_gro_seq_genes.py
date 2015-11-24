@@ -32,9 +32,25 @@ def collect(FILES, G, OUT):
 
 
 if __name__ == "__main__":
-	forward 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
-	reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph"
+
+	HCT_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph"
+	HCT_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph"
+
+	Andersson2014_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/Andersson2014/bedgraph_files/SRR1596501.fastqbowtie2.sorted.pos.BedGraph"
+	Andersson2014_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/Andersson2014/bedgraph_files/SRR1596501.fastqbowtie2.sorted.neg.BedGraph"
+
+	Core2014_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/Core2014/bedgraph_files/SRR1554312.fastqbowtie2.sorted.neg.BedGraph"
+	Core2014_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/Core2014/bedgraph_files/SRR1554312.fastqbowtie2.sorted.pos.BedGraph"
+	
+	Luo2014_forward 	= "/Users/joazofeifa/Lab/gro_seq_files/Luo2014/bedgraph_files/SRR1015584.fastqbowtie2.sorted.pos.BedGraph"
+	Luo2014_reverse 	= "/Users/joazofeifa/Lab/gro_seq_files/Luo2014/bedgraph_files/SRR1015584.fastqbowtie2.sorted.neg.BedGraph"
+
+
 	RefSeq 		= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.bed"
-	OUT 		= "/Users/joazofeifa/Lab/genome_files/DMSO2_3_Gene_Counts.tsv"
+	OUT 		= "/Users/joazofeifa/Lab/genome_files/Core2014Gene_Counts.tsv"
 	G 			= load_intervals(RefSeq)
-	collect((forward, reverse), G, OUT)
+	collect((Core2014_forward, Core2014_reverse), G, OUT)
+
+
+
+

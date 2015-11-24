@@ -49,15 +49,64 @@ def filter_only_single_look_for_noise(A,B, OUT=""):
 		if ID==0:
 			ID="NOISE"
 		FHW.write(chrom+"\t" + str(start)+"\t" + str(stop) + "\t" + ID + "\n")
+def make_merged(forward, reverse, OUT):
+	GS 		= list()
+	for F in (forward, reverse):
+		G 	={}
+		with open(F) as FH:
+			header 	= True
+			for line in FH:
+				if not header:
+					chrom,start, stop, inf 	= line.split("\t")[:4]
+					if "ON" in inf:
+						if chrom not in G:
+							G[chrom]=list()
+						G[chrom].append((int(start), int(stop)))
+				else:
+					header=False
+		GS.append(G)
+	FHW = open(OUT, "w")
+	for chrom in GS[0]:
+		a 	= GS[0][chrom]
+		if chrom in GS[1]:
+			b 		= GS[1][chrom]
+			a 		= a+b
+			a.sort()
+			j,N 	= 0,len(a)
+			while j < N:
+				o_st,o_sp 	= a[j]
+				while j < N and o_st < a[j][1] and o_sp > a[j][0]:
+					o_st, o_sp 	= min(o_st, a[j][0]), max(o_sp, a[j][1])
+					j+=1
+				FHW.write(chrom + "\t" + str(o_st) + "\t" + str(o_sp)+"\n")
+	FHW.close()
+
+
+
+
+
+
+
+
+
 
 
 
 
 
 if __name__ == "__main__":
-	FS_MERGED 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/DMSO2_3_merged_FS.bed"
-	REF 		= "/Users/joazofeifa/Lab/genome_files/RefSeqHG19.bed"
-	OUT 		= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/single_isoform.bed"
+	make_merge 	= True
+	if make_merge:
+		forward_FS_bed 	= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/FStitch_out/FStith_Li2013.pos.bed"
+		reverse_FS_bed 	= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/FStitch_out/FStith_Li2013.neg.bed"
+		FS_MERGED 		= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/FStitch_out/FStith_Li2013_merged.bed"
+		make_merged(forward_FS_bed, reverse_FS_bed, FS_MERGED)
+		OUT 		= "/Users/joazofeifa/Lab/gro_seq_files/Li2013/FStitch_out/single_isoform.bed"
+	
+	else:
+		FS_MERGED 	= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/DMSO2_3_merged_FS.bed"
+		OUT 		= "/Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/single_isoform.bed"
+	REF 		= "/Users/joazofeifa/Lab/genome_files/RefSeqHG18.bed"
 	F 			= load_FS(FS_MERGED)
 	R 			= load_refSeqs(REF)
 	filter_only_single_look_for_noise(R,F, OUT=OUT)

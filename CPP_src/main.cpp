@@ -238,7 +238,7 @@ int main(int argc, char* argv[]){
 		T.get_time(rank);
 		FHW<<"\n(main) Gathering all simple c free model"<<endl;		
 		FHW.flush();
-		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
+		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs, FHW);
 		if (rank==0){//write_out_to_MLE
 			write_out_models_from_free_mode(GGG, P, job_ID, IDS);
 		}
@@ -426,7 +426,8 @@ int main(int argc, char* argv[]){
 		T.get_time(rank);
 		FHW<<"\n(main) Gathering all simple c free model"<<endl;		
 		FHW.flush();
-		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, nprocs);
+		map<int, map<int, vector<simple_c_free_mode>  > > GGG 	= gather_all_simple_c_free_mode(FITS, rank, 
+			nprocs,FHW);
 		if (rank==0){//write_out_to_MLE
 			write_out_models_from_free_mode(GGG, P, job_ID, IDS);
 		}

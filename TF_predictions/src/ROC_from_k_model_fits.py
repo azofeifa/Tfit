@@ -32,6 +32,8 @@ class segment:
 			self.mu,self.si, self.l, self.fp 	= [float(x.split(",")[0]) for x in line_array[1:5]]
 			self.wp 							= float(line_array[6].split(",")[0])
 	def get_BIC_mdoel(self, penality):
+		if not self.N:
+			return 0;
 		NULL 	= -2*self.K[0] + math.log(self.N)
 		MODEL 	= -2*self.K[1] + penality*5*math.log(self.N)
 		if NULL < MODEL:
@@ -68,6 +70,7 @@ def compute_draw_ROC(ax, G,label):
 	TPN, TNN 	= float(len([1 for s in G if s.z ])), float(len([1 for s in G if not s.z ]))
 	TPS,TNS 	= list(),list()
 	print TNN, TPN, label
+	vert 		= ()
 	for p in penalities:
 		TN,TP 	= 0.0,0.0
 		for s in G:
@@ -79,7 +82,7 @@ def compute_draw_ROC(ax, G,label):
 		TNS.append(1-(TN / TNN))
 		TPS.append(TP / TPN)
 	ax.plot( TNS, TPS, label=label+", AUC: " + str(sum([ (TNS[i-1]-TNS[i])*TPS[i]  for i in range(1, len(TPS)  )]))[:5]  ,linewidth=2)
-	
+
 def ROC(GS, labels):
 	F 	= plt.figure()
 	ax	= F.add_subplot(1,1,1)

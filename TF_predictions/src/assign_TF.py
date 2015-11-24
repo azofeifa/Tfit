@@ -423,7 +423,7 @@ def load_PSSMs(FILE,test=False):
 		M,MOTIF 	= list(), None
 		t=0
 		for line in FH:
-			if test and t>5:
+			if test and t>10:
 				break
 			if "MOTIF" in line[:5]:
 				if M and MOTIF is not None:

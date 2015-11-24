@@ -53,7 +53,8 @@ int get_job_ID(string,string,int, int);
 
 double send_density_val(double ,int, int );
 
-map<int, map<int, vector<simple_c_free_mode>  > >  gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >>  , int  , int  );
+map<int, map<int, vector<simple_c_free_mode>  > >  gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >>  , 
+	int  , int, ofstream&  );
 vector<int> send_out_merged_start_stops(vector<vector<int>>  , int  , int  );
 vector<boostrap_struct> collect_bootstrap(vector<segment *>, 
 	int, int,map<string, int>);

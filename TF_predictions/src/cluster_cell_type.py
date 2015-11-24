@@ -211,8 +211,8 @@ def display_matrix(G, BINARY = pow(10,-10), SHOW =False  ):
 			j 	= TFS[TF]
 
 			k 	= int(bool(G[exp][TF][0] < BINARY))
-			k 	= int(bool(G[exp][TF][3] > 0.2))
-			k 	= G[exp][TF][3]*10
+			k 	= int(bool(G[exp][TF][3] > 0.05))
+#			k 	= G[exp][TF][3]*10
 			# if G[exp][TF][0]:
 			# 	k 	= math.log(G[exp][TF][0],10)
 			# else:
@@ -406,7 +406,7 @@ def get_cell_type_label(i):
 
 	return lbl
 
-def finally_as_a_network(A, D2, toEXPS, toTFS):
+def finally_as_a_network(A, D2, toEXPS, toTFS, OUT=""):
 	#toTFS by specificy
 	temp 	= [(sum(A[i,:]), i)    for i in toTFS]
 	temp.sort()
@@ -425,16 +425,19 @@ def finally_as_a_network(A, D2, toEXPS, toTFS):
 	toTFS2 	= dict([(i,i)for i in toTFS])
 	colors 	= list()
 	colors2 = list()
+	if OUT:
+		FHW 	= open(OUT, "w")
 	for u in range(D2.shape[0]):
 		colors2.append(sum(A[u,:]))
 		for v in range(u,D2.shape[0]):
 			#U,V 	= get_most_likelicelltype(u,A, toEXPS, toTFS), get_most_likelicelltype(v,A, toEXPS, toTFS)
 
-			if D2[u,v] <4  and u!=v:
+			if D2[u,v] <3  and u!=v:
 				G.add_node(u)
 				G.add_node(v)
-				G.add_edge(u,v,weight=0.002 )
+				G.add_edge(u,v,weight=0.01 )
 				colors.append(m2.to_rgba(1))
+				FHW.write(toTFS[u]+"," + toTFS[v]+ "," + str(D2[u,v]) + "\n")
 	F = plt.figure(figsize=(8,8))
 	ax 		= F.add_axes([0.05,0.5,0.5,0.45])
 	ax2 	= F.add_axes([0.65,0.5,0.015,0.45])
@@ -646,9 +649,9 @@ if __name__ == "__main__":
 	FILE 	= "/Users/joazofeifa/Lab/EMG/TF_predictions/files/TFS_PER.tsv"
 	G 		= load_TFS_per(FILE)
 	# compare_entropy(G)
-	D, TFS, EXPS, A , toEXPS, toTFS	= display_matrix(G, BINARY=pow(10,-10), SHOW=False)
-	PCA_plot(D, TFS, EXPS, A , toEXPS, toTFS)
+	D, TFS, EXPS, A , toEXPS, toTFS	= display_matrix(G, BINARY=None, SHOW=False)
+	#PCA_plot(D, TFS, EXPS, A , toEXPS, toTFS)
 	A, D2,toTFS= sorted_feature_matrix(D, TFS, EXPS, A , toEXPS, toTFS, SHOW=False)
 
-#	finally_as_a_network(A, D2, toEXPS, toTFS)
-	dendrogram_only(A,D, TFS, EXPS, toEXPS, toTFS)
+	finally_as_a_network(A, D2, toEXPS, toTFS, OUT="/Users/joazofeifa/Lab/TF_predictions/adjacency_matrices/TF_network.csv")
+#	dendrogram_only(A,D, TFS, EXPS, toEXPS, toTFS)

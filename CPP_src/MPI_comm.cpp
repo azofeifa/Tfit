@@ -749,7 +749,8 @@ int get_job_ID(string path, string job_ID, int rank, int nprocs){
 }
 
 	
-map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >> FITS, int rank, int nprocs){
+map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(vector<map<int, vector<simple_c_free_mode> >> FITS, 
+	int rank, int nprocs, ofstream& FHW){
 	
 
 	simple_c_free_mode sc_fm;
@@ -776,11 +777,18 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 		for (int j = 0; j < nprocs; j++){
 			int S =0;
 			if (j > 0){
+				FHW<<"(MPI_comm; root), waiting on " + to_string(j) +"\n";
+				FHW.flush();
 				MPI_Recv(&S, 1, MPI_INT, j, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+				FHW<<"(MPI_comm; root), recieved from " + to_string(j) + ", " + to_string(S) + " fits\n";
+				FHW.flush();
+				FHW<<"(MPI_comm; root), waiting on " + to_string(j) + ", to receive all " + to_string(S) + " fits\n";
+				FHW.flush();
 				for (int s = 0; s < S; s++){
 					MPI_Recv(&sc_fm, 1, mystruct,j,s+1,  MPI_COMM_WORLD,MPI_STATUS_IGNORE );
 					recieved.push_back(sc_fm);
 				}
+				FHW<<"(MPI_comm; root), recieved from " + to_string(j) + ", all" + to_string(S) + " fits\n";
 				
 			}else{
 				for (int s = 0; s < FITS.size(); s++){
@@ -803,8 +811,14 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 				}
 			}
 		}
+		FHW<<"(MPI_comm; slave process: " + to_string(rank)+ " about to send " + to_string(S) + " fits\n";
+		FHW.flush();
 		MPI_Send(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
+		FHW<<"(MPI_comm; slave process: " + to_string(rank)+ " sent " + to_string(S) + " fits\n";
+		FHW.flush();
 		S=0;
+		FHW<<"(MPI_comm; slave process: " + to_string(rank)+ " sending all" + to_string(S) + " fits\n";
+		FHW.flush();
 		for (int s = 0; s < FITS.size(); s++){
 			for (model_it k = FITS[s].begin(); k!=FITS[s].end(); k++){
 				for (int sc= 0; sc < k->second.size();sc++ ){
@@ -814,6 +828,8 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 				}
 			}
 		}
+		FHW<<"(MPI_comm; slave process: " + to_string(rank)+ " sent all " + to_string(S) + " fits\n";
+		FHW.flush();
 		
 	}
 	//printf("Rank: %d,%d\n",rank, recieved.size());
