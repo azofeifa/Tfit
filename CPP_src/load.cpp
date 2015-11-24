@@ -2173,7 +2173,7 @@ void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode
 
 	FHW_bed.open(out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidirectional_hits_intervals.bed");
 	FHW_bed<<P->get_header(0);
-	double Penality 	= 100;
+	double Penality 	= 25;
 	double BIC_score;
 	string M,S,L,PI, W,FW, RW, FP, LL, POS,NEG;
 	for (it_type_1 s = G.begin(); s!=G.end(); s++){ //iterate over each segment
