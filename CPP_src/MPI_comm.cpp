@@ -785,11 +785,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 				FHW<<"(MPI_comm; root), waiting on " + to_string(j) + ", to receive all " + to_string(S) + " fits\n";
 				FHW.flush();
 				for (int s = 0; s < S; s++){
-					FHW<<to_string(s+1)<<":";
-					FHW.flush();
 					MPI_Recv(&sc_fm, 1, mystruct,j,s+1,  MPI_COMM_WORLD,MPI_STATUS_IGNORE );
-					FHW<<to_string(s+1)<<",";
-					FHW.flush();
 					recieved.push_back(sc_fm);
 				}
 				FHW<<"(MPI_comm; root), recieved from " + to_string(j) + ", all " + to_string(S) + " fits\n";
@@ -828,7 +824,6 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 				for (int sc= 0; sc < k->second.size();sc++ ){
 					simple_c_free_mode sc_FM 	= k->second[sc];
 					MPI_Send(&sc_FM, 1, mystruct, 0, S+1, MPI_COMM_WORLD);	
-					FHW<<to_string(S+1)<<",";
 					S++;
 				}
 			}
