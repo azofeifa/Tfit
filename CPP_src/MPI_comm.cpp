@@ -813,7 +813,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 		}
 		FHW<<"(MPI_comm; slave process: " + to_string(rank)+ " about to send " + to_string(S) + " fits\n";
 		FHW.flush();
-		MPI_Send(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
+		MPI_Ssend(&S, 1, MPI_INT, 0,0, MPI_COMM_WORLD);
 		FHW<<"(MPI_comm; slave process: " + to_string(rank)+ " sent " + to_string(S) + " fits\n";
 		FHW.flush();
 		S=0;
