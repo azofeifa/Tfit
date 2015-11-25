@@ -3,16 +3,16 @@
 ~MODEL #do not change this line
 -N     	        = EMG-model_KS
 -v 		= 1
--i 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
--j 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
--k 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
+-i 		= /Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.pos.BedGraph
+-j 		= /Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.neg.BedGraph
+-k 		= /Users/joazofeifa/Downloads/Danko2013_E2_10-1_prelim_bidir_hits.bed
 -o 		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -nf            	= /Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed
 -log_out	= /Users/joazofeifa/Lab/EMG_logs/
 -br 		= 100 #binning resolution
 -ns 		= 100 #normalizing scale
 -minK 		= 1  #min number of models to consider
--maxK		= 2 #max number of models to consider
+-maxK		= 1 #max number of models to consider
 -rounds 	= 1 #number of random EM initializations
 -ct 		= 0.0001 #EM convergence threshold difference
 -mi 		= 2000 #Number of EM iterations before it is aborted
