@@ -823,7 +823,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > gather_all_simple_c_free_mode(
 			for (model_it k = FITS[s].begin(); k!=FITS[s].end(); k++){
 				for (int sc= 0; sc < k->second.size();sc++ ){
 					simple_c_free_mode sc_FM 	= k->second[sc];
-					MPI_Send(&sc_FM, 1, mystruct, 0, S+1, MPI_COMM_WORLD);	
+					MPI_Ssend(&sc_FM, 1, mystruct, 0, S+1, MPI_COMM_WORLD);	
 					S++;
 				}
 			}
