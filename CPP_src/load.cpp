@@ -535,11 +535,13 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 					strand 		= ".";
 				}
 				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]) + pad;
-				if (spec_chrom=="all" or spec_chrom==chrom){
-					segment * S 	= new segment(chrom, start, stop,i,strand);
-					GS[S->chrom].push_back(S);
+				if (start < stop){
+					if (spec_chrom=="all" or spec_chrom==chrom){
+						segment * S 	= new segment(chrom, start, stop,i,strand);
+						GS[S->chrom].push_back(S);
+					}
+					i++;
 				}
-				i++;
 			}
 		}
 	}else{
@@ -617,7 +619,6 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 			return segments;
 		}
 	}
-
 	//now we want to get all the intervals and make a vector<segment *> again...
 	vector<segment *>NS;
 	typedef map<string, node>::iterator it_type_6;
@@ -643,6 +644,7 @@ vector<segment_fits *> load::load_K_models_out(string FILE){
 					segment_fits_all.push_back(S);
 				}
 				line 							= line.substr(1,line.size()-1);
+
 				vector<string> bar_split 		= split_by_bar(line, "");
 				vector<string> comma_split 		= split_by_comma(bar_split[2], "");
 				vector<string> colon_split 		= split_by_colon(bar_split[1], "");
