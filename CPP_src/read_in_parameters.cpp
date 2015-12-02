@@ -28,7 +28,8 @@ params::params(){
 	p["-o"] 		= "";
 	p["-q"] 		= "";
 	p["-log_out"] 	= "";
-	
+
+	p["-merge"] 	= "0";
 	p["-pad"] 		= "0";
 	p["-br"] 		= "300";
 	p["-ns"] 		= "100";
@@ -180,7 +181,11 @@ void params::help(){
 	printf("\n");
 
 
-	printf("-chr      : specific chromosome to run on (default is \"all\")\n");
+	printf("-chr      : (chromosome ID; i.e. chr1) specific chromosome to run on (default is \"all\")\n");
+	printf("-merge    : (boolean integer) will merge overlaping intervals and run model on joint\n");
+	printf("               recommended for bidirectional de novo not recommended for evaluating \n");
+	printf("               gene intervals, default = 0\n");
+	
 	printf("-elon     : (boolean integer) adjust support of elongation component, (default=0)\n");
 	printf("              useful only when fitting to FStitch[1] or groHMM[2] output intervals\n");
 	printf("-pad      : (positive integer) each provided interval will be extended\n");

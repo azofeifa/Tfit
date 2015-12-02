@@ -91,7 +91,7 @@ namespace load{
 
 	void write_out_bidirs(map<string , vector<vector<double> > >, string, string, int ,params *, int);
 
-	vector<segment *> load_intervals_of_interest(string,map<int, string>&, int, string);
+	vector<segment *> load_intervals_of_interest(string,map<int, string>&, params *);
 
 
 	void collect_all_tmp_files(string , string, int, int );

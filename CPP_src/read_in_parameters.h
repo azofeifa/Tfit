@@ -29,8 +29,8 @@ public:
 	map<string, string> p5;
 	map<string, string> p6;
 	
-	char * isIntGroup[7] = {"-pad", "-minK", "-maxK", 
-						 "-rounds", "-mi", "-MLE", "-elon"};
+	char * isIntGroup[8] = {"-pad", "-minK", "-maxK", 
+						 "-rounds", "-mi", "-MLE", "-elon", "-merge"};
 
 	char * isDecGroup[12]  = {  "-br","-ns", "-ct",
 						"-max_noise",    "-r_mu",

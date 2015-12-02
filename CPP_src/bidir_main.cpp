@@ -9,6 +9,7 @@
 using namespace std;
 int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	int verbose 	= stoi(P->p["-v"]);
+	P->p["-merge"] 	= "1";
 	LG->write("\ninitializing bidir module...............................done\n", verbose);
 	int threads 	= omp_get_max_threads();//number of openMP threads that are available for use
 	
@@ -25,7 +26,8 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	map<string, int> chrom_to_ID;
 	map<int, string> ID_to_chrom;
 	LG->write("loading bedgraph files..................................", verbose);
-	vector<segment *> 	segments 	= load::load_bedgraphs_total(forward_bedgraph, reverse_bedgraph, stoi(P->p["-br"]), stof(P->p["-ns"]), P->p["-chr"], chrom_to_ID, ID_to_chrom );
+	vector<segment *> 	segments 	= load::load_bedgraphs_total(forward_bedgraph, reverse_bedgraph, 
+		stoi(P->p["-br"]), stof(P->p["-ns"]), P->p["-chr"], chrom_to_ID, ID_to_chrom );
 	LG->write("done\n", verbose);
 	//(2b) so segments is indexed by inidividual chromosomes, want to broadcast 
 	//to sub-processes and have each MPI call run on a subset of segments
@@ -37,7 +39,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//(3a) now going to run the template matching algorithm based on pseudo-
 	//moment estimator and compute BIC ratio (basically penalized LLR)
 
-	LG->write("running global tempalte matching algorithm..............", verbose);
+	LG->write("running moment estimator algorithm......................", verbose);
 	run_global_template_matching(segments, out_file_dir, 4, 
 			0.,stod(P->p["-ns"]),stod(P->p["-bct"]), threads,0. ,0 );	
 	//(3b) now need to send out, gather and write bidirectional intervals 
@@ -46,7 +48,9 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	int total =  MPI_comm::gather_all_bidir_predicitions(all_segments, 
 			segments , rank, nprocs, out_file_dir, job_name, job_ID,P,0);
 	LG->write("done\n", verbose);
-	LG->write("\nThere were " +to_string(total) + " prelimary bidirectional predictions\n\n", verbose);
+	if (rank==0){
+		LG->write("\nThere were " +to_string(total) + " prelimary bidirectional predictions\n\n", verbose);
+	}
 	
 	//===========================================================================
 	//this should conclude it all

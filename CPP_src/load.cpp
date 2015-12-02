@@ -505,8 +505,13 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 	}
 	return segments;
 }
-vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&  IDS, int pad,string spec_chrom){
+vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&  IDS, params * P){
 	ifstream FH(FILE);
+
+	string spec_chrom 	= P->p["-chr"];
+	int pad 			= stoi(P->p["-pad"]);
+	int merge 			= stof(P->p["-merge"]);
+
 	vector<segment *> G;
 	int ct 	= 1;
 	map<string, vector<segment * > > GS;
@@ -541,8 +546,16 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 		printf("couldn't open %s for reading\n", FILE.c_str() );
 	}
 	typedef map<string, vector<segment * > >::iterator it_type;
+	if (not merge){
+		IDS 	= IDS_first;
+	}
 	for (it_type c 	= GS.begin(); c!=GS.end(); c++){
-		vector<segment *> m_segs 	= merge_segments(c->second, IDS_first, IDS, T);
+		vector<segment *> m_segs;
+		if (merge){
+			m_segs 	= merge_segments(c->second, IDS_first, IDS, T);
+		}else{
+			m_segs 	= c->second;
+		}
 		for (int i = 0 ; i < m_segs.size(); i++){
 			G.push_back(m_segs[i]);
 		}

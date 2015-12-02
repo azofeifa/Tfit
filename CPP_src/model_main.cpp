@@ -23,7 +23,7 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	vector<segment *> FSI;
 	LG->write("loading intervals of interest...........................",verbose);
 	if (rank==0){
-		FSI 	= load::load_intervals_of_interest(interval_file, IDS, stoi(P->p["-pad"]), spec_chrom );
+		FSI 	= load::load_intervals_of_interest(interval_file, IDS, P );
 	}
 	LG->write("done\n",verbose);
 	//(1b) now broad cast out the intervals of interest to individual MPI processes
