@@ -1,9 +1,0 @@
-#This is a config file for running the model fitting module
-#please contact joseph[dot]azofeifa[at]colorado[dot]edu
-~SELECTION #do not change this line
--v 			= 1
--i 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/br_files/100/ #cinput directory
--o 			= /Users/joeyazo/Desktop/Lab/gro_seq_files/HCT116/br_files/100/ # out directory
--penality 	= 500 #BIC penality BIC, -2*LL + penality*K*log(n)
--to_igv 	= 1 #output a bed file that can uploaded to IGV/UCSC genome browser
--to_EMG  	= 1 #output a condensed file of the same format as MODEL module

@@ -44,8 +44,8 @@ def run(L,R):
 
 	axes,bps 	= list(), list()
 	F 	= plt.figure(figsize=(10,6))
-	ax 	= F.add_subplot(1,2,1)
-	ax.set_title("Strand Bias Distributions")
+	ax 	= F.add_subplot(1,1,1)
+	#ax.set_title("Strand Bias Distributions")
 	pos, neg, ERNA 	= [m.pi for m in positive if m.lam < 50],[m.pi for m in negative if m.lam < 50],[m.pi for m in eRNA ]
 
 	pos_neg 		= scipy.stats.ks_2samp(pos,neg)
@@ -60,14 +60,14 @@ def run(L,R):
 	ax.annotate('', xy=(1,1.1), xytext=(2,1.1), arrowprops=props)
 	ax.annotate('', xy=(2,1.2), xytext=(3,1.2), arrowprops=props)
 	ax.annotate('', xy=(1,1.3), xytext=(3,1.3), arrowprops=props)
-	ax.annotate(r'$p<10^{' + str(int(math.log(pos_neg[1],10)-10)) + "}$", 
-		xy=(1.35,1+0.102), zorder=300,fontsize=12)
+	ax.annotate(r'$p<10^{' + str(-100) + "}$", 
+		xy=(1.35,1+0.102), zorder=300,fontsize=20)
 	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10)-10)) + "}$", 
-		xy=(2.35,1+0.202), zorder=300,fontsize=12)
+		xy=(2.35,1+0.202), zorder=300,fontsize=20)
 	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10)-10)) + "}$", 
-		xy=(1.8,1+0.302), zorder=300,fontsize=12)
+		xy=(1.8,1+0.302), zorder=300,fontsize=20)
 	
-	
+	ax.set_yticklabels([""] + [str(y) if y <= 1.0 else "" for y in ax.get_yticks() ], fontsize=20)
 	ax.set_ylim(-0.1,1.5)
 
 	bp = ax.boxplot((pos, neg, ERNA),patch_artist=True)
@@ -75,27 +75,27 @@ def run(L,R):
 	axes.append(ax)
 
 	bps.append(bp)
-	ax 	= F.add_subplot(1,2,2)
-	ax.set_title("Foot Print Parameter Distributions")
-	pos, neg, ERNA 	= [m.fp for m in positive if m.fp < 400],[m.fp for m in negative if m.fp < 400],[m.fp for m in eRNA if m.fp < 400]
-	pos_neg 		= scipy.stats.ks_2samp(pos,neg)
-	pos_ERNA 		= scipy.stats.ks_2samp(pos,ERNA)
-	neg_ERNA 		= scipy.stats.ks_2samp(ERNA,neg)
+	# ax 	= F.add_subplot(1,2,2)
+	# ax.set_title("Foot Print Parameter Distributions")
+	# pos, neg, ERNA 	= [m.fp for m in positive if m.fp < 400],[m.fp for m in negative if m.fp < 400],[m.fp for m in eRNA if m.fp < 400]
+	# pos_neg 		= scipy.stats.ks_2samp(pos,neg)
+	# pos_ERNA 		= scipy.stats.ks_2samp(pos,ERNA)
+	# neg_ERNA 		= scipy.stats.ks_2samp(ERNA,neg)
 	
-	bp = ax.boxplot((pos, neg, ERNA),patch_artist=True)
+	# bp = ax.boxplot((pos, neg, ERNA),patch_artist=True)
 
-	ax.annotate('', xy=(1,450), xytext=(2,450), arrowprops=props)
-	ax.annotate('', xy=(2,500), xytext=(3,500), arrowprops=props)
-	ax.annotate('', xy=(1,550), xytext=(3,550), arrowprops=props)
-	ax.annotate(r'$p=' + str(0.1) + "$", 
-		xy=(1.35,450+2), zorder=300,fontsize=12)
-	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
-		xy=(2.35,500+2), zorder=300,fontsize=12)
-	ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
-		xy=(1.8,550+2), zorder=300,fontsize=12)
-	ax.set_ylim(-100,650)
-	axes.append(ax)
-	bps.append(bp)
+	# ax.annotate('', xy=(1,450), xytext=(2,450), arrowprops=props)
+	# ax.annotate('', xy=(2,500), xytext=(3,500), arrowprops=props)
+	# ax.annotate('', xy=(1,550), xytext=(3,550), arrowprops=props)
+	# ax.annotate(r'$p=' + str(0.1) + "$", 
+	# 	xy=(1.35,450+2), zorder=300,fontsize=12)
+	# ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
+	# 	xy=(2.35,500+2), zorder=300,fontsize=12)
+	# ax.annotate(r'$p<10^{' + str(int(math.log(pos_ERNA[1],10))) + "}$", 
+	# 	xy=(1.8,550+2), zorder=300,fontsize=12)
+	# ax.set_ylim(-100,650)
+	# axes.append(ax)
+	# bps.append(bp)
 	## change outline color, fill color and linewidth of the boxes
 	for i,bp in enumerate(bps):
 		ax 	= axes[i]
@@ -120,7 +120,7 @@ def run(L,R):
 		## change the style of fliers and their fill
 		for flier in bp['fliers']:
 		    flier.set(marker='o', color='#e7298a', alpha=0.5)
-		ax.set_xticklabels(["Forward Strand\nPromoter", "Reverse Strand\nPromoter", "eRNA\nUnannotated"])
+		ax.set_xticklabels(["Forward Strand\nPromoter", "Reverse Strand\nPromoter", "eRNA\nUnannotated"], fontsize=20)
 		ax.grid()
 	plt.tight_layout()
 	plt.savefig("/Users/joazofeifa/Lab/Talks/2015/CSHL/Parameter_Comparison")

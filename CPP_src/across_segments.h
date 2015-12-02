@@ -3,6 +3,7 @@
 #include "load.h"
 #include "read_in_parameters.h"
 #include "model.h"
+#include "error_stdo_logging.h"
 
 string check_file(string, int);
 
@@ -49,5 +50,5 @@ string get_header(params *);
 
 vector<simple_c> move_elongation_support(vector<segment *>, params *);
 vector<single_simple_c> run_single_model_across_segments(vector<segment *> , params *, ofstream& );
-vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<segment *> , params *, ofstream& );
+vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<segment *> , params *, Log_File * );
 #endif

@@ -1,23 +1,28 @@
 #This is a config file for running the BIDIR module
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
+#/Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.pos.BedGraph
+#/Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.neg.BedGraph
+#/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+#/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
 ~BIDIR #do not change this line
 -N     	       	      	= foot_print_testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.pos.BedGraph
--j 	  		= /Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.neg.BedGraph
--nf 			= /Users/joazofeifa/Lab/genome_files/hg19_no_anntation.bed
+-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+-k 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
+-q 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3-4_K_models_MLE.tsv
+-tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -chr 			= chr1  #specific chromosome
 -br 			= 50 #binning resolution do not consider changing
--window_res 		= 2 #window
 -pad 			= 2000
--MLE			= 1 #get Maximum likelihood estimates
+-MLE			= 0 #get Maximum likelihood estimates
+-select 		= 0 #run BIC optimization for MLE from moment estimators
 -bct 			= 1.0 #confidence threshold
 -ns 			= 100 #scaling for numerical stability, would not consider changing
--opt_res 		= 5 #grid search resolution
 -r_mu 			= 1 #seed EM randomally from the peak finder
 -minK 			= 1
--maxK 			= 2
+-maxK 			= 1
 -ALPHA_0 		= 1 #prior for sigma
 -BETA_0 		= 1 #prior for sigma
 -ALPHA_1 		= 500 #prior for lambda
@@ -28,8 +33,6 @@
 -ct 			= 0.0001 #EM convergence threshold difference
 -mi 			= 2000 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
--optimize 		= 0 #whether or not we should train on the bed files in the -k dir
--foot_res 		= 5
--show_seeds 		= 1 #show the pseudo moment estimators that the MLE will be fit on
+-elon 			= 0
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
 

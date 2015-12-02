@@ -7,7 +7,7 @@
 #include "read_in_parameters.h"
 #include <stdio.h>
 #include <ctype.h>
-
+#include <cctype>
 #include <stdio.h>
 #include <time.h>
 #include "split.h"
@@ -16,160 +16,105 @@ using namespace std;
 params::params(){
 	p["-N"] 		= "EMG";
 	p["-v"] 		= "1";
+	
+	p["-h"] 		= "";
+	p["--help"] 	= "";
+
+	p["-config"] 	= "";
 	p["-i"] 		= "";
 	p["-j"] 		= "";
 	p["-k"] 		= "";
-	p["-pad"] 		= "0";
+	p["-tss"] 		= "";
 	p["-o"] 		= "";
+	p["-q"] 		= "";
+	p["-log_out"] 	= "";
+	
+	p["-pad"] 		= "0";
 	p["-br"] 		= "300";
 	p["-ns"] 		= "100";
 	p["-minK"] 		= "1";
 	p["-maxK"] 		= "3";
 	p["-rounds"] 	= "10";
 	p["-ct"] 		= "0.0001";
+	p["-bct"] 		= "0.95";
+	p["-ms_pen"] 	= "1";
+	p["-MLE"] 		= "0";
+	p["-select"] 	= "0";
 	p["-max_noise"] = "0.05";
 	p["-chr"] 		= "all";
 	p["-elon"] 		= "0";
-	p["-mi"] 		= "300";
+	p["-mi"] 		= "2000";
 	p["-r_mu"] 		= "0";
+	
 	p["-ALPHA_0"] 	= "1";
 	p["-BETA_0"] 	= "1";
 	p["-ALPHA_1"] 	= "1";
 	p["-BETA_1"] 	= "1";
 	p["-ALPHA_2"] 	= "1";
 	p["-ALPHA_3"] 	= "1";
-	p["-template"] 	= "0";
-	p["-bct"] 		= "0.95";
-	p["-window_res"]= "10";
-	p["-log_out"] 	= "";
-	p["-ms_pen"] 	= "1";
-	p["-topology"] 	= "1";
-	p["-foot_res"] 	= "5";
-	p["-nf"] 		= "";
-
-
-	p2["-v"] 		= "1";
-	p2["-i"] 		= "";
-	p2["-j"] 		= "";
-	p2["-k"] 		= "";
-	p2["-o"] 		= "";
-	p2["-pad"] 		= "100";
-
-	p3["-v"] 		= "1";
-	p3["-i"] 		= "";
-	p3["-o"] 		= "";
-	p3["-penality"] = "1";
-	p3["-to_igv"] 	= "1";
-	p3["-to_EMG"] 	= "1";
-
-
-	p4["-v"] 				= "1";
-	p4["-N"] 				= "EMG";
-	p4["-log_out"] 			= "";
-	p4["-i"] 				= "";
-	p4["-j"] 				= "";
-	p4["-k"] 				= "";
-	p4["-f"] 				= "";
-	p4["-optimize"] 		= "0";
-	p4["-o"] 				= "1";
-	p4["-ns"] 				= "100";
-	p4["-br"] 				= "50";
-	p4["-density"] 			= "1000";
-	p4["-window_res"] 		= "100";
-	p4["-bct"] 				= "0.9";
-	p4["-minK"] 		= "1";
-	p4["-maxK"] 		= "1";
-	
-	p4["-chr"] 				= "all";
-	p4["-opt_res"] 			= "5";
-	p4["-np"] 				= "4";
-	p4["-MLE"] 				= "1";
-	p4["-pad"] 				= "3000";
-
-	p4["-rounds"] 			= "10";
-	p4["-ct"] 				= "0.0001";
-	p4["-max_noise"] 		= "0.05";
-	p4["-mi"] 				= "300";
-	p4["-r_mu"] 			= "0";
-	p4["-ALPHA_0"] 			= "1";
-	p4["-BETA_0"] 			= "1";
-	p4["-ALPHA_1"] 			= "1";
-	p4["-BETA_1"] 			= "1";
-	p4["-ALPHA_2"] 			= "1";
-	p4["-ALPHA_3"] 			= "1";
-	p4["-elon"] 			= "0";
-	p4["-show_seeds"] 		= "0";
-	p4["-foot_res"] 		= "5";
-	p4["-log_out"] 			= "";
-	p4["-nf"] 				= "";
-
-
-	p5["-v"] 			= "1";
-	p5["-N"] 			= "EMG";
-	p5["-log_out"] 		= "";
-
-	p5["-poll"] 		= "0";
-	p5["-merge"] 		= "0";
-	p5["-i"]  			= "";
-	p5["-j"]  			= "";
-	p5["-o"] 			= "";
-	p5["-br"] 			= "300";
-	p5["-ns"] 			= "100";
-	p5["-minK"] 		= "1";
-	p5["-maxK"] 		= "2";
-	p5["-rounds"] 		= "10";
-	p5["-r_mu"] 		= "1";
-	p5["-mi"] 			= "1000";
-	p5["-ct"] 			= "0.0001";
-	p5["-max_noise"] 	= "0.05";
-	p5["-np"] 			= "4";
-	p5["-chr"] 			= "all";
-	p5["-template"] 	= "1";
-	p5["-opt_res"] 		= "10";
-	p5["-show_seeds"] 	= "0";
-	p5["-bct"] 			= "1";
-	p5["-template"] 	= "0";
-	p5["-pad"] 			= "0";
-	p5["-alpha_1"] 		= "1";
-	p5["-alpha_2"] 		= "1";
-	p5["-alpha_3"] 		= "1";
-	p5["-beta_1"] 		= "1";
-	p5["-beta_2"] 		= "1";
-	p5["-foot_res"] 	= "5";
-
-
-
-	p6["-v"] 			= "1";
-	p6["-N"] 			= "";
-	p6["-i"] 			= "";
-	p6["-j"] 			= "";
-	p6["-k"] 			= "";
-	p6["-o"]			= "";
-	p6["-chr"] 			= "all";
-	p6["-br"] 			= "100";
-	p6["-pad"] 			= "";
-	p6["-ns"] 			= "100";
-	p6["-r_mu"] 		= "1";
-	p6["-ALPHA_0"] 		= "1";
-	p6["-BETA_0"] 		= "1";
-	p6["-ALPHA_1"] 		= "1";
-	p6["-BETA_1"] 		= "1";
-	p6["-ALPHA_2"] 		= "1";
-	p6["-foot_res"] 	= "5";
-	p6["-ALPHA_3"] 		= "1";
-	p6["-rounds"] 		= "1";
-	p6["-brounds"] 		= "1";
-	p6["-mi"] 			= "1000";
-	p6["-ct"] 			= "0.0001";
-	p6["-max_noise"] 	= "0.05";
-	p6["-log_out"] 		= ""	;
-
+		
 	
 	N 				= 0;
 	module 			= "";
 	EXIT 			= 0;
+	bidir 			= 0;
+	model 			= 0;
+	select 			= 0;
 
 }
+bool is_decimal(const std::string& s){
+   if(s.empty() || std::isspace(s[0]) || std::isalpha(s[0])) return false ;
+   char * p ;
+   strtod(s.c_str(), &p) ;
+   return (*p == 0) ;
+}
+bool is_integer(const std::string& s){
+	std::string::const_iterator it = s.begin();
+	while (it != s.end() && std::isdigit(*it)) ++it;
+	return !s.empty() && it == s.end();
+}
+
+bool is_path(string FILE){
+	ifstream FH(FILE);
+	if (FH){
+		return true;
+	}else{
+		return false;
+	}
+
+}
+
+vector<string> params::validate_parameters(){
+	vector<string> errors;
+	for (int i = 0; i < 12; i++){
+		if (i <8 and not  is_integer(p[isIntGroup[i]])  ){
+			string line = "User provided input for (" + string(isIntGroup[i]) + ") "  ;
+			line+= + "'"+string(p[isIntGroup[i]])+ "'"+ " is not integer valued";
+			errors.push_back(line);
+		}
+		if (not  is_decimal(p[isDecGroup[i]])){
+			string line = "User provided input for (" + string(isDecGroup[i]) + ") ";
+			line+= + "'"+ string(p[isDecGroup[i]] ) + "'" + " is not decimal valued";
+			errors.push_back(line);
+		}
+		if (i < 8){
+			string path_FILE 	= p[isPathGroup[i]];
+			if (isPathGroup[i] == "-o" and !path_FILE.empty() and path_FILE.substr(path_FILE.size()-1, 1) != "/"  ){
+				p[isPathGroup[i]] 	= path_FILE+ "/";
+			}
+		}
+		if (i < 8 and not is_path(p[isPathGroup[i]])){
+
+			if (!(bidir and isPathGroup[i] == "-k" ) and (!((bidir or model ) and isPathGroup[i]=="-tss")) and (!((bidir or model ) and isPathGroup[i]=="-q"))    ){
+				string line = "User provided input for (" + string(isPathGroup[i]) + ") ";
+				line+= + "'"+ string(p[isPathGroup[i]]) + "'"  + " path does not exist";
+				errors.push_back(line);
+			}
+		}
+	}
+	return errors;
+}
+
 const std::string currentDateTime() {
     time_t     now = time(0);
     struct tm  tstruct;
@@ -182,573 +127,363 @@ const std::string currentDateTime() {
     return buf;
 }
 void params::help(){
-	cout<<"----------------------------------------------------------------"<<endl;
-	cout<<"               Description of EMGU Parameters"<<endl;
-	cout<<"-i  : "<<"/path/to/annotation_file"<<endl;
-	cout<<"-o  : "<<"path/to/output_file"<<endl;
-	cout<<"-np : "<<"number of CPU cores (default: 1)"<<endl;
-	cout<<"-chr: "<<"specific chromsome (default: all)"<<endl;
-	cout<<"-r  : "<<"base pair binning resolution (default: 1)"<<endl;
-	cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-	cout<<"These parameters can also be set in seperate config file"<<endl;
-	cout<<"----------------------------------------------------------------"<<endl;	
+	string header 	= "";
+	header+="--------------------------------------------------------------------------------------\n";
+	header+="                        transcriptional inference (tINF)                 \n";
+	printf("%s\n",header.c_str() );
+	printf("                   ....description of application modules....             \n");
+	printf("                                  (critical)                            \n\n");
+	
+	printf("bidir     : must be provided immediatly following the application call \"EMGU\"\n");
+	printf("              to scan for bidirectional signal across provided dataset, uses\n");
+	printf("              a poisson noise background model to assess enrichment and \n");
+	printf("              quick moment estimation to asses divergent transcription shape \n");
+	printf("model     : must be provided immediatly following the application call \"EMGU\"\n");
+	printf("              to perform maximum likelihood or a-posteriori parameter inference\n");
+	printf("              recommended for accruacy; especially for point estimate on\n");
+	printf("              RNA polymerase II loading position needed for TF ID-ing \n");
+	printf("select    : must be provided immediatly following the application call \"EMGU\"\n");
+	printf("              model selection is performed via penalized bayesian information\n");
+	printf("              criteria. To set the penality, we consider an ROC curve over signal\n");
+	printf("              with no moment estimate prediction (TN) and bidirectionals found near TSS (TP) \n");
+	
+	printf("\n\n");
+	header="";
+	header+="                ....description of non-default parameters....          \n";
+	header+="                                 (critical)                             \n";
+	printf("%s\n",header.c_str() );
+	printf("-N        : Name of Job; default is \"EMG\"\n");
+	printf("-i        : /path/to/forward/strand/bedgraph/file\n");
+	printf("              this file should be bedgraph formatted\n");
+	printf("              chromosome[tab]start[tab]stop[tab]coverage[newline]\n");
+	printf("-j        : /path/to/reverse/strand/bedgraph/file\n");
+	printf("              this file should be bedgraph formatted\n");
+	printf("              chromosome[tab]start[tab]stop[tab]coverage[newline]\n");
+	printf("-k        : /path/to/interval/file\n");
+	printf("              this file should be formatted as a bed file\n");
+	printf("              chromosome[tab]start[tab]stop[newline]\n");
+	printf("              for each provided interval we will fit a mixture\n");
+	printf("              from -minK components to -maxK components\n");
+	printf("-o        : /path/to/output/directory/\n");
+	printf("              the \"bidir\" module will create a file in this\n");
+	printf("              directory {-N}_prelim_bidir_hits.bed\n");
+	printf("              the \"model\" module will create two files in this\n");
+	printf("              directory {-N}_K_models_MLE.tsv and\n");
+	printf("              {-N}_bidirectional_hits_intervals.bed\n");
+	printf("-log_out  : /path/to/directory/where/tmp/log_files/will/be/stored\n");
+	printf("              as the application runs, this directory will house tmp_{-N}.log\n");
+	printf("              log files for each MPI process (and they will be removed at the end)\n");
+	printf("              these will be updated and will give application progress\n");
+	printf("\n");
+	printf("                    ....description of default parameters....          \n");	
+	printf("                                (non-critical)                         \n");
+	printf("\n");
+
+
+	printf("-chr      : specific chromosome to run on (default is \"all\")\n");
+	printf("-elon     : (boolean integer) adjust support of elongation component, (default=0)\n");
+	printf("              useful only when fitting to FStitch[1] or groHMM[2] output intervals\n");
+	printf("-pad      : (positive integer) each provided interval will be extended\n");
+	printf("              in both the five-prime and three-prime direction (default=1000)\n");
+	printf("-MLE      : (boolean integer) specific to the bidir module, will perform parameter\n");
+	printf("              inference via EM (highly recommended for accuracy)\n");
+	printf("-select   : (boolean integer) specific to the bidir and model module will perform\n");
+	printf("              ROC analysis and run the selection module\n");
+	printf("-ms_pen   : (positive floating) penality term in BIC criteria for model selection\n");
+	printf("              (default = 1)\n");
+	
+	printf("\n");
+	printf("                    ....description of default parameters....          \n");	
+	printf("                        (non-critical, advanced useage)                 \n");
+	printf("\n");
+	printf("-minK     : (positive integer) minimum number of model components to try\n");	
+	printf("              (default=1)\n");
+	printf("-maxK     : (positive integer) maximum number of model components to try\n");
+	printf("              (default=5)\n");
+	printf("-rounds   : (positive integer) number of random intializations to the\n");
+	printf("              EM algorithm (default=10)\n" );	                  
+	printf("-mi       : (positive integer) maximum number of iterates to the\n");
+	printf("              EM algorithm (default=2000)\n" );	                  
+	printf("-ct       : (positive decimal) EM log-likelihood convergence threshold\n");
+	printf("              (default=0.0001)\n" );	                  
+	printf("-ALPHA_0  : hyperparameter (1) for the Normal Inverse Wishart prior for loading variance (sigma)\n" );	                  
+	printf("              (default=1; weak)\n" );	                  
+	printf("-BETA_0   : hyperparameter (2) for the Normal Inverse Wishart fprior for loading variance (sigma)\n" );	                  
+	printf("              (default=1; weak)\n" );	                  
+	printf("-ALPHA_1  : hyperparameter (1) for the Gamma prior for initiating length (lambda)\n" );	                  
+	printf("              (default=1; weak)\n" );	                  
+	printf("-BETA_1   : hyperparameter (2) for the Gamma prior for initiating length (lambda)\n" );	                  
+	printf("              (default=1; weak)\n" );	                  
+	printf("-ALPHA_2  : hyperparameter (symmetric) for the Dirichlet prior for component mixing weights\n" );	                  
+	printf("              (default=1; weak)\n" );	                 
+	printf("-ALPHA_3  : hyperparameter (symmetric) for the Beta prior for strand bias\n" );	                  
+	printf("              (default=1; weak)\n" );	                 
+	 
+	
+	printf("\n\n");
+	printf("-config   :  all parameters may be specified in a config file with     \n");	
+	printf("              flag = value [newline] syntax, parameters specified on the command line\n" );	                 
+	printf("              following the -config flag will override any parameters given in the config file\n" );	                 
+	
+	
+	printf("\nQuestions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu\n" );
+		
+	printf("--------------------------------------------------------------------------------------------\n");
+
+	
+	
+
+	
+	
+
+
+
+	
+	
+
+
+	
+	
+
+
+
 }
 void params::display(int nodes, int cores){
-	if (module=="MODEL"){
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"                 (RUNNING MIXTURE MODEL)                        "<<endl;
-		cout<<"-N         : "<<p["-N"]<<endl;
-		cout<<"-i         : "<<p["-i"]<<endl;
-		cout<<"-j         : "<<p["-j"]<<endl;
-		cout<<"-k         : "<<p["-k"]<<endl;
-		cout<<"-o         : "<<p["-o"]<<endl;
-		cout<<"-log_out   : "<<p["-log_out"]<<endl;
-		cout<<"-chr       : "<<p["-chr"]<<endl;
-		cout<<"-br        : "<<p["-br"]<<endl;
-		cout<<"-ns        : "<<p["-ns"]<<endl;
-		cout<<"-rounds    : "<<p["-rounds"]<<endl;
-		cout<<"-elon      : "<<p["-elon"]<<endl;
-		cout<<"-foot_res  : "<<p["-foot_res"]<<endl;
-		cout<<"-pad       : "<<p["-pad"]<<endl;
-		
-		cout<<"-template  : "<<p["-template"]<<endl;
-		cout<<"-ct        : "<<p["-ct"]<<endl;
-		cout<<"-mi        : "<<p["-mi"]<<endl;
-		cout<<"-bct       : "<<p["-bct"]<<endl;
-		cout<<"-window_res: "<<p["-window_res"]<<endl;
-		cout<<"-minK      : "<<p["-minK"]<<endl;
-		cout<<"-maxK      : "<<p["-maxK"]<<endl;			
-		cout<<"-threads   : "<<cores<<endl;
-		cout<<"-MPI_nodes : "<<nodes<<endl;
-		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
-	
-	}else if (module=="FORMAT"){
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"                    (FORMATING DATA)                        "<<endl;
-		cout<<"-i        : "<<p2["-i"]<<endl;
-		cout<<"-j        : "<<p2["-j"]<<endl;
-		cout<<"-k        : "<<p2["-k"]<<endl;
-		cout<<"-o        : "<<p2["-o"]<<endl;
-		cout<<"-pad      : "<<p2["-pad"]<<endl;
-		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
-		
-	}else if (module=="SELECTION"){
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"                    (MODEL SELECTION)                        "<<endl;
-		cout<<"-i           : "<<p3["-i"]<<endl;
-		cout<<"-o           : "<<p3["-i"]<<endl;
-		cout<<"-penality    : "<<p3["-penality"]<<endl;
-		cout<<"-to_igv      : "<<p3["-to_igv"]<<endl;
-		cout<<"-to_EMG      : "<<p3["-to_EMG"]<<endl;
-		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
-	}else if (module=="BIDIR")	{
-		if (p4["-optimize"]=="0"){
-			cout<<"----------------------------------------------------------------"<<endl;
-			cout<<"              User Provided EMGU Parameters                     "<<endl;
-			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
-			cout<<"-N           : "<<p4["-N"]<<endl;
-			cout<<"-i           : "<<p4["-i"]<<endl;
-			cout<<"-j           : "<<p4["-j"]<<endl;
-			cout<<"-nf          : "<<p4["-nf"]<<endl;
-
-			cout<<"-o           : "<<p4["-o"]<<endl;
-			cout<<"-log_out     : "<<p4["-log_out"]<<endl;
-			cout<<"-chr         : "<<p4["-chr"]<<endl;
-			cout<<"-window_res  : "<<p4["-window_res"]<<endl;
-			cout<<"-bct         : "<<p4["-bct"]<<endl;
-			cout<<"-MLE         : "<<p4["-MLE"]<<endl;
-			cout<<"-mi          : "<<p4["-mi"]<<endl;
-			cout<<"-ct          : "<<p4["-ct"]<<endl;
-			cout<<"-foot_res    : "<<p4["-foot_res"]<<endl;
-			cout<<"-pad         : "<<p4["-pad"]<<endl;
-			cout<<"-ns          : "<<p4["-ns"]<<endl;
-			cout<<"-br          : "<<p4["-br"]<<endl;
-			cout<<"-rounds      : "<<p4["-rounds"]<<endl;
-			cout<<"-threads     : "<<cores<<endl;
-			cout<<"-MPI_nodes   : "<<nodes<<endl;
-			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-			cout<<"----------------------------------------------------------------"<<endl;
-		
-		}else{
-			cout<<"----------------------------------------------------------------"<<endl;
-			cout<<"              User Provided EMGU Parameters                     "<<endl;
-			cout<<"                 (BIDIRECTIONAL DETECTOR)                       "<<endl;
-			cout<<"                ...Running Optimization...                      "<<endl;
-			cout<<"-i           : "<<p4["-i"]<<endl;
-			cout<<"-j           : "<<p4["-j"]<<endl;
-			cout<<"-k           : "<<p4["-k"]<<endl;
-			cout<<"-o           : "<<p4["-o"]<<endl;
-			cout<<"-opt_res     : "<<p4["-opt_res"]<<endl;
-			cout<<"-chr         : "<<p4["-chr"]<<endl;
-			cout<<"-ns          : "<<p4["-ns"]<<endl;
-			cout<<"-br          : "<<p4["-br"]<<endl;
-			cout<<"-threads     : "<<cores<<endl;
-			cout<<"-MPI_nodes   : "<<nodes<<endl;
-			cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-			cout<<"----------------------------------------------------------------"<<endl;
-			
-		}
-	}else if (module == "SINGLE") {
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"                 (Fitting single model)                       "<<endl;
-		cout<<"Date Time    : "<<currentDateTime()<<endl;
-		cout<<"-i           : "<<p5["-i"]<<endl;
-		cout<<"-j           : "<<p5["-j"]<<endl;
-		cout<<"-o           : "<<p5["-o"]<<endl;
-		cout<<"-ns          : "<<p5["-ns"]<<endl;
-		cout<<"-br          : "<<p5["-br"]<<endl;
-		cout<<"-foot_res    : "<<p5["-foot_res"]<<endl;
-		cout<<"-rounds      : "<<p5["-rounds"]<<endl;
-		cout<<"-chr         : "<<p5["-chr"]<<endl;
-		cout<<"-pad         : "<<p5["-pad"]<<endl;
-		cout<<"-threads     : "<<cores<<endl;
-		cout<<"-MPI_nodes   : "<<nodes<<endl;
-		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
-	}else if (module == "BOOTSTRAP"){
-
-		cout<<"----------------------------------------------------------------"<<endl;
-		cout<<"              User Provided EMGU Parameters                     "<<endl;
-		cout<<"               (Bootstraping MLE Estimates)                     "<<endl;
-		cout<<"Date Time    : "<<currentDateTime()<<endl;
-		cout<<"-i           : "<<p6["-i"]<<endl;
-		cout<<"-j           : "<<p6["-j"]<<endl;
-		cout<<"-k           : "<<p6["-k"]<<endl;
-		cout<<"-o           : "<<p6["-o"]<<endl;
-		cout<<"-log_out     : "<<p6["-log_out"]<<endl;
-		cout<<"-ns          : "<<p6["-ns"]<<endl;
-		cout<<"-br          : "<<p6["-br"]<<endl;
-		cout<<"-chr         : "<<p6["-chr"]<<endl;
-		cout<<"-rounds      : "<<p6["-rounds"]<<endl;
-		cout<<"-brounds     : "<<p6["-brounds"]<<endl;
-		
-		cout<<"-pad         : "<<p6["-pad"]	<<endl;
-		cout<<"-r_mu        : "<<p6["-r_mu"]	<<endl;
-		cout<<"-ALPHA_0     : "<<p6["-ALPHA_0"]	<<endl;
-		cout<<"-BETA_0      : "<<p6["-BETA_0"]	<<endl;
-		cout<<"-ALPHA_1     : "<<p6["-ALPHA_1"]	<<endl;
-		cout<<"-BETA_1      : "<<p6["-BETA_1"]	<<endl;
-		cout<<"-ALPHA_2     : "<<p6["-ALPHA_2"]	<<endl;
-		cout<<"-ALPHA_3     : "<<p6["-ALPHA_3"]	<<endl;
-		cout<<"-mi          : "<<p6["-mi"]	<<endl;
-		cout<<"-ct          : "<<p6["-ct"]	<<endl;
-		cout<<"-max_noise   : "<<p6["-max_noise"]	<<endl;
-		cout<<"-threads     : "<<cores<<endl;
-		cout<<"-MPI_nodes   : "<<nodes<<endl;
-		cout<<"Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu"<<endl;
-		cout<<"----------------------------------------------------------------"<<endl;
-
+	bool MLE 	= stoi(p["-MLE"]);
+	bool SELECT = stoi(p["-select"]);
+	string header 	= "";
+	header+="----------------------------------------------------------------\n";
+	header+="             transcriptional inference (tINF)                   \n";
+	if (bidir){
+	header+="               ...bidirectional scanner...     \n";
+	}if (bidir and MLE){
+	header+="             ....coupled to mixture model....     \n";
+	}if (bidir and select){
+	header+="       ....coupled to BIC penality optimization....     \n";
 	}
+	if (model){
+	header+="               ...running mixture model...                      \n";
+	}
+	if (select){
+	header+="            ....BIC penality optimization....                      \n";		
+	}
+	printf("%s\n",header.c_str() );
+	printf("-N         : %s\n", p["-N"].c_str()  );
+	printf("-i         : %s\n", p["-i"].c_str()  );
+	printf("-j         : %s\n", p["-j"].c_str()  );
+	printf("-MLE       : %s\n",  p["-MLE"].c_str());
+	printf("-select    : %s\n",  p["-select"].c_str());
+	if (model or MLE){
+	printf("-k         : %s\n", p["-k"].c_str()  );
+	}
+
+	if (select){
+		printf("-q         : %s\n", p["-q"].c_str());
+		printf("-tss       : %s\n", p["-tss"].c_str()  );
+	}
+	printf("-o         : %s\n", p["-o"].c_str()  );
+	printf("-log_out   : %s\n", p["-log_out"].c_str()  );
+	printf("-chr       : %s\n", p["-chr"].c_str());	
+	printf("-br        : %s\n", p["-br"].c_str());	
+	printf("-rounds    : %s\n", p["-rounds"].c_str()  );
+	printf("-elon      : %s\n", p["-elon"].c_str()  );
+	printf("-pad       : %s\n", p["-pad"].c_str()  );
+	if (!model){
+	printf("-bct       : %s\n", p["-bct"].c_str());
+	}
+	printf("-minK      : %s\n", p["-minK"].c_str());
+	printf("-maxK      : %s\n", p["-maxK"].c_str());
+	printf("-threads   : %d\n",  cores);
+	printf("-MPI_np    : %d\n",  nodes);
+	printf("Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu\n" );
+	printf("----------------------------------------------------------------\n" );
+	
 }
 
 
 string params::get_header(int ID){
 	string header = "";
-
-
-	if (ID == 5){
-		header+="#----------------------------------------------------\n";
-		header+="#Date Time    : "+currentDateTime()+"\n";
-		header+="#-N           : "+p5["-N"]+"\n";	
-		header+="#-i           : "+p5["-i"]+"\n";
-		header+="#-j           : "+p5["-j"]+"\n";
-		header+="#-o           : "+p5["-o"]+"\n";
-		header+="#-ns          : "+p5["-ns"]+"\n";
-		header+="#-br          : "+p5["-br"]+"\n";
-		header+="#-foot_res    : "+p5["-foot_res"]+"\n";
-		header+="#-chr         : "+p5["-chr"]+"\n";
-		header+="#-mi          : "+p5["-mi"]+"\n";
-		header+="#-ct          : "+p5["-ct"]+"\n";
-		header+="#-rounds      : "+p5["-rounds"]+"\n";
-		header+="#-pad         : "+p5["-pad"]+"\n";	
-		header+="#-alpha_1     : "+p5["-alpha_1"]+"\n";	
-		header+="#-beta_1      : "+p5["-beta_1"]+"\n";	
-		header+="#-alpha_2     : "+p5["-alpha_2"]+"\n";	
-		header+="#-beta_2      : "+p5["-beta_2"]+"\n";	
-		header+="#-alpha_3     : "+p5["-alpha_3"]+"\n";	
-		header+="#----------------------------------------------------\n";
-	}else if (ID == 4){
-		header+="#----------------------------------------------------\n";
-		header+="#Date Time    : "+currentDateTime()+"\n";
-		header+="#-N           : "+p4["-N"]+"\n";
-		header+="#-i           : "+p4["-i"]+"\n";
-		header+="#-j           : "+p4["-j"]+"\n";
-		header+="#-nf          : "+p4["-nf"]+"\n";
-		header+="#-o           : "+p4["-o"]+"\n";
-		header+="#-ns          : "+p4["-ns"]+"\n";
-		header+="#-br          : "+p4["-br"]+"\n";
-		header+="#-bct         : "+p4["-bct"]+"\n";
-		header+="#-window_res  : "+p4["-window_res"]+"\n";
-		header+="#-mi          : "+p4["-mi"]+"\n";
-		header+="#-ct          : "+p4["-ct"]+"\n";
-		header+="#-rounds      : "+p4["-rounds"]+"\n";
-		header+="#-foot_res    : "+p4["-foot_res"]+"\n";
-		header+="#-pad         : "+p4["-pad"]+"\n";	
+	header+="#----------------------------------------------------\n";
+	header+="#Date Time    : "+currentDateTime()+"\n";
+	header+="#-N           : "+p["-N"]+"\n";
+	header+="#-i           : "+p["-i"]+"\n";
+	header+="#-j           : "+p["-j"]+"\n";
+	header+="#-k           : "+p["-k"]+"\n";
+	header+="#-o           : "+p["-o"]+"\n";
+	header+="#-ns          : "+p["-ns"]+"\n";
+	header+="#-br          : "+p["-br"]+"\n";
+	header+="#-bct         : "+p["-bct"]+"\n";
+	header+="#-elon        : "+p["-elon"]+"\n";
+	header+="#-pad         : "+p["-pad"]+"\n";
+	header+="#-minK        : "+p["-minK"]+"\n";
+	header+="#-maxK        : "+p["-maxK"]+"\n";
+	header+="#-ms_pen      : "+p["-ms_pen"]+"\n";
+	header+="#-mi          : "+p["-mi"]+"\n";
+	header+="#-ct          : "+p["-ct"]+"\n";
+	header+="#-rounds      : "+p["-rounds"]+"\n";
+	header+="#-ALPHA_0     : "+p["-ALPHA_0"]+"\n";	
+	header+="#-BETA_0      : "+p["-BETA_0"]+"\n";	
+	header+="#-BETA_1      : "+p["-BETA_1"]+"\n";	
+	header+="#-ALPHA_2     : "+p["-ALPHA_2"]+"\n";	
+	header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
+	header+="#----------------------------------------------------\n";
 	
-		header+="#-ALPHA_0     : "+p4["-ALPHA_0"]+"\n";	
-		header+="#-BETA_0      : "+p4["-BETA_0"]+"\n";	
-		header+="#-BETA_1      : "+p4["-BETA_1"]+"\n";	
-		header+="#-ALPHA_2     : "+p4["-ALPHA_2"]+"\n";	
-		header+="#-ALPHA_3     : "+p4["-ALPHA_3"]+"\n";	
-
-		header+="#----------------------------------------------------\n";
-	}else if(ID==0){
-		header+="#----------------------------------------------------\n";
-		header+="#Date Time    : "+currentDateTime()+"\n";
-		header+="#-N           : "+p["-N"]+"\n";
-		header+="#-i           : "+p["-i"]+"\n";
-		header+="#-j           : "+p["-j"]+"\n";
-		header+="#-k           : "+p["-k"]+"\n";
-		header+="#-o           : "+p["-o"]+"\n";
-		header+="#-ns          : "+p["-ns"]+"\n";
-		header+="#-br          : "+p["-br"]+"\n";
-		header+="#-bct         : "+p["-bct"]+"\n";
-		header+="#-template    : "+p["-template"]+"\n";		
-		header+="#-elon        : "+p["-elon"]+"\n";
-		header+="#-foot_res    : "+p["-foot_res"]+"\n";
-		header+="#-pad         : "+p["-pad"]+"\n";
-		
-		header+="#-window_res  : "+p["-window_res"]+"\n";
-
-		header+="#-minK        : "+p["-minK"]+"\n";
-		header+="#-maxK        : "+p["-maxK"]+"\n";
-		header+="#-ms_pen      : "+p["-ms_pen"]+"\n";
-		header+="#-mi          : "+p["-mi"]+"\n";
-		header+="#-ct          : "+p["-ct"]+"\n";
-		header+="#-rounds      : "+p["-rounds"]+"\n";
-		header+="#-ALPHA_0     : "+p["-ALPHA_0"]+"\n";	
-		header+="#-BETA_0      : "+p["-BETA_0"]+"\n";	
-		header+="#-BETA_1      : "+p["-BETA_1"]+"\n";	
-		header+="#-ALPHA_2     : "+p["-ALPHA_2"]+"\n";	
-		header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
-		header+="#----------------------------------------------------\n";
-	
-	}else if (ID==6){
-		header+="#----------------------------------------------------\n";
-		header+="#Date Time    : "+currentDateTime()+"\n";
-		header+="#-N           : "+p6["-N"]+"\n";
-		header+="#-i           : "+p6["-i"]+"\n";
-		header+="#-j           : "+p6["-j"]+"\n";
-		header+="#-k           : "+p6["-k"]+"\n";
-		header+="#-o           : "+p6["-o"]+"\n";
-		header+="#-ns          : "+p6["-ns"]+"\n";
-		header+="#-br          : "+p6["-br"]+"\n";
-		header+="#-mi          : "+p6["-mi"]+"\n";
-		header+="#-ct          : "+p6["-ct"]+"\n";
-		header+="#-foot_res    : "+p6["-foot_res"]+"\n";
-		header+="#-rounds      : "+p6["-rounds"]+"\n";
-		header+="#-brounds     : "+p6["-brounds"]+"\n";
-		header+="#-ALPHA_0     : "+p6["-ALPHA_0"]+"\n";	
-		header+="#-BETA_0      : "+p6["-BETA_0"]+"\n";	
-		header+="#-BETA_1      : "+p6["-BETA_1"]+"\n";	
-		header+="#-ALPHA_2     : "+p6["-ALPHA_2"]+"\n";	
-		header+="#-ALPHA_3     : "+p6["-ALPHA_3"]+"\n";	
-		header+="#----------------------------------------------------\n";
-
-	}
-
 	return header;
 }
 
 
-bool checkIfFileAndConfigFile(string FILE){
+
+void split_config_line(string line, string& param, string& value){
+	bool   S=false;
+	for (int i = 0 ; i < line.size(); i++){
+		if (line.substr( i, 1) == "="  ){
+			S 	= true;
+		}
+		else if ( not S and   !isspace(line[i])   ){
+			param+=line[i];
+		}else if(S and line.substr( i, 1) == "#" ){
+			break;
+		}else if (S and !isspace(line[i])   ){
+			value+=line[i];
+		}
+	}
+}
+
+void fill_in_config_file(string FILE, params * P, int rank){
 	ifstream FH(FILE);
-	
 	if (FH){
 		string line;
-		getline(FH, line);
-		if ("#" == line.substr(0,1)){
-			FH.close();
-			return true;
-		}
-		return false;
-	}
-	return false;
-}
-
-string checkModule(string FILE){
-	ifstream FH(FILE);
-	
-	if (FH){
-		string line, ID;
-		ID="";
-		string pound 		= "#";
-		const char *h 	=pound.c_str();
 		while (getline(FH, line)){
-			if ("~"==line.substr(0,1)){
-				for (int i = 1; i < line.size(); i++){
-					if (not isspace(line[i]) and line[i]!= *h){
-						ID+=line[i];
-					}else{
-						break;
+			if (line.substr(0,1)!= "#" and line.substr(0,1)!= "~" and !line.empty()){
+				string param="", value="";
+				split_config_line(line, param, value);
+				if (!param.empty() and param.substr(0,1)!= "-" and P->p.find(param)==P->p.end()){
+					if (rank == 0){
+						printf("option in config file %s is not valid\n", param.c_str() );
 					}
+					P->EXIT=1;
+				}else{
+					P->p[param]=value;
 				}
-				FH.close();
-				return ID;
+			
 			}
-		}
-	}
-	return "";
-}
-
-
-void read_in_config_file(string FILE, params * P){
-	ifstream FH(FILE);
-	if (FH){
-		string line, ID, val;
-		string::iterator it;
-		string empty_space 	= " ";
-		string dash  		= "-";
-		string equal 		= "=";
-		string pound 		= "#";
-		
-		const char *es 	=empty_space.c_str();
-		const char *d 	=dash.c_str();
-		const char *eq 	=equal.c_str();
-		const char *h 	=pound.c_str();
-		
-		bool add_ID 	= true;
-		bool add_param 	= false;
-		vector<string> not_valid;
-		while (getline(FH, line)){
-			if ("#" != line.substr(0,1)){
-				ID 	= "";
-				val = "";
-				add_ID=true;
-				add_param=false;
-				for (int i = 0; i < line.size(); i++){
-					if (line[i]==*d and not add_param and ID.empty()){
-						ID+="-";
-					}else if (not ID.empty() and not isspace(line[i]) and add_ID ){
-						ID+=line[i];
-					}else if (not ID.empty() and isspace(line[i])){
-						add_ID=false;
-					}
-					else if (not ID.empty() and line[i]==*eq ){
-						add_param=true;
-					}else if (add_param and not isspace(line[i]) and line[i]!=*h){
-						val+=line[i];
-					}else if (add_param and not isspace(line[i])){
-						add_param=false;
-					}
-				}
-				if (P->module=="MODEL"){
-					if (P->p.find(ID) !=P->p.end()){
-						P->p[ID] 	= val;
-					}else if(not ID.empty()) {
-						not_valid.push_back(ID);
-					}				
-				}else if (P->module=="FORMAT"){
-					if (P->p2.find(ID) !=P->p2.end()){
-							P->p2[ID] 	= val;
-					}else if (not ID.empty() ){
-						not_valid.push_back(ID);
-					}
-				}else if (P->module=="SELECTION")	{
-					if (P->p3.find(ID) !=P->p3.end()){
-							P->p3[ID] 	= val;
-					}else if (not ID.empty() ){
-						not_valid.push_back(ID);
-					}
-				}else if (P->module=="BIDIR")	{
-					if (P->p4.find(ID) !=P->p4.end()){
-							P->p4[ID] 	= val;
-					}else if (not ID.empty() ){
-						not_valid.push_back(ID);
-					}
-				}else if(P->module =="SINGLE"){
-					if (P->p5.find(ID) !=P->p5.end()){
-							P->p5[ID] 	= val;
-					}else if (not ID.empty() ){
-						not_valid.push_back(ID);
-					}
-				}else if(P->module=="BOOTSTRAP"){
-					if (P->p6.find(ID) !=P->p6.end()){
-							P->p6[ID] 	= val;
-					}else if (not ID.empty() ){
-						not_valid.push_back(ID);
-					}				
-				}
-			}	
-		}
-		if (not_valid.size() >0){
-			cout<<"These parameters were found but are not valid identifiers: ";
-			for (int i =0; i < not_valid.size(); i++){
-				cout<<not_valid[i]<<",";
-			}
-			P->EXIT=1;
-			cout<<endl;
 		}
 	}else{
-		printf("couldn't open config file...\n");
+		if (rank==0){
+			printf("could not open config file %s\n",FILE.c_str() );
+		}
+		P->EXIT 	= 1;
 	}
-	
 }
 
-
-void fillInOptions(char* argv[],params * P){
+void fill_in_options(char* argv[],params * P, int rank){
+	bool bidir 		= P->bidir;
+	bool model 		= P->model;
 	string F 		= "";
 	char * COM 		= "-";
-	bool begin 		= true;
-	bool GO_FORIT 	= false;
+		
 	while (*argv){
-		if (begin){
-			F 				= string(*argv); 
-			bool isConfig 	= checkIfFileAndConfigFile(F);
-			if (isConfig){
-				//read this in
-				string module 	= checkModule(F);
-				P->module 		= module;
-
-				if (not P->module.empty() ){
-					read_in_config_file(F, P);
+		if ((*argv)[0] == COM[0]){
+			F 	= string(*argv); 
+			if ( P->p.find(F) ==P->p.end() ){
+				if (rank == 0){
+					printf("Unknown user option: %s\n", F.c_str() );
 				}
-				begin 		= false;
-			}else{
-				GO_FORIT 	= true;
+				P->EXIT 	= 1;
+				break;	
 			}
-
-		}
-		if ((*argv)[0] == COM[0] and GO_FORIT){
-			F 			= string(*argv); 
-			if (P->module=="MODEL"){
-				if (P->p.find(F) !=P->p.end()){
-					P->p[F] 	= "1";
-					P->N+=1;
-				}else{
-					F 			= "";
-				}
-			}else if(P->module=="FORMAT"){
-				if (P->p2.find(F) !=P->p2.end()){
-					P->p2[F] 	= "1";
-					P->N+=1;
-				}else{
-					F 			= "";
-				}
-			}else if (P->module== "SELECTION"){
-				if (P->p3.find(F) !=P->p3.end()){
-					P->p3[F] 	= "1";
-					P->N+=1;
-				}else{
-					F 			= "";
-				}
-			}else if (P->module== "BIDIR"){
-				if (P->p4.find(F) !=P->p4.end()){
-					P->p4[F] 	= "1";
-					P->N+=1;
-				}else{
-					F 			= "";
-				}
-			}else if (P->module == "SINGLE"){
-				if (P->p5.find(F) !=P->p5.end()){
-					P->p5[F] 	= "1";
-					P->N+=1;
-				}else{
-					F 			= "";
-				}
-			}else if (P->module == "BOOTSTRAP"){
-				if (P->p6.find(F) !=P->p6.end()){
-					P->p6[F] 	= "1";
-					P->N+=1;
-				}else{
-					F 			= "";
-				}
+			if (F.substr(0,2) == "-h" or F.substr(0,7)=="--help" ){
+				P->EXIT=true;
+				P->help();
+				break;
 			}
-
-
-
+		
 		}
 		else if (not F.empty()) {
-			if (P->module=="MODEL"){
-				if (P->p.find(F) !=P->p.end()){
-					P->p[F]=string(*argv);
-				}
-			}else if(P->module=="FORMAT"){
-				if (P->p2.find(F) !=P->p2.end()){
-					P->p2[F]=string(*argv);
-				}
-			}else if(P->module=="SELECTION"){
-				if (P->p3.find(F) !=P->p3.end()){
-					
-					P->p3[F]=string(*argv);
-				}
-			}else if(P->module=="BIDIR"){
-				if (P->p4.find(F) !=P->p4.end()){
-					P->p4[F]=string(*argv);
-				}
-			}else if(P->module=="SINGLE"){
-				if (P->p5.find(F) !=P->p5.end()){
-					P->p5[F]=string(*argv);
-				}
-			}else if(P->module=="BOOTSTRAP"){
-				if (P->p6.find(F) !=P->p6.end()){
-					P->p6[F]=string(*argv);
-				}
+			if ((model or bidir or select) && P->p.find(F) !=P->p.end()){
+				P->p[F]=string(*argv);
+				if (F=="-config"){
+					fill_in_config_file(P->p[F], P, rank );
+				}		
+				F="";
 			}
 		}
 		argv++;
-		GO_FORIT=true;
-	}
-
-}
-
-void fill_in_bidir_boostrap(params * P ){
-	string FILE 		= P->p6["-i"];
-	ifstream FH(FILE);
-	vector<string> lineArray;
-	string line, ID;
-	map<string, int> NOT;
-	NOT["-i"] 		= 1;
-	NOT["-j"] 		= 1;
-	NOT["-N"] 		= 1;
-	NOT["-o"] 		= 1;
-	NOT["-chr"] 	= 1;
-	NOT["-log_out"] = 1;
-	NOT["-rounds"] 	= 1;
-	
-	bool COLLECT;
-	while(getline(FH, line)){
-		ID 	= "";
-		COLLECT 	= false;
-		if (line.substr(0,1)=="#"){
-			for (int i = 1; i < line.size(); i++){
-				if (not isspace(line[i]) ){
-					ID+=line[i];
-				}else{
-					break;
-				}
-			}
-			if (P->p6.find(ID) != P->p6.end() and NOT.find(ID)==NOT.end() ){
-				COLLECT=true;
-			}
-			if (COLLECT){
-				lineArray 	= splitter(line, ":")	;
-				if (lineArray.size()==2){
-					P->p6[ID] 	= lineArray[1].substr(1,lineArray[1].size() );
-				}
-			}
-
-
-		}else{
-
-		}
-
 	}
 }
 
 
-params * readInParameters( char* argv[]){	
+
+
+int read_in_parameters( char* argv[], params * P, int rank){	
 	string userModParameter = "";
-	params 	* P = new params;
-	fillInOptions(argv, P);
-	return P;
+	argv = ++argv;
+	if (not *argv){
+		if (rank==0){
+			printf("No Model found, please specify either bidir, model or select\n");
+		}
+		P->EXIT = 1;
+		return 1;
+	}
+
+	if (not P->EXIT){
+		string F 	= *argv;
+		if ((F.size()==2 and F.substr(0,2) == "-h") or (F.size()==6 and F.substr(0,6)=="--help") ){
+
+			P->EXIT=true;
+			P->help();
+			return 1;
+		}
+		if (F.size()==5 and F.substr(0,5) == "bidir") {
+			P->bidir 	= 1;
+	 	}
+		else if (F.size()==5 and  F.substr(0,5) == "model") {
+			P->model 	= 1;
+		}
+		else if(F.size() == 6 and F.substr(0,6)=="select"){
+			P->select 	= 1;
+		}
+		else{
+			if (rank == 0){
+				printf("couldn't understand user provided option: %s\n",F.c_str() );
+			}
+			P->EXIT = 1;
+		}
+		if (not P->EXIT){
+			argv = ++argv;
+			fill_in_options(argv, P, rank);
+		}
+	}
+	if (not P->EXIT){
+		vector<string> errors = P->validate_parameters();
+		if (!errors.empty()){
+			P->EXIT=1;
+		}
+		if (rank == 0){
+			for (int i = 0 ; i < errors.size(); i++){
+				printf("%s\n",errors[i].c_str() );
+			}
+		}
+	
+	}
+	return 1;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

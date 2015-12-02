@@ -3,6 +3,7 @@ from model import component_bidir
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 def LOG(x):
 	if x!= 0:
 		return math.log(x)
@@ -105,6 +106,7 @@ def run_MM(X, window=500, scale=100):
 				sv_f = math.sqrt(var_f/N_pos);
 				sv_r = math.sqrt(var_r/N_neg);
 				si 	= 0.5*(sv_f + sv_r) - (1. / lam);
+				si 	= 1.0
 				if (lam!= None and si!= None and lam >0 and si > 0 and np.sum(X[j:k,1:]) ):
 					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, 0.5,foot_print=0)
 					EMG_BIC = -2*EMG_ll + 1*math.log(np.sum(X[j:k,1:]))
@@ -115,7 +117,9 @@ def run_MM(X, window=500, scale=100):
 					U_BIC 	= -2*U_ll + 1*math.log(np.sum(X[j:k, 1:]))
 					ratio_x.append(X[i,0])
 					ratio_y.append(U_BIC/EMG_BIC)
-					densities.append((vl*np.sum(X[j:k, 1]) + vl*np.sum(X[j:k,2]) ) )
+					densities.append(np.sum(X[j:k, 2]) )
+					# print np.sum(X[j:k, 1])
+					# time.sleep(0.1)
 				else:
 					ratio_x.append(X[i,0])
 					ratio_y.append(0)
@@ -143,7 +147,7 @@ def run_MM(X, window=500, scale=100):
 		ax2.scatter(ratio_x, ratio_y,c=colors[i])
 		ax2.set_xlim(X[0,0],X[-1,0])
 		ax2.grid()
-		ax3.scatter(ratio_x, [d/1000. for d in densities],c=colors[i])
+		ax3.scatter(ratio_x, [d for d in densities],c=colors[i])
 		ax3.set_xlim(X[0,0],X[-1,0])
 		ax3.grid()
 		
@@ -164,8 +168,7 @@ def quick(X,Y):
 	X2 		= sum([pow(X[i],2)*Y[i] for i in range(len(X))])
 	print var, (X2 - 2*mean*XS + pow(mean,2)*N) /N
 
-
-
+	
 if __name__ == "__main__":
 	IN  = "/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/"
 	#chr1:87,691,254-87,695,004
@@ -175,7 +178,11 @@ if __name__ == "__main__":
 	#8,246,915-8,255,824
 	#chr1:3,233,790-3,239,961
 	#chr1:1,013,872-1,017,272
-	X 	= load.grab_specific_region("chr1",1013872,1017272, SHOW=False, bins=500, 
+	#934,235-937,997
+	#1,206,352-1,213,240
+	#836,632-843,542
+	#1,091,333-1,096,157
+	X 	= load.grab_specific_region("chr1",1091333,1096157, SHOW=False, bins=500, 
 		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100

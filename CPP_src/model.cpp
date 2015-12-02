@@ -681,10 +681,12 @@ void check_mu_positions(component * components, int K){
 	double dist 	= 0;
 	double dist_a  	= 0;
 	double dist_b 	= 0;
+	double dist_c 	= 0;
 	for (int i = 0; i < K; i++){
 		for (int j = i+1; j < K; j++){
-			dist 	= abs(components[i].bidir.mu - components[j].bidir.mu); 
-			if (dist <  1  ) {
+			dist_a 	= components[i].bidir.mu + components[i].bidir.si + (1.0/components[i].bidir.l);
+			dist_b 	= components[j].bidir.mu - components[j].bidir.si - (1.0/components[j].bidir.l);
+			if (dist_b < dist_a   ) {
 				components[i].EXIT 	= true, components[j].EXIT=true;
 			}
 		}
@@ -1537,6 +1539,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	while (t < max_iterations && not converged){
 		//******
 		//reset old sufficient statistics
+
 		for (int k=0; k < K+add; k++){
 			components[k].reset();
 			if (components[k].EXIT){
@@ -1597,12 +1600,16 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 			ll 	= nINF;
 			return 0;	
 		}
-		if (u > 200 and elon_move ){
+		if (u > 100 ){
 			sort_components(components, K);
-			update_j_k(components,data, K, N);
-			update_l(components,  data, K);
+			check_mu_positions(components, K);
+			if (elon_move){
+				update_j_k(components,data, K, N);
+				update_l(components,  data, K);
+			}
 			u 	= 0;
 		}
+
 		u++;
 		
 		last_diff=abs(ll-prevll);

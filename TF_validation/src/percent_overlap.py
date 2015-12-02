@@ -56,75 +56,92 @@ def make_DNAse_searchable(FILE):
 	return G
 
 
-def graph_percent(GS, M, D, penality=10, SHOW=False, OUT=""):
+
+
+def graph_percent(GS, M, D, H, m1, REF, penality=150, SHOW=False, OUT=""):
 	R 	= {}
 	U 	= {}
 	Z 	= {}
 	DN 	= {}
+	HB 	= {}
+	HD 	= {}
 	for F, G in GS:
 		if "POL" not in M[F]:
-			G 	= [s for s in G if s.chrom in D]
-
-			TF 	= M[F]
-			U[TF] 	= len(G)
-			N 	= float(len(G))
-			B 	= [s.get_BIC_mdoel(penality) for s in G ]
-			DNN 	= sum([1.0  for s in G if D[s.chrom].searchInterval((s.start, s.stop)) ])
-			S 	= float(sum( B ))
+			G 			= [s for s in G if s.chrom in D and s.chrom in H and s.chrom in m1 ]
+			TF 			= M[F]
+			U[TF] 		= len(G)
+			N 			= float(len(G))
+			B 			= [s for s in G if s.get_BIC_mdoel(penality) ]
+			DNN 		= [s for s in G if D[s.chrom].searchInterval((s.start, s.stop)) ]
+			H_BIDIR 	= [s for s in B if H[s.chrom].searchInterval((s.start, s.stop))   ]
+			H_DNN 		= [s for s in DNN if H[s.chrom].searchInterval((s.start, s.stop))  ]
+			S 			= float(len(B))
+			DNN 	 	= float(len(DNN))
 
 			if TF not in R:
 				R[TF] 	= (N, S/N)
 				DN[TF] 	= DNN / N
+				HB[TF] 	= float(len(H_BIDIR)) / N
+				HD[TF] 	= float(len(H_DNN)) / N
 			else:
 				if R[TF][0] < N:
 					R[TF] 	= (N, S/N)
 					DN[TF] 	= DNN / N
-
+					HB[TF] 	= float(len(H_BIDIR)) / N
+					HD[TF] 	= float(len(H_DNN)) / N
 	for TF in R:
 		R[TF]  = [R[TF][1]]
-	positions,percents,colors,labels 	= list(),list(),list(),list()
-	percents_DNase  	= list()
+	positions,percents,percents_2, colors,labels 	= list(),list(),list(),list(),list()
+
+	percents_DNase,percents_DNase_2  	= list(),list()
 	delta,height 		= 1.1,1.0
 		
-	xy 	= [(np.mean(R[r]), r, DN[r])  for r in R]
+	xy 	= [(np.mean(R[r]), r, DN[r], HD[r], HB[r])  for r in R]
 	xy.sort()
-	for i,(mean,TF, mean_DNAse) in enumerate(xy):
-		positions+=[i*(delta*2) ]
-		percents_DNase+=[mean_DNAse]
-		percents+=[mean]
-
+	for i,(mean,TF, mean_DNAse, mean_HD, mean_HB) in enumerate(xy):
+		positions+=[i*(delta*1.2) ]
+		percents_DNase+=[mean_HD]
+		percents_DNase_2+=[mean_DNAse-mean_HD]
+		percents+=[mean_HB]
+		percents_2+=[mean-mean_HB]
 
 		colors.append(i)
-		labels.append(TF)
+		labels.append(TF + "\n(N=" + str(U[TF]) + ")")
 
 	
 
 
 	if SHOW:
-		F 	= plt.figure()
+		F 	= plt.figure(figsize=(5,10))
 		ax 	= F.add_subplot(1,1,1)
-		ax.set_title("Cell type: HCT116\nRed: % with DNAse I Signal\nPurple: % with divergent transcription signal")
-		ax.barh(positions, percents, height=height/2., color="m" )
-		ax.barh([p+(delta/2.) for p in positions], percents_DNase, height=height/2., color="r" )
 		
-		ax.set_xlim(0,1)
+		ax.barh(positions, percents, height=height/2., color="m", edgecolor='white', hatch="//" , label=" " )
+		ax.barh(positions, percents_2,height=height/2., color="m", left=percents,edgecolor='white', label=" " )
+
+		ax.barh([p+(delta/2.) for p in positions], percents_DNase, height=height/2., color="r", edgecolor='white', hatch="//", label=" "  )
+		ax.barh([p+(delta/2.) for p in positions], percents_DNase_2, height=height/2., color="r",edgecolor='white', left =percents_DNase, label=" "  )
+		
+		ax.set_xlim(0,1.6)
 		ax.set_ylim(-delta ,max(positions)+delta*2)
+		ax.legend( )
 		positions=np.array(positions) +(( height) / 2.)
 
-		ax.set_xticks(np.arange(0,1,0.1))
-		ax.set_xticklabels([str(int(x*100)) for x in np.arange(0,1,0.1)])
+		ax.set_xticks(np.arange(0,1.1,0.1))
+		ax.set_xticklabels([str(int(x*100)) for x in np.arange(0,1.1,0.1)])
 		ax.set_xlabel("Percent of TF Binding Events with\nDivergent Transcription Prediction")
 
 		ax.set_yticks(positions)
 		ax.set_yticklabels(labels)
 		ax.grid()
-		for i,(pos, per, perDNA) in enumerate(zip(positions, percents, percents_DNase)):
-			ax.text(per  , pos -(height/5.)    , str(per*100)[:4]+ "%, " + "N=" + str(U[labels[i]])+ "  ",color="white" ,fontsize=10,
+		for i,(pos, per, per2 , perDNA, perDNA2) in enumerate(zip(positions, percents, percents_2 , percents_DNase, percents_DNase_2)):
+			ax.text(per  , pos -(height/5.)    ,   str(int(100*per/(per2+per))) + "%"  ,color="white" ,fontsize=10,
 				verticalalignment='center', horizontalalignment="right" )
-			ax.text(perDNA  , pos + (delta/2.) -(height/5.)  , str(perDNA*100)[:4]+ "%, " + "N=" + str(U[labels[i]])+ "  ",color="white" ,fontsize=10 ,
+			ax.text(perDNA2  , pos + (delta/2.) -(height/5.)  ,     str(int(100*perDNA/(perDNA2+perDNA)  ))+ "%"  ,color="white" ,fontsize=10 ,
 				verticalalignment='center', horizontalalignment="right" )
-
-
+		for o in F.findobj():
+			o.set_clip_on(False)
+		plt.tight_layout()
+		plt.savefig("/Users/joazofeifa/Lab/Article_drafts/EMG_paper/images/DNAse_Bidir_H3K27ac_overlap.pdf")
 		plt.show()
 
 
@@ -134,14 +151,20 @@ def graph_percent(GS, M, D, penality=10, SHOW=False, OUT=""):
 
 
 if __name__ == "__main__":
-	Allen_DIR 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_ChIP/"
-	Allen_META 	= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_ChIP/metadata.txt"
-	HCT116_DNAse= "/Users/joazofeifa/Lab/ChIP/HCT116/DNase/wgEncodeUwDnaseHct116PkRep1.narrowPeak.bed"
-	K562 		= "/Users/joazofeifa/Lab/ChIP/K562/K562_SAHADukeDNaseSeq.pk"
-	Core_DIR 	= "/Users/joazofeifa/Lab/gro_seq_files/Core2014/EMG_out_ChIP/"
-	Core_META 	= "/Users/joazofeifa/Lab/gro_seq_files/Core2014/EMG_out_ChIP/metadata.txt"
-	D 			= make_DNAse_searchable(HCT116_DNAse)
-	GS 		= load_directory(Allen_DIR, test=False)
-	M 		= load_meta_data(Allen_META)
-	G 		= graph_percent(GS, M, D, SHOW=True)
+	Allen_DIR 		= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_ChIP/"
+	Allen_META 		= "/Users/joazofeifa/Lab/gro_seq_files/Allen2014/EMG_out_ChIP/metadata.txt"
+	HCT116_DNAse 	= "/Users/joazofeifa/Lab/ChIP/HCT116/DNase/wgEncodeUwDnaseHct116PkRep1.narrowPeak.bed"
+	HCT116_H3K27ac 	= "/Users/joazofeifa/Lab/ChIP/HCT116/H3K27ac/HCT-116_H3K27Ac_narrowPeak.bed"
+	HCT116_H3K4me1 	= "/Users/joazofeifa/Lab/ChIP/HCT116/H3K4me1/HCT-116_H3K4me1_narrowPeak.bed"
+	TSS 			= "/Users/joazofeifa/Lab/genome_files/TSS.bed"
+	K562 			= "/Users/joazofeifa/Lab/ChIP/K562/K562_SAHADukeDNaseSeq.pk"
+	Core_DIR 		= "/Users/joazofeifa/Lab/gro_seq_files/Core2014/EMG_out_ChIP/"
+	Core_META 		= "/Users/joazofeifa/Lab/gro_seq_files/Core2014/EMG_out_ChIP/metadata.txt"
+	D 				= make_DNAse_searchable(HCT116_DNAse)
+	H 				= make_DNAse_searchable(HCT116_H3K27ac)
+	m1 				= make_DNAse_searchable(HCT116_H3K4me1)
+	REF 			= make_DNAse_searchable(TSS)
+	GS 				= load_directory(Allen_DIR, test=True)
+	M 				= load_meta_data(Allen_META)
+	G 				= graph_percent(GS, M, D, H, m1, REF, SHOW=True)
 

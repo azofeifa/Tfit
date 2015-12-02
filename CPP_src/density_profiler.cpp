@@ -72,6 +72,7 @@ double get_table_mean_var(string GAP_FILE, string bed_file, double res, double b
 	}else{
 		cout<<"Coudn't open: "<<bed_file<<endl;
 	}
+
 	BED.close();
 	//make vector
 	typedef map<string, vector<gap_interval> >::iterator it_type;
@@ -159,3 +160,5 @@ double get_table_mean_var(string GAP_FILE, string bed_file, double res, double b
 	return collect/collect_N;
 
 }
+
+
