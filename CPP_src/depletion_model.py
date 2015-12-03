@@ -7,7 +7,7 @@ from scipy import integrate
 
 
 
-def simulate(N=10000, mu=0, si=1, a=-15,b=15):
+def simulate(N=10000, mu=0, si=1, a=-5,b=5):
 	f 	= lambda x: (1.0 / math.sqrt(2*math.pi*pow(si,2))    )*math.exp(-pow(x-mu,2)/(2*pow(si,2)))
 	u 	= lambda x: 1.0 / (b-a)
 	xs 	= list()

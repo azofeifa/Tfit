@@ -40,10 +40,6 @@ int sample_centers(vector<double> centers, double p){
 	default_random_engine generator;
 	uniform_int_distribution<int> distribution(0,centers.size()-1);
 	int i 	= distribution(mt);
-	//int s 	= centers.size()-1;
-	// if (i > s){
-	// 	return s;
-	// }
 	return i;//required in model.o (ugh...)
 }
 

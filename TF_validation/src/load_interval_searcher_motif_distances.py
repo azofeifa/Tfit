@@ -9,11 +9,12 @@ def load(FILE,  test=False):
 	with open(FILE) as FH:
 		for line in FH:
 			t+=1
-			if t > 1000 and test :
+			if t > 20000 and test :
 				break
 			chrom,start, stop, info 	= line.strip("\n").split("\t")
 			center 						= (float(stop) + float(start)) / 2.
-			info, distances 			= info.split("|")
+			info_array 					= info.split("|")
+			info, distances 			= info_array[0],info_array[-1]
 			distances 					= distances.split(",")
 			D 							= [d.split(":") for d in distances]
 			if len(D[0]) > 2:
@@ -73,7 +74,7 @@ def display(G, specs):
 			distances 		= list()
 			for m in motifs:
 				distances 	+= G[m]
-			X,edges 	= np.histogram(distances, bins=100, range=(-100,100))
+			X,edges 	= np.histogram(distances, bins=100, range=(-1000,1000))
 			norm    		= mpl.colors.Normalize(vmin=min(X), vmax=max(X) )
 			cmap    		= cm.Blues
 			m       		= cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -100,9 +101,33 @@ def load_distance_parsed(FILE):
 			G[motif] 				= (w, distances)
 	return G
 
-def display_matrix(G,bins=100, write_out=False):
+def display_side_by_side():
+	FILE1 	= "/Users/joazofeifa/Lab/TF_predictions/DMSO2_3_distances_parsed_EM_w.tsv"
+	FILE2 	= "/Users/joazofeifa/Lab/TF_predictions/distances_parsed_EM_w.tsv"
+	GS 		= [{},{}]
+	for i,FILE in enumerate((FILE1, FILE2)):
+		GS[i] 	= load_distance_parsed(FILE)
+	motifs 	= [m for m in GS[0] if m in GS[1] ]
+	for m in motifs:
+		print m
+		F 	= plt.figure()
+		x1 	= GS[0][m][1]
+		x2 	= GS[1][m][1]
+
+		ax1 = F.add_subplot(1,2,1)
+		ax1.set_title("DMSO2_3 " + m)
+		ax1.hist(x1, bins=100)
+		ax1.set_xlim(-1500,1500)
+		ax2 = F.add_subplot(1,2,2)
+		ax2.set_title("Danko " + m)
+		ax2.hist(x2, bins=100)
+		ax2.set_xlim(-1500,1500)
+		plt.savefig("/Users/joazofeifa/Desktop/weirdest_figures_ever/" + m)
+		plt.close()
+
+def display_matrix(G,bins=300, write_out=True	):
 	if write_out:
-		FHW 	= open("/Users/joazofeifa/Lab/TF_predictions/distances_parsed_EM_w.tsv", "w")
+		FHW 	= open("/Users/joazofeifa/Lab/TF_predictions/DMSO2_3_distances_parsed_EM_w.tsv", "w")
 		for i,m in enumerate(G.keys()):
 			w 	= get_w(G[m])
 			print i
@@ -113,7 +138,7 @@ def display_matrix(G,bins=100, write_out=False):
 	G 	= load_distance_parsed("/Users/joazofeifa/Lab/TF_predictions/distances_parsed_EM_w.tsv" )
 
 	motifs 	= [(w,x) for x,(w, d) in zip(G.keys(), G.values() ) ]
-	motifs.sort()
+	#motifs.sort()
 
 
 	N 	= len(motifs)
@@ -125,7 +150,11 @@ def display_matrix(G,bins=100, write_out=False):
 	r 	= 5
 	M 	= ""
 	for i,(w,m) in enumerate(motifs):
-		counts,edges 	= np.histogram( G[m][1] ,bins=bins, range=(-500,500))
+		counts,edges 	= np.histogram( G[m][1] ,bins=bins, range=(-1500,1500))
+		print len(G[m][1])
+		plt.title(m)
+		plt.hist(G[m][1],bins=bins)
+		plt.show()
 		X[i,:] 	 		= counts
 		X[i,:]/=float(sum(X[i,:]))
 		if t > r:
@@ -155,10 +184,13 @@ def display_matrix(G,bins=100, write_out=False):
 
 if __name__ == "__main__":
 	FILE 	= "/Users/joazofeifa/Lab/TF_predictions/interval_searcher_motif_distances/Allen2014_overlaps.bed"
-	FILE 	= "/Users/joazofeifa/Lab/TF_predictions/interval_searcher_motif_distances/FIS_RUN_overlaps.bed"
-	G 		= load(FILE)
+	#FILE 	= "/Users/joazofeifa/Lab/TF_predictions/interval_searcher_motif_distances/FIS_RUN_overlaps.bed"
+	#FILE 	= "/Users/joazofeifa/Downloads/not_sure_FIS_RUN_overlaps.bed"
+	FILE	= "/Users/joazofeifa/Downloads/DMSO2_3_FIS_RUN_overlaps.bed"
+	#G 		= load(FILE,test=True)
 	#G 		= None
 	specs 	= ("ZBTB","ELF1", "EGR1", "MAZ", "YY1", "MAX", "TEAD4", "ATF3", "SRF", "SP1", "USF1", "JUND", "CEBPB", "FOX", "FOSL1", "REST", "CTCF", "HEY" )
-	display(G, specs)
+	#display(G, specs)
 	#display_matrix(G)
+	display_side_by_side()
 

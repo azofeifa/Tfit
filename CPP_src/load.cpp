@@ -327,6 +327,7 @@ void segment_fits::get_model(double ms_pen){
 	int arg;
 	double MIN=INF;
 	double score;
+	
 	for (it_type m 	= M.begin(); m != M.end(); m++){
 		if (m->first > 0){
 			score 	= -2*m->second + log(N)*(ms_pen*m->first);
@@ -353,7 +354,7 @@ string segment_fits::write (){
 			double w 	= stod(split_by_comma(split_by_bar(params[5], "")[i] , "" )[0] );
 
 			int start 	= mu - (std + lam), stop = mu + (std+lam);
-			if (std  < 500 and lam < 1000 and w > 0.05 ){
+			if (std  < 50000 and lam < 20000 and w > 0.05 ){
 				line+=chrom+"\t" + to_string(start) + "\t" + to_string(stop)+"\t";
 				line+=ID+"|";
 				string ps 	= "";
@@ -670,6 +671,9 @@ vector<segment_fits *> load::load_K_models_out(string FILE){
 				S->parameters[complexity] 	= parameters;
 				
 			}
+		}
+		if (S!=NULL){
+			segment_fits_all.push_back(S);		
 		}
 	}else{
 		printf("couldn't open %s...strange error\n", FILE.c_str() );
