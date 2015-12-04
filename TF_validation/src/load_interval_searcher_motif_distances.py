@@ -102,8 +102,8 @@ def load_distance_parsed(FILE):
 	return G
 
 def display_side_by_side():
-	FILE1 	= "/Users/joazofeifa/Lab/TF_predictions/DMSO2_3_distances_parsed_EM_w.tsv"
-	FILE2 	= "/Users/joazofeifa/Lab/TF_predictions/distances_parsed_EM_w.tsv"
+	FILE1 	= "/Users/joazofeifa/Lab/TF_predictions/Le2013_fiveprime_motif_overlaps_EM_w.tsv"
+	FILE2 	= "/Users/joazofeifa/Lab/TF_predictions/Danko2013_fiveprime_motif_overlaps_EM_w.tsv"
 	GS 		= [{},{}]
 	for i,FILE in enumerate((FILE1, FILE2)):
 		GS[i] 	= load_distance_parsed(FILE)
@@ -127,15 +127,16 @@ def display_side_by_side():
 
 def display_matrix(G,bins=300, write_out=True	):
 	if write_out:
-		FHW 	= open("/Users/joazofeifa/Lab/TF_predictions/DMSO2_3_distances_parsed_EM_w.tsv", "w")
+		FHW 	= open("/Users/joazofeifa/Lab/TF_predictions/Le2013_fiveprime_motif_overlaps_EM_w.tsv", "w")
 		for i,m in enumerate(G.keys()):
-			w 	= get_w(G[m])
+			#w 	= get_w(G[m])
 			print i
+			w 	= 1.0
 			FHW.write(m+"\t" + str(w) +"\t" + ",".join([str(d) for d in G[m]]) + "\n" )
 			FHW.flush()
 
 			
-	G 	= load_distance_parsed("/Users/joazofeifa/Lab/TF_predictions/distances_parsed_EM_w.tsv" )
+	G 	= load_distance_parsed("/Users/joazofeifa/Lab/TF_predictions/Le2013_fiveprime_motif_overlaps_EM_w.tsv" )
 
 	motifs 	= [(w,x) for x,(w, d) in zip(G.keys(), G.values() ) ]
 	#motifs.sort()
@@ -185,8 +186,10 @@ def display_matrix(G,bins=300, write_out=True	):
 if __name__ == "__main__":
 	FILE 	= "/Users/joazofeifa/Lab/TF_predictions/interval_searcher_motif_distances/Allen2014_overlaps.bed"
 	#FILE 	= "/Users/joazofeifa/Lab/TF_predictions/interval_searcher_motif_distances/FIS_RUN_overlaps.bed"
-	#FILE 	= "/Users/joazofeifa/Downloads/not_sure_FIS_RUN_overlaps.bed"
-	FILE	= "/Users/joazofeifa/Downloads/DMSO2_3_FIS_RUN_overlaps.bed"
+	FILE 	= "/Users/joazofeifa/Downloads/not_sure_FIS_RUN_overlaps.bed"
+	#FILE	= "/Users/joazofeifa/Downloads/DMSO2_3_FIS_RUN_overlaps.bed"
+	FILE 	= "/Users/joazofeifa/Downloads/Le2013_fiveprime_motifs_overlaps.bed"
+	#FILE 	= "/Users/joazofeifa/Downloads/Danko2013_vehicle_motifs_overlaps.bed"
 	#G 		= load(FILE,test=True)
 	#G 		= None
 	specs 	= ("ZBTB","ELF1", "EGR1", "MAZ", "YY1", "MAX", "TEAD4", "ATF3", "SRF", "SP1", "USF1", "JUND", "CEBPB", "FOX", "FOSL1", "REST", "CTCF", "HEY" )
