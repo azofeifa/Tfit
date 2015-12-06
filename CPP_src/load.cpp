@@ -415,6 +415,17 @@ vector<segment *> merge_segments(vector<segment *> segments, map<int, string>  I
 
 	return new_segments;
 }
+bool check_ID_name(string & INFO){
+	bool PASSED 	= true;
+	string change 	= "::";
+	for (int i = 0; i < INFO.size(); i++){
+		if (INFO.substr(i,1)=="|"){
+			PASSED 		= false;
+			INFO.replace(i, 1, change);
+		}
+	}
+	return PASSED;
+}
 
 //================================================================================================
 //LOADING from file functions...need to clean this up...
@@ -524,10 +535,17 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 		int 	i = 0;
 		vector<string> lineArray;
 		string strand; 
+		bool PASSED 	= true;
 		while(getline(FH, line)){
 			lineArray=splitter(line, "\t");
 			if (lineArray[0].substr(0,1)!="#" and lineArray.size()>3){
 				if (lineArray.size() > 3){
+					if (not check_ID_name(lineArray[3]) and PASSED ){
+						PASSED 			= false;
+						printf("\ninterval id in line: %s, contains a | symbol changing to :: -> %s\n",line.c_str(), lineArray[3].c_str() );
+						printf("Will continue to change throughout other occurences....\n");
+
+					}
 					IDS_first[i] 		= lineArray[3];
 				}
 				if (lineArray.size() > 4){
