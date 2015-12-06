@@ -188,7 +188,7 @@ if __name__ == "__main__":
 	#FILE 	= "/Users/joazofeifa/Lab/TF_predictions/interval_searcher_motif_distances/FIS_RUN_overlaps.bed"
 	FILE 	= "/Users/joazofeifa/Downloads/not_sure_FIS_RUN_overlaps.bed"
 	#FILE	= "/Users/joazofeifa/Downloads/DMSO2_3_FIS_RUN_overlaps.bed"
-	FILE 	= "/Users/joazofeifa/Downloads/Le2013_fiveprime_motifs_overlaps.bed"
+	FILE 	= "/Users/joazofeifa/Downloads/Le2013_2_vehicle_motifs_overlaps.bed"
 	#FILE 	= "/Users/joazofeifa/Downloads/Danko2013_vehicle_motifs_overlaps.bed"
 	#G 		= load(FILE,test=True)
 	#G 		= None
