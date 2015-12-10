@@ -70,7 +70,6 @@ public:
 	UNI forward;
 	UNI reverse;
 	NOISE noise;
-	NORMAL term; 
 	component * forward_neighbor;
 	component * reverse_neighbor;
 	

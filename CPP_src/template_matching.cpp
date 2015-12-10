@@ -76,7 +76,6 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 				emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);	
 			}	
 			double currBIC= (-2*uni_ll + 1*LOG(N) ) / (-2*emg_ll + 3*LOG(N));
-			//currBIC 		= uni_ll/emg_ll;
 			if (currBIC > argBIC){
 				argBIC=currBIC, arg_si=si, arg_l=l, arg_ll=emg_ll;
 			}
@@ -86,7 +85,6 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 	lambdas[i] 		= arg_l;
 	avgLL[i] 		= arg_ll / N;
 	skews[i][0]  	= 0, skews[i][1]= 0;
-//	62,182,362-62,198,443
 	return argBIC;
 }
 

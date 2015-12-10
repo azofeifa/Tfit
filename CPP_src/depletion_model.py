@@ -74,6 +74,11 @@ def simulate(N=10000, mu=0, si=1, a=-5,b=5, w=0.2, bins=200):
 
 
 
-
 if __name__ == "__main__":
-	X 	= simulate()
+	mu,si 	= 0,100
+	a,b 	= -1500,1500
+	f 	= lambda x: (1.0 / math.sqrt(2*math.pi*pow(si,2))    )*math.exp(-pow(x-mu,2)/(2*pow(si,2)))
+	u 	= lambda x: 1.0 / (b-a)
+	g 	= lambda x: ((u(x) / (f(x)+u(x))))
+	c 	= integrate.quad(g, a, b)[0] #find normalizing factor via numerial integrator
+	print c

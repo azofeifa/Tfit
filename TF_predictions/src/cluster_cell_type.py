@@ -21,6 +21,7 @@ def get_color(EXP, EXPS, BINARY=False):
 	colors 		= {}
 	B 			= {}
 	cell_types["Allen2014"] 	= "HCT116"
+	cell_types["DMSO"] 	= "HCT116"
 	cell_types["Andersson2014"] = "HeLa"
 	cell_types["Core2014"] 		= "K562"
 	cell_types["Danko_2015"] 	= "T-Cells"
@@ -43,6 +44,8 @@ def get_color(EXP, EXPS, BINARY=False):
 	cell_types["Yang2013"] 		= "LNCaP"
 	cell_types["Luo2014"] 		= "AC16"
 	cell_types["Chen2014"] 		= "H1-hESC"
+	cell_types["Chen2015"] 		= "HCT116"
+
 
 	colors["HeLa"] 				= "red"
 	colors["T-Cells"] 			= "blue"
@@ -50,6 +53,7 @@ def get_color(EXP, EXPS, BINARY=False):
 	colors["LNCaP"] 			= "green"
 	colors["MCF7"] 				= "purple"
 	colors["HEK293T"] 			= "teal"
+	colors["HCT116"] 			= "white"
 
 	B["HeLa"] 				= 0
 	B["T-Cells"] 			= 1

@@ -183,7 +183,7 @@ void run_bootstrap_across(vector<segment *> segments, params * P, ofstream& log_
 						classifier current_clf(K, stod(P->p6["-ct"]), stoi(P->p6["-mi"]), stod(P->p6["-max_noise"]), 
 							stod(P->p6["-r_mu"]), stod(P->p6["-ALPHA_0"]), stod(P->p6["-BETA_0"]), stod(P->p6["-ALPHA_1"]), 
 							stod(P->p6["-BETA_1"]), stod(P->p6["-ALPHA_2"]) , stod(P->p6["-ALPHA_3"]), false,foot_print );
-						current_clf.fit(NS, mu_seeds);
+						//current_clf.fit(NS, mu_seeds); this function is gone now!!!
 						if (w == 0 or current_clf.ll > best_ll){
 							best_clf 	= current_clf;
 							best_ll 	= current_clf.ll;

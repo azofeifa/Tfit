@@ -48,10 +48,9 @@ class component_elongation:
 		return self.ri[1] + self.ri[-1]
 	def set_new_parameters(self, N):
 		r 				= (self.r[1] + self.r[-1])
-		self.pi, self.w =(self.r[1] + self.c.beta_0) / (r+ self.c.beta_0*2), (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
+		self.w = (r + self.c.alpha_0)  / (N+self.c.alpha_0*self.c.K*3 + self.c.K*3 )
 		if self.type=="noise":
 			self.w 		= min(self.c.noise_max, self.w)
-			print "HERE", self.w
 		#====================================================
 		self.r[1], self.r[-1] 			= 0,0
 		self.ri[1], self.ri[-1] 		= 0,0
@@ -60,10 +59,12 @@ class component_elongation:
 			self.a 			= self.bidir.mu +self.foot_print
 			if abs(self.b - self.a) < 2:
 				self.b 		= self.a + min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
+			self.pi 		= 1.0
 		elif self.type=="reverse" :
 			self.b 			= self.bidir.mu - self.foot_print
 			if abs(self.b - self.a) < 2:
 				self.a 			= self.b - min(np.random.gamma(self.c.uniform_rate, 1), self.c.maxX)
+			self.reverse 	= 0.0
 
 	def check(self):
 		if math.isnan(self.w) or math.isnan(self.a) or math.isnan(self.b):
@@ -236,9 +237,6 @@ class component_bidir:
 		self.l 							= min(2,self.l)
 		if self.move_fp:
 			self.foot_print 				= min((self.C / (r+0.1)), 20)
-		else:
-			self.foot_print 				= 0
-		print self.foot_print, "****", abs(mu-self.prev_mu)
 		#====================================================
 		self.r[1], self.r[-1] 			= 0,0
 		self.ri[1], self.ri[-1] 		= 0,0
@@ -291,7 +289,7 @@ class EMGU:
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
 		self.beta_0 				= 100000. #symmetric prior for strand probabilities
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
-		self.alpha_1, self.beta_1 	= 1, 1 #priors for component sigmas
+		self.alpha_1, self.beta_1 	= 100, 100 #priors for component sigmas
 		self.alpha_2, self.beta_2 	= 1, 1 #priors for component 
 		self.peaks 					= None #prior on where the bidirectionals are from our template/bayes factor analysis
 		self.seed 					= seed
@@ -327,18 +325,18 @@ class EMGU:
 			mus 		=  np.random.uniform(minX, maxX, self.K)
 		else:
 			mus 		= [x for x  in self.peaks]
-		mus 		= [15]
-		sigmas 		= np.random.gamma((maxX-minX)/(35*self.K), 1, self.K)
+		mus 		=  np.random.uniform(minX, maxX, self.K)
+		sigmas 		= [1.0 for i in range(self.K)]
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
 		#assign to components
 
 		self.uniform_rate= (maxX-minX)/(1*self.K)
-		fp 			= 0
-		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], 0.5,self, foot_print=fp) for k in range(self.K)] 
+		fps 		= [2,1]
+		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], 0.5,self, foot_print=fps[k]) for k in range(self.K)] 
 	
-		uniforms    = [component_elongation(minX, mus[k], ws[k][1], 0.5, bidirs[k], "reverse",self ,0 , foot_print=fp) for k in range(self.K)]
-		uniforms   += [component_elongation(mus[k],maxX, ws[k][2], 0.5, bidirs[k], "forward",self, X.shape[0] , foot_print=fp) for k in range(self.K)]
+		uniforms    = [component_elongation(minX, mus[k], 0.0, 0., bidirs[k], "reverse",self ,0 , foot_print=fps[k]) for k in range(self.K)]
+		uniforms   += [component_elongation(mus[k],maxX, 0.0, 1.0, bidirs[k], "forward",self, X.shape[0] , foot_print=fps[k]) for k in range(self.K)]
 		
 		if self.noise:
 			uniforms+=[component_elongation(minX, maxX, 0.1, 0.5, bidirs[0], "noise", self, X.shape[0]) ]
@@ -351,7 +349,7 @@ class EMGU:
 		
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
-			if np.random.uniform(0,1) <0.1:
+			if np.random.uniform(0,1) <0.5:
 				self.draw(X)
 			
 			# for rv in self.rvs:
@@ -396,9 +394,9 @@ class EMGU:
 			#move LLs...unfortunately this is brute - force...
 			
 			prevll 	= ll
-			# for c in components:
-			# 	print c
-			# print "------------"
+			for c in components:
+				print c
+			print "------------"
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
@@ -406,15 +404,20 @@ class EMGU:
 		F 			= plt.figure(figsize=(15,10))
 		for c in self.rvs:
 			print c
-		ax 			= F.add_subplot(111)
-		ax.bar(X[:,0],  X[:,1] / float(np.sum(X[:,1:]) ), color="blue", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
-		ax.bar(X[:,0], -X[:,2] / float(np.sum(X[:,1:])), color="red", alpha=0.25, width=(X[-1,0]-X[0,0])/X.shape[0])
-		xs 			= np.linspace(X[0,0], X[-1,0], 1000)
-		ys_forward 	= map(lambda x: sum([rv.pdf(x, 1) for rv in self.rvs if rv.type == "EMGU"]) , xs) 
-		ys_reverse 	= map(lambda x: -sum([rv.pdf(x, -1) for rv in self.rvs if rv.type == "EMGU"]) , xs)
+		ax 				= F.add_subplot(111)
+		counts,edges 	= np.histogram(X[:,0],weights=X[:,1], normed=1,bins=200)
+		counts2,edges2 	= np.histogram(X[:,0],weights=X[:,2], normed=1,bins=200)
+		counts*=0.25
+		counts2*=0.25
 		
-		ax.plot(xs, ys_forward, linewidth=3.5,  color="blue")
-		ax.plot(xs, ys_reverse, linewidth=3.5,  color="red")
+		ax.bar(edges[1:],  counts  , color="blue", edgecolor="blue", alpha=0.5, width=(X[-1,0]-X[0,0])/200)
+		ax.bar(edges[1:], -counts2  , color="red", edgecolor="red", alpha=0.5, width=(X[-1,0]-X[0,0])/200)
+		xs 			= np.linspace(X[0,0], X[-1,0], 1000)
+		ys_forward 	= map(lambda x: sum([rv.pdf(x, 1) for rv in self.rvs  ]) , xs) 
+		ys_reverse 	= map(lambda x: -sum([rv.pdf(x, -1) for rv in self.rvs  ]) , xs)
+		
+		ax.plot(xs, ys_forward, linewidth=3.5,  color="black")
+		ax.plot(xs, ys_reverse, linewidth=3.5,  color="black")
 		ax.grid()
 		plt.show()
 	
@@ -429,15 +432,31 @@ if __name__ == "__main__":
 	# chr1:20,984,647-20,991,448
 	#chr1:836,835-843,549
 	#chr1:539,399-542,484
- 	X 		=  load.grab_specific_region("chr1",539399, 542484, 
-			pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
-			neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
-			SHOW 	=False, bins=300)
- 	X[:,0]-=X[0,0]
-	X[:,0]/=100.
-	clf = EMGU(noise=True, K=1,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
+	#chr3:15,684,556-15,692,636
+	WRITE 	= False
+	if WRITE:
+	 	X 		=  load.grab_specific_region("chr3",15684556, 15692636, 
+				pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
+				neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
+				SHOW 	=False, bins=1000)
+	 	X[:,0]-=X[0,0]
+		X[:,0]/=100.
+		FHW 	= open("/Users/joazofeifa/test.bed", "w")
+		for i in range(X.shape[0]):
+			FHW.write(str(X[i,0]) + "\t" + str(X[i,1]) + "\t" + str(X[i,2]) + "\n")
+		FHW.close()
+	X 	= list()
+
+	with open("/Users/joazofeifa/test.bed") as FH:
+		for line in FH:
+			x,y,z 	= [float(x) for x in line.strip("\n").split("\t")]
+			X.append([x,y,z])
+	X 	= np.array(X)
+
+	clf = EMGU(noise=True, K=2,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
 		seed=True )
 	clf.fit(X)
+	clf.draw(X)
 
 
 	# # #make test_file
