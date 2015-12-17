@@ -595,7 +595,6 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 	for(it_type_5 c = A.begin(); c != A.end(); c++) {
 		NT[c->first] 	= node(c->second);
 	}
-
 	int start, stop, N, j;
 	double coverage;
 	N 	= 0,j 	= 0;
@@ -620,14 +619,21 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 			prevchrom="";
 			while (getline(FH, line)){
 				lineArray 	= splitter2(line, "\t");
-				chrom 		= lineArray[0];
-				start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = abs(stod(lineArray[3]));
-				center 	= (stop + start) /2.;
-				if (NT.find(chrom)!=NT.end()){
-					vector<double> x(2);
-					x[0]=center, x[1] = coverage;
-					NT[chrom].insert_coverage(x, strand);
-					
+				if (lineArray.size()==4){
+					chrom 		= lineArray[0];
+					start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = abs(stod(lineArray[3]));
+					center 	= (stop + start) /2.;
+					if (NT.find(chrom)!=NT.end()){
+						vector<double> x(2);
+						x[0]=center, x[1] = coverage;
+						NT[chrom].insert_coverage(x, strand);
+						
+					}
+				}
+				else{
+					printf("\n***error in line: %s, not bedgraph formatted\n", line.c_str() );
+					segments.clear();
+					return segments;
 				}
 			}
 			FH.close();

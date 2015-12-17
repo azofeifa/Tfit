@@ -94,12 +94,12 @@ def graph_percent(GS, M, D, H, m1, REF, penality=150, SHOW=False, OUT=""):
 	positions,percents,percents_2, colors,labels 	= list(),list(),list(),list(),list()
 
 	percents_DNase,percents_DNase_2  	= list(),list()
-	delta,height 		= 1.1,1.0
+	delta,height 		= 0.8,0.6
 		
 	xy 	= [(np.mean(R[r]), r, DN[r], HD[r], HB[r])  for r in R]
 	xy.sort()
 	for i,(mean,TF, mean_DNAse, mean_HD, mean_HB) in enumerate(xy):
-		positions+=[i*(delta*1.2) ]
+		positions+=[i*(delta*1.7) ]
 		percents_DNase+=[mean_HD]
 		percents_DNase_2+=[mean_DNAse-mean_HD]
 		percents+=[mean_HB]
@@ -115,15 +115,14 @@ def graph_percent(GS, M, D, H, m1, REF, penality=150, SHOW=False, OUT=""):
 		F 	= plt.figure(figsize=(5,10))
 		ax 	= F.add_subplot(1,1,1)
 		
-		ax.barh(positions, percents, height=height/2., color="m", edgecolor='white', hatch="//" , label=" " )
-		ax.barh(positions, percents_2,height=height/2., color="m", left=percents,edgecolor='white', label=" " )
+		ax.barh(positions, percents, height=height/2., color="b", edgecolor='white',   label=" " )
+		ax.barh(positions, percents_2,height=height/2., color="b", left=percents,edgecolor='white', label=" ", alpha=0.5 )
 
-		ax.barh([p+(delta/2.) for p in positions], percents_DNase, height=height/2., color="r", edgecolor='white', hatch="//", label=" "  )
-		ax.barh([p+(delta/2.) for p in positions], percents_DNase_2, height=height/2., color="r",edgecolor='white', left =percents_DNase, label=" "  )
+		ax.barh([p+(delta/2.) for p in positions], percents_DNase, height=height/2., color="r", edgecolor='white' , label=" "  )
+		ax.barh([p+(delta/2.) for p in positions], percents_DNase_2, height=height/2., color="r",edgecolor='white', left =percents_DNase, label=" " , alpha=0.5 )
 		
-		ax.set_xlim(0,1.6)
+		ax.set_xlim(0,1.)
 		ax.set_ylim(-delta ,max(positions)+delta*2)
-		ax.legend( )
 		positions=np.array(positions) +(( height) / 2.)
 
 		ax.set_xticks(np.arange(0,1.1,0.1))
@@ -132,14 +131,13 @@ def graph_percent(GS, M, D, H, m1, REF, penality=150, SHOW=False, OUT=""):
 
 		ax.set_yticks(positions)
 		ax.set_yticklabels(labels)
-		ax.grid()
+
 		for i,(pos, per, per2 , perDNA, perDNA2) in enumerate(zip(positions, percents, percents_2 , percents_DNase, percents_DNase_2)):
-			ax.text(per  , pos -(height/5.)    ,   str(int(100*per/(per2+per))) + "%"  ,color="white" ,fontsize=10,
-				verticalalignment='center', horizontalalignment="right" )
-			ax.text(perDNA2  , pos + (delta/2.) -(height/5.)  ,     str(int(100*perDNA/(perDNA2+perDNA)  ))+ "%"  ,color="white" ,fontsize=10 ,
-				verticalalignment='center', horizontalalignment="right" )
-		for o in F.findobj():
-			o.set_clip_on(False)
+			ax.text(per  , pos -  (height/2 )   ,   str(int(100*per/(per2+per))) + "%"  ,color="black" ,fontsize=12,
+				verticalalignment='top', horizontalalignment="center" )
+			ax.text(perDNA  , pos  + (height/2. ) + (delta/5.)  ,     str(int(100*perDNA/(perDNA2+perDNA)  ))+ "%"  ,color="black" ,fontsize=12 ,
+				verticalalignment='bottom', horizontalalignment="center" )
+
 		plt.tight_layout()
 		plt.savefig("/Users/joazofeifa/Lab/Article_drafts/EMG_paper/images/DNAse_Bidir_H3K27ac_overlap.pdf")
 		plt.show()
@@ -164,7 +162,7 @@ if __name__ == "__main__":
 	H 				= make_DNAse_searchable(HCT116_H3K27ac)
 	m1 				= make_DNAse_searchable(HCT116_H3K4me1)
 	REF 			= make_DNAse_searchable(TSS)
-	GS 				= load_directory(Allen_DIR, test=True)
+	GS 				= load_directory(Allen_DIR, test=False)
 	M 				= load_meta_data(Allen_META)
 	G 				= graph_percent(GS, M, D, H, m1, REF, SHOW=True)
 
