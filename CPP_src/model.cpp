@@ -761,9 +761,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	if (add){
 		components[K].initialize_bounds(0., data, 0., 0. , noise_max, pi, foot_print, data->minX, data->maxX);
 	}
-	if (elon_move ){
-		update_l(components, data, K);
-	}
+
 	//===========================================================================
 	int t 			= 0; //EM loop ticker
 	double prevll 	= nINF; //previous iterations log likelihood
