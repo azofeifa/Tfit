@@ -9,9 +9,9 @@
 ~BIDIR #do not change this line
 -N     	       	      	= foot_print_testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/synthetic_data_accuracy/files/simulation_forward.bedgraph
--j 	  		= /Users/joazofeifa/Lab/synthetic_data_accuracy/files/simulation_reverse.bedgraph
--k 			= /Users/joazofeifa/Lab/synthetic_data_accuracy/files/simulation_intervals.bed
+-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.nneg.BedGraph
+-k 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
 -q 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3-4_K_models_MLE.tsv
 -tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
