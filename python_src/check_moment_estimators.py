@@ -49,7 +49,6 @@ def compute_ll(X, i,j, mu,si, l, pi, SHOW=False, foot_print=0):
 	EMG 	= component_bidir(mu, si, l, 1.0,pi , None,foot_print=foot_print)
 	LL 		= sum([ LOG(EMG.pdf(X[k,0],1))*X[k,1]  for k in range(i,j) ])
 	LL 		+=sum([ LOG(EMG.pdf(X[k,0],-1))*X[k,2]  for k in range(i,j) ])
-	PI 		= 0.5
 	if SHOW:
 		l 	= float(max(X[i:j,0]) - min(X[i:j,0])) 
 		w 	= l / float(len(X[i:j,0]) )
@@ -117,12 +116,11 @@ def run_MM(X, window=500, scale=100):
 				si 	= 1.0
 				lam = 0.2
 				if (lam!= None and si!= None and lam >0 and si > 0 and np.sum(X[j:k,1:]) ):
-					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, 0.5,foot_print=1)
+					pi 		= np.sum(X[j:k, 1])/ np.sum(X[j:k, 1:])
+					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, pi,foot_print=1)
 					EMG_BIC = -2*EMG_ll  
 					vl 		= 1.0 / pow(X[k,0]-X[j,0],2)
 					
-					pi 		= np.sum(X[j:k, 1])/ np.sum(X[j:k, 1:])
-					pi 		= 0.5
 					U_ll 	= LOG(vl*pi)*np.sum(X[j:k, 1]) + LOG(vl*(1-pi))*np.sum(X[j:k, 2])
 					U_BIC 	= -2*U_ll  
 					ratio_x.append(X[i,0])

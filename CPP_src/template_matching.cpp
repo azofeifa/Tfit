@@ -55,7 +55,8 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 	double fp_res 	= 5;
 	double fp_delta = (fp_b-fp_a) /fp_res;
 	double N 	= N_neg + N_pos;
-	double pi 	= N_pos / (N_neg + N_pos);
+	double pi 	= (N_pos) / (N_neg + N_pos);
+	double pi2 	= (N_pos+10000) / (N_neg + N_pos+20000);
 	double a 	= X[0][j], b=X[0][k];
 	double uni_ll= LOG(pi/ pow(b-a,1) )*N_pos + LOG((1-pi)/pow(b-a,1))*N_neg;
 	for (int fp = 0; fp < 4; fp++){
@@ -70,7 +71,7 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 		si 	= 2.0;
 		if (l > 0 and si > 0){
 
-			EMG EMG_clf(mu, si, l, 1.0, pi );
+			EMG EMG_clf(mu, si, l, 1.0, pi2 );
 			double emg_ll=0;
 			for (int i = j; i < k; i++ ){
 				emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);	
@@ -239,7 +240,7 @@ void run_global_template_matching(vector<segment*> segments,
 			for (int j = 1; j<segments[i]->XN-1; j++){
 				
 
-				if (BIC_values[j] >=ct and densities[j] > ef + 5*stdf  and densities_r[j]> er + 5*stdr    ){
+				if (BIC_values[j] >=ct and densities[j] > ef + 15*stdf  and densities_r[j]> er + 15*stdr    ){
 					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - window*scale*0.5);
