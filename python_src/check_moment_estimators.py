@@ -49,13 +49,20 @@ def compute_ll(X, i,j, mu,si, l, pi, SHOW=False, foot_print=0):
 	EMG 	= component_bidir(mu, si, l, 1.0,pi , None,foot_print=foot_print)
 	LL 		= sum([ LOG(EMG.pdf(X[k,0],1))*X[k,1]  for k in range(i,j) ])
 	LL 		+=sum([ LOG(EMG.pdf(X[k,0],-1))*X[k,2]  for k in range(i,j) ])
+	PI 		= 0.5
 	if SHOW:
-		plt.bar(X[i:j,0], X[i:j,1]/np.sum(X[i:j,1]))
-		plt.bar(X[i:j,0], -X[i:j,2]/np.sum(X[i:j,2]) )
+		l 	= float(max(X[i:j,0]) - min(X[i:j,0])) 
+		w 	= l / float(len(X[i:j,0]) )
+		plt.bar(X[i:j,0], X[i:j,1]/np.sum(X[i:j,1]), width=w)
+		plt.bar(X[i:j,0], -X[i:j,2]/np.sum(X[i:j,2]), width=w )
 		xs 	= np.linspace(X[i,0],X[j,0],100)
-		plt.plot(xs, [EMG.pdf(x,1) for x in xs])
-		plt.plot(xs, [-EMG.pdf(x,-1) for x in xs])
+		plt.plot(xs, [EMG.pdf(x,1) for x in xs], lw=2, color="blue")
+		plt.plot(xs, [-EMG.pdf(x,-1) for x in xs], lw=2, color="blue")
+		plt.plot(xs, [PI / l for x in xs], lw=2, color="red")
+		plt.plot(xs, [-(1-PI) / l for x in xs],lw=2, color="red")
 		
+
+
 		plt.show()
 		
 	return LL
@@ -102,21 +109,28 @@ def run_MM(X, window=500, scale=100):
 			lam =  1./ (0.5*((S_pos / N_pos) - (S_neg / N_neg)) )
 			var_f= (S2_pos - (2*mu *S_pos) + (N_pos*pow((mu ),2)))
 			var_r= (S2_neg - (2*mu *S_neg) + (N_neg*pow((mu ),2)))
-			if (var_f > 0 and var_r > 0):
+			#var_f > 0 and var_r > 0
+			if (N_pos > 0 and N_neg > 0):
 				sv_f = math.sqrt(var_f/N_pos);
 				sv_r = math.sqrt(var_r/N_neg);
 				si 	= 0.5*(sv_f + sv_r) - (1. / lam);
 				si 	= 1.0
+				lam = 0.2
 				if (lam!= None and si!= None and lam >0 and si > 0 and np.sum(X[j:k,1:]) ):
-					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, 0.5,foot_print=0)
-					EMG_BIC = -2*EMG_ll + 1*math.log(np.sum(X[j:k,1:]))
-
-					vl 		= 1.0 / (X[k,0]-X[j,0])
+					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, 0.5,foot_print=1)
+					EMG_BIC = -2*EMG_ll  
+					vl 		= 1.0 / pow(X[k,0]-X[j,0],2)
+					
 					pi 		= np.sum(X[j:k, 1])/ np.sum(X[j:k, 1:])
+					pi 		= 0.5
 					U_ll 	= LOG(vl*pi)*np.sum(X[j:k, 1]) + LOG(vl*(1-pi))*np.sum(X[j:k, 2])
-					U_BIC 	= -2*U_ll + 1*math.log(np.sum(X[j:k, 1:]))
+					U_BIC 	= -2*U_ll  
 					ratio_x.append(X[i,0])
 					ratio_y.append(U_BIC/EMG_BIC)
+					# if ratio_y[-1] > 0.5:
+					# 	print U_ll, EMG_ll, vl
+					# 	EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, 0.5,foot_print=1, SHOW=True)
+						
 					densities.append(np.sum(X[j:k, 2]) )
 					# print np.sum(X[j:k, 1])
 					# time.sleep(0.1)
@@ -182,7 +196,9 @@ if __name__ == "__main__":
 	#1,206,352-1,213,240
 	#836,632-843,542
 	#1,091,333-1,096,157
-	X 	= load.grab_specific_region("chr1",1091333,1096157, SHOW=False, bins=500, 
+	#chr1:162,105,107-162,113,041
+	#25,681-33,615
+	X 	= load.grab_specific_region("chr1",162105107,162113041, SHOW=False, bins=500, 
 		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100

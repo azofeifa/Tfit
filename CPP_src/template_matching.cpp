@@ -57,7 +57,7 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 	double N 	= N_neg + N_pos;
 	double pi 	= N_pos / (N_neg + N_pos);
 	double a 	= X[0][j], b=X[0][k];
-	double uni_ll= LOG(pi/ (b-a) )*N_pos + LOG((1-pi)/(b-a))*N_neg;
+	double uni_ll= LOG(pi/ pow(b-a,1) )*N_pos + LOG((1-pi)/pow(b-a,1))*N_neg;
 	for (int fp = 0; fp < 4; fp++){
 
 		double foot_print 	= fp*fp_delta;
@@ -70,7 +70,7 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 		si 	= 2.0;
 		if (l > 0 and si > 0){
 
-			EMG EMG_clf(mu, si, l, 1.0, 0.5 );
+			EMG EMG_clf(mu, si, l, 1.0, pi );
 			double emg_ll=0;
 			for (int i = j; i < k; i++ ){
 				emg_ll+=(LOG(EMG_clf.pdf((X[0][i]- foot_print),1))*X[1][i] + LOG(EMG_clf.pdf((X[0][i]+foot_print),-1))*X[2][i]);	
@@ -268,7 +268,11 @@ void run_global_template_matching(vector<segment*> segments,
 		
 		scores.clear();
 		for (int m = 0; m < mergees.size(); m++){
-			scores.push_back(mergees[m].get_best());
+			vector<double> info(3);
+			vector<double> BEST 	= mergees[m].get_best();
+			info[0] 	= mergees[m].start, info[1] = mergees[m].stop, info[2] = BEST[2];
+			scores.push_back(info);
+
 		}
 		all+=int(scores.size());
 		for (int j = 0; j < scores.size();j++){
