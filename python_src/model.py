@@ -326,13 +326,15 @@ class EMGU:
 		else:
 			mus 		= [x for x  in self.peaks]
 		mus 		=  np.random.uniform(minX, maxX, self.K)
+
 		sigmas 		= [1.0 for i in range(self.K)]
 		lambdas 	= 1.0/np.random.gamma((maxX-minX)/(25*self.K), 1, self.K)
 		#=======================================
 		#assign to components
 
 		self.uniform_rate= (maxX-minX)/(1*self.K)
-		fps 		= [2,1]
+		mus 		= [23,45,88,175, 220]
+		fps 		= [1,1,2,1,3]
 		bidirs 		= [component_bidir(mus[k], sigmas[k], lambdas[k], ws[k][0], 0.5,self, foot_print=fps[k]) for k in range(self.K)] 
 	
 		uniforms    = [component_elongation(minX, mus[k], 0.0, 0., bidirs[k], "reverse",self ,0 , foot_print=fps[k]) for k in range(self.K)]
@@ -349,7 +351,7 @@ class EMGU:
 		
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
-			if np.random.uniform(0,1) <0.5:
+			if np.random.uniform(0,1) <0.1:
 				self.draw(X)
 			
 			# for rv in self.rvs:
@@ -407,7 +409,7 @@ class EMGU:
 		ax 				= F.add_subplot(111)
 		counts,edges 	= np.histogram(X[:,0],weights=X[:,1], normed=1,bins=200)
 		counts2,edges2 	= np.histogram(X[:,0],weights=X[:,2], normed=1,bins=200)
-		counts*=0.25
+		counts*=0.45
 		counts2*=0.25
 		
 		ax.bar(edges[1:],  counts  , color="blue", edgecolor="blue", alpha=0.5, width=(X[-1,0]-X[0,0])/200)
@@ -433,9 +435,10 @@ if __name__ == "__main__":
 	#chr1:836,835-843,549
 	#chr1:539,399-542,484
 	#chr3:15,684,556-15,692,636
+	#chr2:10,420,826-10,462,048
 	WRITE 	= False
 	if WRITE:
-	 	X 		=  load.grab_specific_region("chr3",15684556, 15692636, 
+	 	X 		=  load.grab_specific_region("chr2",10420826, 10433237, 
 				pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
 				neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
 				SHOW 	=False, bins=1000)
@@ -453,41 +456,10 @@ if __name__ == "__main__":
 			X.append([x,y,z])
 	X 	= np.array(X)
 
-	clf = EMGU(noise=True, K=2,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
+	clf = EMGU(noise=True, K=3,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
 		seed=True )
 	clf.fit(X)
 	clf.draw(X)
-
-
-	# # #make test_file
-	# FHW_f 	= open("three_prime_forward.bedgraph", "w")
-	# FHW_r 	= open("three_prime_reverse.bedgraph", "w")
-	# for i in range(X.shape[0]):
-	# 	x 		= int(X[i,0])
-
-	# 	FHW_f.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,1])) + "\n" )
-	# 	FHW_r.write("chr1\t" + str(x)  + "\t" + str(x) + "\t" + str(int(X[i,2])) + "\n" )
-
-
-
-
-
-
-	#2,518,131-2,523,183
-	#chr1:25,656,111-25,693,262
-	#chr1:28,569,727-28,580,179
-	#chr1:1,403,824-1,426,126
-	#chr1:1,644,778-1,661,469
-	#chr1:3,757,936-3,793,447
-	
-	# print max(X[:,0])
-
-
-
-	# clf.draw(X)
-	#==================================
-	
-
 
 
 
