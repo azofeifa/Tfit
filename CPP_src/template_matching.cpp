@@ -240,7 +240,7 @@ void run_global_template_matching(vector<segment*> segments,
 			for (int j = 1; j<segments[i]->XN-1; j++){
 				
 
-				if (BIC_values[j] >=ct and densities[j] > ef + 15*stdf  and densities_r[j]> er + 15*stdr    ){
+				if (BIC_values[j] >=ct and densities[j] > ef + 5*stdf  and densities_r[j]> er + 5*stdr    ){
 					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
 					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - window*scale*0.5);

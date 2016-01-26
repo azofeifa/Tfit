@@ -8,7 +8,7 @@
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
 #PBS -l walltime=12:00:00
-#PBS -l nodes=20:ppn=64
+#PBS -l nodes=10:ppn=64
 #PBS -l mem=800gb
 
 hostlist=$( cat $PBS_NODEFILE | sort | uniq | tr '\n' ',' | sed -e 's/,$//' )
