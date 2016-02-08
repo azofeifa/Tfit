@@ -71,7 +71,7 @@ def compute_ll(X, i,j, mu,si, l, pi, SHOW=False, foot_print=0):
 def run_MM(X, window=500, scale=100):
 	ratios_x, ratios_y, densities_s 	= list(),list(),list()
 	foot_print=0
-	for w in (1000,):
+	for w in (500,):
 		window 	= w / scale
 		ratio_x 	= list()
 		ratio_y 	= list()
@@ -118,11 +118,11 @@ def run_MM(X, window=500, scale=100):
 				if (lam!= None and si!= None and lam >0 and si > 0 and np.sum(X[j:k,1:]) ):
 					pi 		= np.sum(X[j:k, 1])/ np.sum(X[j:k, 1:])
 					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, pi,foot_print=1)
-					EMG_BIC = -2*EMG_ll  
-					vl 		= 1.0 / pow(X[k,0]-X[j,0],2)
+					EMG_BIC = -2*EMG_ll + 3*math.log(N_neg + N_neg)  
+					vl 		= 1.0 / pow(X[k,0]-X[j,0],1)
 					
 					U_ll 	= LOG(vl*pi)*np.sum(X[j:k, 1]) + LOG(vl*(1-pi))*np.sum(X[j:k, 2])
-					U_BIC 	= -2*U_ll  
+					U_BIC 	= -2*U_ll  + 1*math.log(N_neg + N_neg)
 					ratio_x.append(X[i,0])
 					ratio_y.append(U_BIC/EMG_BIC)
 					# if ratio_y[-1] > 0.5:
@@ -196,7 +196,9 @@ if __name__ == "__main__":
 	#1,091,333-1,096,157
 	#chr1:162,105,107-162,113,041
 	#25,681-33,615
-	X 	= load.grab_specific_region("chr1",162105107,162113041, SHOW=False, bins=500, 
+	#chr1:760,940-764,973
+	#899,808-905,675
+	X 	= load.grab_specific_region("chr1",899808,905675, SHOW=False, bins=500, 
 		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100

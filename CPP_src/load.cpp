@@ -134,6 +134,10 @@ void segment::bin(double delta, double scale, bool erase){
 	//populate bin ranges
 	X[0][0] 		= double(minX);
 	X[1][0]=0,X[2][0]=0;
+	
+
+
+
 	for (int i = 1; i < BINS; i++){
 		X[0][i] 	= X[0][i-1] + delta;
 		X[1][i] 	= 0;
@@ -172,6 +176,8 @@ void segment::bin(double delta, double scale, bool erase){
 		for (int i = 0; i < BINS; i ++ ){
 
 			X[0][i] 	= (X[0][i]-minX)/scale;
+			// X[1][i]/=delta;
+			// X[2][i]/=delta;
 		}
 	}
 	//we also want to get rid of those data points that we don't need
@@ -279,7 +285,8 @@ void node::insert_coverage(vector<double> x, int s){
 			}
 		}
 	}	
-	if (x[0] >= center and right != NULL ){
+
+	if (x[1] >= center and right != NULL ){
 		right->insert_coverage(x, s);
 	}
 	if (x[0] <= center and left !=NULL){
