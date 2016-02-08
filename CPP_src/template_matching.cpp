@@ -236,14 +236,14 @@ void run_global_template_matching(vector<segment*> segments,
 			double stdf 	= sqrt(ef*(1- (  2*(window_a+window_delta*w) /l  ) )  );
 			double stdr 	= sqrt(er*(1- (  2*(window_a+window_delta*w) /l  ) )  );
 			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single, fp_res,scale);
-			// if (w==0){
-			// 	for (int j = 1; j < segments[i]->XN; j++){
-			// 		start 		= int(segments[i]->X[0][j-1]*scale+segments[i]->start);
-			// 		stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start);
+			if (w==1){
+				for (int j = 1; j < segments[i]->XN; j++){
+					start 		= int(segments[i]->X[0][j-1]*scale+segments[i]->start);
+					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start);
 					
-			// 		FHW_scores<<segments[i]->chrom<<"\t"<<to_string(start)<<"\t"<<to_string(stop)<<"\t"<<to_string(BIC_values[j])<<endl;
-			// 	}
-			// }
+					FHW_scores<<segments[i]->chrom<<"\t"<<to_string(start)<<"\t"<<to_string(stop)<<"\t"<<to_string(BIC_values[j])<<endl;
+				}
+			}
 
 			mj 	= 0;
 			//write out contigous regions of up?

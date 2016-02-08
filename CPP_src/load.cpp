@@ -286,7 +286,7 @@ void node::insert_coverage(vector<double> x, int s){
 		}
 	}	
 
-	if (x[1] >= center and right != NULL ){
+	if (x[0] >= center and right != NULL ){
 		right->insert_coverage(x, s);
 	}
 	if (x[0] <= center and left !=NULL){
