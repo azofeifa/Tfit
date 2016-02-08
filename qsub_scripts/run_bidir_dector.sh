@@ -8,7 +8,7 @@
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
 #PBS -l walltime=12:00:00
-#PBS -l nodes=30:ppn=64
+#PBS -l nodes=10:ppn=64
 #PBS -l mem=800gb
 
 hostlist=$( cat $PBS_NODEFILE | sort | uniq | tr '\n' ',' | sed -e 's/,$//' )
@@ -40,5 +40,5 @@ genome=$hg19
 #================================================================
 #calling command
 cmd="mpirun -np $PBS_NUM_NODES -hosts ${hostlist}"
-$cmd $src $config_file -i ${bedgraph_directory}$forward -j ${bedgraph_directory}$reverse -f ${interval_directory}$interval_file   -o $out_directory -log_out $tmp_log_directory -N $PBS_JOBNAME -nf $genome
+$cmd $src $config_file -i ${bedgraph_directory}$forward -j ${bedgraph_directory}$reverse -f ${interval_directory}$interval_file   -o $out_directory -log_out $tmp_log_directory -N $PBS_JOBNAME -nf $genome -rounds 65
 #================================================================

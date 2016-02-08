@@ -4,7 +4,6 @@
 #/Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.neg.BedGraph
 #/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
 #/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
-~BIDIR #do not change this line
 -N     	       	      	= foot_print_testing #job name
 -v     	       	      	= 1 #verbose output
 -i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
@@ -13,25 +12,31 @@
 -q 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3-4_K_models_MLE.tsv
 -tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
+-merge 			= 0
 -chr 			= all  #specific chromosome
 -br 			= 25 #binning resolution do not consider changing
 -pad 			= 100
 -MLE			= 0 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
--bct 			= 1.0 #confidence threshold
+-bct 			= 0.95 #confidence threshold
 -ns 			= 100 #scaling for numerical stability, would not consider changing
 -r_mu 			= 1 #seed EM randomally from the peak finder
 -minK 			= 1
--maxK 			= 15
+-maxK 			= 1
+-ms_pen			= 1
+-ALPHA_0 		= 100 #prior for sigma
+-BETA_0 		= 100 #prior for sigma
+-ALPHA_1 		= 1 #prior for lambda
+-BETA_1 		= 1 #prior for lambda
 -ALPHA_0 		= 1 #prior for sigma
 -BETA_0 		= 1 #prior for sigma
 -ALPHA_1 		= 500 #prior for lambda
 -BETA_1 		= 1000 #prior for lambda
 -ALPHA_2 		= 1 #prior for weights
--ALPHA_3 		= 100 #prior for strand probs
--rounds 		= 1 #number of random EM initializations
--ct 			= 0.0001 #EM convergence threshold difference
--mi 			= 2000 #Number of EM iterations before it is aborted
+-ALPHA_3 		= 10000 #prior for strand probs
+-rounds 		= 100 #number of random EM initializations
+-ct 			= 0.01 #EM convergence threshold difference
+-mi 			= 5000 #Number of EM iterations before it is aborted
 -max_noise		= 0.05 #weight of the random/uniform noise component
 -elon 			= 0
 -log_out 		= /Users/joazofeifa/Lab/EMG_logs/
