@@ -241,7 +241,7 @@ void run_global_template_matching(vector<segment*> segments,
 					start 		= int(segments[i]->X[0][j-1]*scale+segments[i]->start);
 					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start);
 					
-					FHW_scores<<segments[i]->chrom<<"\t"<<to_string(start)<<"\t"<<to_string(stop)<<"\t"<<to_string(BIC_values[j])<<endl;
+					FHW_scores<<segments[i]->chrom<<"\t"<<to_string(start)<<"\t"<<to_string(stop)<<"\t"<<to_string(BIC_values[j])<<"\t"<<to_string(densities[j])<<"\t"<<to_string(densities_r[j])<<endl;
 				}
 			}
 
