@@ -161,7 +161,6 @@ void run_global_template_matching(vector<segment*> segments,
 	ofstream FHW;
 	ofstream FHW_intervals;
 	ofstream FHW_scores;
-	FHW_scores.open(out_dir + "template_bidir_scores.bed");
 	string annotation;
 	int prev, prev_start, stop;
 	int N;
@@ -236,14 +235,6 @@ void run_global_template_matching(vector<segment*> segments,
 			double stdf 	= sqrt(ef*(1- (  2*(window_a+window_delta*w) /l  ) )  );
 			double stdr 	= sqrt(er*(1- (  2*(window_a+window_delta*w) /l  ) )  );
 			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single, fp_res,scale);
-			if (w==1){
-				for (int j = 1; j < segments[i]->XN; j++){
-					start 		= int(segments[i]->X[0][j-1]*scale+segments[i]->start);
-					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start);
-					
-					FHW_scores<<segments[i]->chrom<<"\t"<<to_string(start)<<"\t"<<to_string(stop)<<"\t"<<to_string(BIC_values[j])<<"\t"<<to_string(densities[j])<<"\t"<<to_string(densities_r[j])<<endl;
-				}
-			}
 
 			mj 	= 0;
 			//write out contigous regions of up?
