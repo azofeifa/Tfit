@@ -84,8 +84,71 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 	lambdas[i] 		= arg_l;
 	avgLL[i] 		= arg_ll / N;
 	skews[i][0]  	= 0, skews[i][1]= 0;
+
 	return argBIC;
 }
+
+double get_ll(double ** X, double mu, double w, double pi, double l, int j, int k){
+	double emg_ll 	= 0;
+	EMG EMG_clf(mu, 1.0, 0.1, w, pi  );
+	for (int i = j; i < k;i++ ){
+		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
+	}
+	return emg_ll;
+
+}
+
+
+double BIC3(double ** X, int j, int k, int i,
+	double N_pos, double N_neg, double * avgLL, double * variances,double * lambdas, 
+	double ** skews){
+
+	double w = 0.01;
+	double delta 	= 0.25;
+	double N 		= N_pos + N_neg;
+	double pi 	= (N_pos+10000) / (N_neg + N_pos+20000);
+	double a 	= X[0][j], b=X[0][k];
+	double uni_ll= LOG(pi/  (b-a ) )*N_pos + LOG((1-pi)/ (b-a ))*N_neg;
+	double best_emg_ll 	= nINF;
+	double 		l = b-a;
+	double best_w 	= 0.0;
+	w 				= 0.95;
+	double fp 		= 0.0;
+
+	double emg_ll 	= 0;
+	EMG EMG_clf(X[0][i], 1.0, 0.1, w, pi  );
+	EMG_clf.foot_print 	= 1.0;
+
+	for (int i = j; i < k;i++ ){
+		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
+	}
+
+	
+	double emg_ratio 			= (-2*uni_ll + LOG(N)) / (-2*emg_ll + 3*LOG(N));
+
+
+
+	variances[i] 	= 1.0;
+	lambdas[i] 		= 1.0;
+	avgLL[i] 		= best_emg_ll / N;
+	skews[i][0]  	= 0, skews[i][1]= 0;
+	return emg_ratio;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 void BIC_template(segment * data, double * avgLL, double * BIC_values, double * densities, double * densities_r,
 	double * variances,double * lambdas, double ** skews ,double window, int np, int single,double foot_res,double scale){
@@ -138,10 +201,21 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 				// 	lambdas, skews, data->X[0][i], i, k, j,  single, foot_res, 
 				// 	densities, densities_r,scale , window, N_pos, N_neg);	
 				double mu 		= (data->X[0][k] + data->X[0][j]) /2.;
-				BIC_values[i] 	=  BIC2(data->X, avgLL, variances, 
-					lambdas, skews, N_pos,  N_neg, S_pos, 
-			 		S_neg, S2_pos, S2_neg, mu, j, k,i, scale );
+				//double CENTER 	= (mu*100 + data->start);
+
+
+				// BIC_values[i] 	=  BIC2(data->X, avgLL, variances, 
+				// 	lambdas, skews, N_pos,  N_neg, S_pos, 
+			 // 		S_neg, S2_pos, S2_neg, mu, j, k,i, scale );
+				BIC_values[i] 	= BIC3(data->X,  j,  k,  i, N_pos,  N_neg,avgLL, variances, lambdas, skews);
+
+
+
+
 				double II 		= data->X[0][i]*scale + data->start;
+				// if   (CENTER < 1144764 and CENTER > 1139533 and data->chrom == "chr1"){
+				// 	printf("%f,%f,%f\n", BIC_values[i],CENTER, densities[i],densities_r[i] );
+				// }
 				
 			
 					
@@ -171,13 +245,13 @@ void run_global_template_matching(vector<segment*> segments,
 	double window, foot_print;
 	double window_a;
 	double window_b;
-	window_a 	= 500;
-	window_b 	= 1000;
+	window_a 	= 1000;
+	window_b 	= 1500;
 
 	int all 	= 0;
 	double fp_res = 10;
 	double window_delta = (window_b-window_a)/res;
-	window 		= 1500/scale;
+	window 		= 2500/scale;
 	//now we want to merge all of these overlaps...
 	struct merged{
 	public:
@@ -226,14 +300,15 @@ void run_global_template_matching(vector<segment*> segments,
 		mergees.clear();
 
 
-		for (int w = 0 ; w<3; w++){
+		for (int w = 0 ; w<1; w++){
 			double l 		=  segments[i]->XN*scale;
 			window 			= (window_a+window_delta*w)/(scale);
-			
+			window 			= 1000/scale;
 			double ef 		= segments[i]->fN*( 2*(window_a+window_delta*w)  /l);
 			double er 		= segments[i]->rN*( 2*(window_a+window_delta*w) /l);
 			double stdf 	= sqrt(ef*(1- (  2*(window_a+window_delta*w) /l  ) )  );
 			double stdr 	= sqrt(er*(1- (  2*(window_a+window_delta*w) /l  ) )  );
+//			printf("%f,%f,%f,%f\n",ef,er, stdf,stdr );
 			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single, fp_res,scale);
 
 			mj 	= 0;
@@ -242,8 +317,10 @@ void run_global_template_matching(vector<segment*> segments,
 				
 
 				if (BIC_values[j] >=ct and densities[j] > ef + 1*stdf  and densities_r[j]> er + 1*stdr    ){
-					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
-					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+					// start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+					// stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + ((variances[j]/2.)+(1.0/lambdas[j]))*scale);
+					
+
 					start 		= int(segments[i]->X[0][j]*scale+segments[i]->start - window*scale*0.5);
 					stop 		= int(segments[i]->X[0][j]*scale+segments[i]->start + window*scale*0.5);
 					

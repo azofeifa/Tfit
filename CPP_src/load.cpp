@@ -480,10 +480,10 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 			break;
 		}
 		if (INSERT){
-			for (int x = start; x < stop; x++){
+			//for (int x = start; x < stop; x++){
 
-				G[chrom]->add2(1, double(x), coverage);
-			}
+			G[chrom]->add2(1, double(stop+start)/2., coverage);
+			//}
 		}
 		prevChrom=chrom;
 

@@ -1,5 +1,8 @@
 import numpy as np
 import time
+import model as MODEL
+import matplotlib.pyplot as plt
+import math
 def get_counts(FILES):
 	G= {}
 	DS 	= [{}, {}]
@@ -21,20 +24,30 @@ def get_counts(FILES):
 				G[chrom][2] 	= max((G[chrom][2], int(stop)))
 				DS[i][chrom].append((x, float(cov)))
 	return G,DS[0],DS[1]
-def window(X, win=1000):
-	i 				= 0
-	forward,reverse = list(), list()
-	while i < X.shape[0]:
-		j,k 	= i,i
-		while j < X.shape[0] and (X[j,0] - X[i,0]) < win:
+def window(X, win=10):
+	i,j,k 				= 0,0,0
+	scores, forward,reverse = list(), list(),list()
+	while i < 5000:
+		while j < X.shape[0] and  (X[j,0]-X[i,0]) < -win:
 			j+=1
-		while k >=0 and (X[i,0] - X[k,0]) < win:
-			k-=1
-		if j < X.shape[0] and i < X.shape[0]:
-			forward.append( (np.sum(X[i:j, 1])   ))
-			reverse.append( (np.sum(X[k:i, 2])  ))
+		while k <X.shape[0] and (X[k,0]-X[i,0]) < win:
+			k+=1
+		if i < X.shape[0] and j < X.shape[0] and k < X.shape[0]:
+			a,b 					= X[j,0],X[k,0]
+			N_forward,N_reverse  	= np.sum(X[j:k,1]),np.sum(X[j:k,2])
+			N 						= N_forward + N_reverse
+			pi 						= (N_forward+1) / (N+2)
+
+			null 					= math.log(pi / (b-a))*N_forward +  math.log((1-pi) / (b-a))*N_reverse
+			center 					= X[i,0]
+			rvs 					= [MODEL.component_bidir(center, 1.0, 0.5, 0.9,pi , None) , MODEL.component_elongation( a,b, 0.1, pi, None, None, None, None, )]
+			model 					= sum([math.log(sum([rv.pdf(X[u,0],1) for rv in rvs] ))*X[u,1] for u in range(j,k)])
+			model 					+=sum([math.log(sum([rv.pdf(X[u,0],-1) for rv in rvs] ))*X[u,2] for u in range(j,k)])
+			scores.append(model/null)
+
+
 		i+=1
-	return forward, reverse
+	return scores
 def bin(Forward, Reverse,step_size=25):
 	G 	= {}
 	for chrom in Forward:
@@ -49,32 +62,27 @@ def bin(Forward, Reverse,step_size=25):
 				while i < X.shape[0] and X[i,0] <= x:
 					i+=1
 				X[i-1, j+1]+=c
+		X[:,0]/=100.
 		G[chrom]=X
 	return G
 def scan(G, win=1000):
 	FHW 	= open("/Users/joazofeifa/test_peak_caller.bed","w")
 	for chrom in G:
-		windows_forward, windows_reverse 	= window(G[chrom], win=win) 
-		Nf, Nr 		= sum( windows_forward), sum( windows_reverse)
-		l 			= float(len(windows_forward)  )*win
-		start 		= None
-		scores 		= list()
-		ef, er 		= Nf * (25.0 / l), Nr*(25.0 / l)
+		print chrom, 
+		scores 	= window(G[chrom]) 
 		
 		intervals  	= list()
-		for i in range( len(windows_forward) ):
-			
-
-			if windows_forward[i] > ef and windows_reverse[i] > er and start is None:
+		start 		= None
+		for i in range( len(scores) ):
+			if scores[i] < 1.0 and start is None:
 				start 	= i
-			elif start is not None and (windows_forward[i] < ef or windows_reverse[i] < er) :
+			elif start is not None and scores[i] > 1.0 :
 				stop 	= i
-				intervals.append((start, stop))
+				intervals.append((G[chrom][start,0]*100, G[chrom][stop,0]*100))
 				start 	= None
-
-			elif (windows_forward[i] < ef or windows_reverse[i] < er) :
-				start  	= None
-
+		print len(intervals)
+		for start, stop in intervals:
+			FHW.write(chrom+"\t" + str(int(start)) + "\t" + str(int(stop)) + "\n")
 
 
 

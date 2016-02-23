@@ -164,10 +164,8 @@ class component_bidir:
 		vl 		= (self.l /2.)* (s*2*(self.mu-z) + self.l*self.si**2. )
 		if vl > 200: #overflow error, try this one...
 			p 	= self.l*self.IN((z-self.mu)/self.si)*self.R(self.l*self.si - s*((z - self.mu)/self.si))
-		try:
+		else:
 			p 		= (self.l / 2.)*m.exp( vl )*erfc( (s*(self.mu- z) + self.l*self.si**2. ) / (m.sqrt(2)*self.si) )
-		except:
-			self.remove,p 	= True,0.
 		step 	= 0
 
 		return p*self.w*pow(self.pi, max(0, s) )*pow(1-self.pi, max(0, -s) )

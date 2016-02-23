@@ -110,19 +110,16 @@ def run_MM(X, window=500, scale=100):
 			var_r= (S2_neg - (2*mu *S_neg) + (N_neg*pow((mu ),2)))
 			#var_f > 0 and var_r > 0
 			if (N_pos > 0 and N_neg > 0):
-				sv_f = math.sqrt(var_f/N_pos);
-				sv_r = math.sqrt(var_r/N_neg);
-				si 	= 0.5*(sv_f + sv_r) - (1. / lam);
 				si 	= 1.0
-				lam = 0.2
+				lam = 0.1
 				if (lam!= None and si!= None and lam >0 and si > 0 and np.sum(X[j:k,1:]) ):
 					pi 		= np.sum(X[j:k, 1])/ np.sum(X[j:k, 1:])
 					EMG_ll 	=  compute_ll(X, j,k, mu,si, lam, pi,foot_print=1)
-					EMG_BIC = -2*EMG_ll + 3*math.log(N_neg + N_neg)  
+					EMG_BIC = -2*EMG_ll + 3*math.log(N_neg + N_pos)  
 					vl 		= 1.0 / pow(X[k,0]-X[j,0],1)
 					
 					U_ll 	= LOG(vl*pi)*np.sum(X[j:k, 1]) + LOG(vl*(1-pi))*np.sum(X[j:k, 2])
-					U_BIC 	= -2*U_ll  + 1*math.log(N_neg + N_neg)
+					U_BIC 	= -2*U_ll  + 1*math.log(N_neg + N_pos)
 					ratio_x.append(X[i,0])
 					ratio_y.append(U_BIC/EMG_BIC)
 					# if ratio_y[-1] > 0.5:
@@ -198,7 +195,15 @@ if __name__ == "__main__":
 	#25,681-33,615
 	#chr1:760,940-764,973
 	#899,808-905,675
-	X 	= load.grab_specific_region("chr1",899808,905675, SHOW=False, bins=500, 
+	#chr1:4,763,739-4,766,290
+	#chr1:1,140,801-1,143,549
+	#:1,200,396-1,202,629
+	#:936,603-947,066
+	#1,246,727-1,252,981
+
+	#1,137,847-1,145,798
+	print (1252981 - 1246727)/500.0
+	X 	= load.grab_specific_region("chr1",1246727,1252981, SHOW=False, bins=500, 
 		pos_file=IN+"DMSO2_3.pos.BedGraph", neg_file=IN+"DMSO2_3.neg.BedGraph" )
 	X[:,0]-=min(X[:,0])
 	scale = 100
