@@ -4,7 +4,11 @@
 #include <iostream>
 #include "across_segments.h"
 #include <limits>
-#include <math.h>
+#ifdef USING_ICC
+#include <mathimf.h>
+#else
+#include <math.h>   
+#endif
 #include <errno.h>
 #include "error_stdo_logging.h"
 #include <time.h>  

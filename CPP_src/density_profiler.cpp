@@ -2,7 +2,11 @@
 #include <iostream>
 #include "split.h"
 #include <fstream>
-#include <math.h> 
+#ifdef USING_ICC
+#include <mathimf.h>
+#else
+#include <math.h>   
+#endif
 #include <cmath>
 #ifdef USING_ICC
 #include <aligned_new>

@@ -2,7 +2,11 @@
 #include "model.h"
 #include "load.h"
 #include "template_matching.h"
-#include <math.h> 
+#ifdef USING_ICC
+#include <mathimf.h>
+#else
+#include <math.h>   
+#endif
 #include <limits>
 #include <iostream>
 #include <algorithm>

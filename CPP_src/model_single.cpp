@@ -1,4 +1,8 @@
-#include <math.h> 
+#ifdef USING_ICC
+#include <mathimf.h>
+#else
+#include <math.h>   
+#endif
 #include <limits>
 #include "model_single.h"
 #include "load.h"
@@ -7,7 +11,11 @@
 #include <algorithm>
 #include <unistd.h>
 #include <random>
-#include <math.h> 
+#ifdef USING_ICC
+#include <mathimf.h>
+#else
+#include <math.h>   
+#endif
 #include "model.h"
 #include "template_matching.h"
 #ifdef USING_ICC
