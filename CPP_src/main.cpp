@@ -22,6 +22,9 @@
 #include "bidir_main.h"
 #include "model_main.h"
 #include "select_main.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 using namespace std;
 
 int main(int argc, char* argv[]){

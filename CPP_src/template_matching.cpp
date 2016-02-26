@@ -9,6 +9,9 @@
 #include <fstream>
 #include <random>
 #include "omp.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 using namespace std;
 
 double nINF	=-exp(1000);

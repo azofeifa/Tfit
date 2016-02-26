@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include <random>
 #include "omp.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 
 
 //=============================================

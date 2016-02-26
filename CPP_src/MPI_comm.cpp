@@ -8,6 +8,9 @@
 #include "split.h"
 #include <stddef.h>
 #include "read_in_parameters.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 using namespace std;
 
 vector<segment *> MPI_comm::slice_segments(vector<segment *> segments, int rank, int nprocs){

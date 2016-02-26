@@ -10,6 +10,9 @@
 #include <math.h> 
 #include "model.h"
 #include "template_matching.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 
 
 

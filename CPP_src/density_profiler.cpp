@@ -4,6 +4,9 @@
 #include <fstream>
 #include <math.h> 
 #include <cmath>
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 using namespace std;
 
 gap_interval::gap_interval(){};
