@@ -124,9 +124,7 @@ double BIC3(double ** X, int j, int k, int i,
 	}
 
 	
-	double emg_ratio 			= (-2*uni_ll + LOG(N)) / (-2*emg_ll + 3*LOG(N));
-
-
+	double emg_ratio 			= (-2*uni_ll + LOG(N)) / (-2*emg_ll + 1*LOG(N));
 
 	variances[i] 	= 1.0;
 	lambdas[i] 		= 1.0;
