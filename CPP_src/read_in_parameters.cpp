@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <time.h>
 #include "split.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 using namespace std;
 
 params::params(){

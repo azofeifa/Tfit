@@ -200,6 +200,18 @@ if __name__ == "__main__":
 	#:1,200,396-1,202,629
 	#:936,603-947,066
 	#1,246,727-1,252,981
+	f 		= lambda x,y,n: (-2*x + 1*n) / (-2*y + 2*n)
+	ns 		= np.linspace(1,50,100)
+	xs 		= np.linspace(-1000,-1,10)
+	ys 		= np.linspace(-1000,-1,10)
+	F 		= plt.figure(figsize=(15,10))
+	ax 		= F.add_subplot(111)
+	x 		= -10
+	ax.plot(ns, [f(x,-10,n) for n in ns],label=str(x))
+	ax.legend(loc='best')
+	plt.show()
+
+
 
 	#1,137,847-1,145,798
 	print (1252981 - 1246727)/500.0
