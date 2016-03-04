@@ -9,6 +9,9 @@
 
 #include <omp.h>
 #include "template_matching.h"
+#ifdef USING_ICC
+#include <aligned_new>
+#endif
 using namespace std;
 
 int sample(double ** CDF, int XN, double sum_N, segment * NS, double pi , segment * S){

@@ -12,7 +12,11 @@
 #include "across_segments.h"
 #include "model_selection.h"
 #include <cmath>
-#include <math.h> 
+#ifdef USING_ICC
+#include <mathimf.h>
+#else
+#include <math.h>   
+#endif
 #include <limits>
 #include <iostream>
 #include <algorithm>
@@ -21,7 +25,12 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <math.h> 
+#ifdef USING_ICC
+#include <mathimf.h>
+#include <aligned_new>
+#else
+#include <math.h>   
+#endif
 
 using namespace std;
 //========================================================================
