@@ -1,4 +1,3 @@
 *.pyc
 *.o
 EMGU
-Makefile*
