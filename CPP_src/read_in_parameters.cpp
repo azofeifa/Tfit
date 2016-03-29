@@ -144,7 +144,7 @@ void params::help(){
 	printf("              quick moment estimation to asses divergent transcription shape \n");
 	printf("model     : must be provided immediately following the application call \"EMGU\"\n");
 	printf("              to perform maximum likelihood or a-posteriori parameter inference\n");
-	printf("              recommended for accruacy; especially for point estimate on\n");
+	printf("              recommended for accuracy; especially for point estimate on\n");
 	printf("              RNA polymerase II loading position needed for TF ID-ing \n");
 	printf("select    : must be provided immediately following the application call \"EMGU\"\n");
 	printf("              model selection is performed via penalized bayesian information\n");
