@@ -24,7 +24,7 @@ public:
 	string strand ;
 	int counts;
 	vector<double> centers;
-	vector<vector<double>> parameters; //for bootstraping
+	vector<vector<double>> parameters; //for bootstrapping
 	map<int, vector<double> > variances;
 	segment(string, int , int);
 	segment(string, int , int, int);
