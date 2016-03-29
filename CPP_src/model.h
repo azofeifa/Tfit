@@ -86,7 +86,7 @@ public:
 	double ALPHA_0, BETA_0;
 	//FOR LAMBA ; rate of initiation, gamma
 	double ALPHA_1, BETA_1;
-	//FOR W ; weight , dirchlet
+	//FOR W ; weight , Dirichlet
 	double ALPHA_2;
 	//FOR PI ; strand prob. , beta
 	double ALPHA_3;
