@@ -208,7 +208,7 @@ void params::help(){
 	printf("              (default=1)\n");
 	printf("-maxK     : (positive integer) maximum number of model components to try\n");
 	printf("              (default=5)\n");
-	printf("-rounds   : (positive integer) number of random intializations to the\n");
+	printf("-rounds   : (positive integer) number of random initializations to the\n");
 	printf("              EM algorithm (default=10)\n" );	                  
 	printf("-mi       : (positive integer) maximum number of iterates to the\n");
 	printf("              EM algorithm (default=2000)\n" );	                  
