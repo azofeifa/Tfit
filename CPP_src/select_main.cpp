@@ -15,7 +15,7 @@ int select_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	
 	
 	string forward_bedgraph 		= P->p["-i"]; //forward strand bedgraph file
-	string reverse_bedgraph 		= P->p["-j"]; //reverse strand beddgraph file
+	string reverse_bedgraph 		= P->p["-j"]; //reverse strand bedgraph file
 	string out_file_dir 			= P->p["-o"];//out file directory
 	string query_file 				= P->p["-q"];
 	string tss_file 				= P->p["-tss"];
