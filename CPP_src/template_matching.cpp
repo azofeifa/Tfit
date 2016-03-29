@@ -319,7 +319,7 @@ void run_global_template_matching(vector<segment*> segments,
 			BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,skews, window, np, single, fp_res,scale);
 
 			mj 	= 0;
-			//write out contigous regions of up?
+			//write out contiguous regions of up?
 			for (int j = 1; j<segments[i]->XN-1; j++){
 				
 
