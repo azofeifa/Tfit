@@ -7,7 +7,7 @@ using namespace std;
 int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_File * LG){
 	int verbose 	= stoi(P->p["-v"]);
 	LG->write("\ninitializing model module...............................done\n\n",verbose);
-	int threads 	= omp_get_max_threads();//number of openMP threads that are available for use	
+	int threads 	= omp_get_max_threads();//number of OpenMP threads that are available for use	
 	string job_name = P->p["-N"];
 
 	//=======================================================================================
