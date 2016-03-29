@@ -60,7 +60,7 @@ simple_c_free_mode::simple_c_free_mode(bool FOUND, double ll,
 	if (FOUND){
 		ID[4]=1; 
 	}else{
-		ID[4]=0;//didnt converge
+		ID[4]=0;//didn't converge
 	}
 	for (int c =0 ; c < 5; c++){
 		if (c < data->chrom.size()){

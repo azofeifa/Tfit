@@ -11,7 +11,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	int verbose 	= stoi(P->p["-v"]);
 	P->p["-merge"] 	= "1";
 	LG->write("\ninitializing bidir module...............................done\n", verbose);
-	int threads 	= omp_get_max_threads();//number of openMP threads that are available for use
+	int threads 	= omp_get_max_threads();//number of OpenMP threads that are available for use
 	
 	//===========================================================================
 	//get job_ID and open file handle for log files
@@ -20,7 +20,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//===========================================================================
 	//input files and output directories
 	string forward_bedgraph 	= P->p["-i"]; //forward strand bedgraph file
-	string reverse_bedgraph 	= P->p["-j"]; //reverse strand beddgraph file
+	string reverse_bedgraph 	= P->p["-j"]; //reverse strand bedgraph file
 	string out_file_dir 		= P->p["-o"] ;//out file directory
 	//(2a) read in bedgraph files 
 	map<string, int> chrom_to_ID;
