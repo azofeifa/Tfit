@@ -479,7 +479,7 @@ void component::add_stats(double x, double y, int st, double normalize){
 			reverse.r_reverse+=(vl2*y);
 			forward.r_reverse+=(vl3*y);
 		}
-		//now adding all the conditional expections for the convolution
+		//now adding all the conditional expectations for the convolution
 		if (vl > 0 and y > 0){
 			double current_EY 	= bidir.EY(x, st);
 			double current_EY2 	= bidir.EY2(x, st);
