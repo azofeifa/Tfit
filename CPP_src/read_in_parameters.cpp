@@ -138,15 +138,15 @@ void params::help(){
 	printf("                   ....description of application modules....             \n");
 	printf("                                  (critical)                            \n\n");
 	
-	printf("bidir     : must be provided immediatly following the application call \"EMGU\"\n");
+	printf("bidir     : must be provided immediately following the application call \"EMGU\"\n");
 	printf("              to scan for bidirectional signal across provided dataset, uses\n");
 	printf("              a poisson noise background model to assess enrichment and \n");
 	printf("              quick moment estimation to asses divergent transcription shape \n");
-	printf("model     : must be provided immediatly following the application call \"EMGU\"\n");
+	printf("model     : must be provided immediately following the application call \"EMGU\"\n");
 	printf("              to perform maximum likelihood or a-posteriori parameter inference\n");
 	printf("              recommended for accruacy; especially for point estimate on\n");
 	printf("              RNA polymerase II loading position needed for TF ID-ing \n");
-	printf("select    : must be provided immediatly following the application call \"EMGU\"\n");
+	printf("select    : must be provided immediately following the application call \"EMGU\"\n");
 	printf("              model selection is performed via penalized bayesian information\n");
 	printf("              criteria. To set the penalty, we consider an ROC curve over signal\n");
 	printf("              with no moment estimate prediction (TN) and bidirectionals found near TSS (TP) \n");
