@@ -447,7 +447,7 @@ double component::evaluate(double x, int st){
 	forward.ri_reverse 	= forward.pdf(x, st);
 	return bidir.ri_reverse + reverse.ri_reverse + forward.ri_reverse;
 }
-//compute the conditional expectations and add to running totatl
+//compute the conditional expectations and add to running total
 void component::add_stats(double x, double y, int st, double normalize){
 	if (type==0){//noise component
 		if (st==1){
