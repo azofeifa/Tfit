@@ -342,7 +342,7 @@ map<int, map<int, vector<simple_c_free_mode>  > > MPI_comm::gather_all_simple_c_
 
 	typedef map<int, vector<simple_c_free_mode> >::iterator model_it;
 	if (rank==0){
-		//first want to recieve the number of segments each child processes ran
+		//first want to receive the number of segments each child processes ran
 		for (int j = 0; j < nprocs; j++){
 			int S =0;
 			if (j > 0){
