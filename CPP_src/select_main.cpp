@@ -10,7 +10,7 @@ int select_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 
 	LG->write("\ninitializing select module..............................done\n\n",verbose);
 
-	int threads 	= omp_get_max_threads();//number of openMP threads that are available for use
+	int threads 	= omp_get_max_threads();//number of OpenMP threads that are available for use
 	string job_name = P->p["-N"];
 	
 	
