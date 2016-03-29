@@ -508,7 +508,7 @@ void component::reset(){
 		
 	}
 }
-//used for large responsbility normalization term
+//used for large responsibility normalization term
 double component::get_all_repo(){
 	if (type==1){
 		return bidir.r_forward+bidir.r_reverse+forward.r_forward+reverse.r_reverse;
@@ -795,7 +795,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 			norm_forward=0;
 			norm_reverse=0;
 			
-			for (int k=0; k < K+add; k++){ //computing the responsbility terms
+			for (int k=0; k < K+add; k++){ //computing the responsibility terms
 				if (data->X[1][i]){//if there is actually data point here...
 					norm_forward+=components[k].evaluate(data->X[0][i],1);
 				}
