@@ -80,7 +80,7 @@ int select_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//====================================================================
 	//(5) need to label K_models as to whether they are 
 	// over transcription start sites (these are true positives)
-	// compute ROC at get BIC penality for the TP or FP rate
+	// compute ROC at get BIC penalty for the TP or FP rate
 
 	
 	if (rank == 0){
@@ -92,7 +92,7 @@ int select_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 		LG->write("AUC              : " + to_string(AUC) + "\n", verbose);
 		LG->write("Optimal TP       : " + to_string(TP) + "\n", verbose);
 		LG->write("Optimal FP       : " + to_string(FP) + "\n", verbose);
-		LG->write("Optimal Penality : " + to_string(optimal_penality) + "\n", verbose);
+		LG->write("Optimal Penalty  : " + to_string(optimal_penality) + "\n", verbose);
 	}
 
 	LG->write("\nexiting select module...................................done\n\n",verbose);
