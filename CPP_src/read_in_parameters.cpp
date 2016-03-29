@@ -148,7 +148,7 @@ void params::help(){
 	printf("              RNA polymerase II loading position needed for TF ID-ing \n");
 	printf("select    : must be provided immediatly following the application call \"EMGU\"\n");
 	printf("              model selection is performed via penalized bayesian information\n");
-	printf("              criteria. To set the penality, we consider an ROC curve over signal\n");
+	printf("              criteria. To set the penalty, we consider an ROC curve over signal\n");
 	printf("              with no moment estimate prediction (TN) and bidirectionals found near TSS (TP) \n");
 	
 	printf("\n\n");
@@ -197,7 +197,7 @@ void params::help(){
 	printf("              inference via EM (highly recommended for accuracy)\n");
 	printf("-select   : (boolean integer) specific to the bidir and model module will perform\n");
 	printf("              ROC analysis and run the selection module\n");
-	printf("-ms_pen   : (positive floating) penality term in BIC criteria for model selection\n");
+	printf("-ms_pen   : (positive floating) penalty term in BIC criteria for model selection\n");
 	printf("              (default = 1)\n");
 	
 	printf("\n");
@@ -267,13 +267,13 @@ void params::display(int nodes, int cores){
 	}if (bidir and MLE){
 	header+="             ....coupled to mixture model....     \n";
 	}if (bidir and select){
-	header+="       ....coupled to BIC penality optimization....     \n";
+	header+="       ....coupled to BIC penalty optimization....     \n";
 	}
 	if (model){
 	header+="               ...running mixture model...                      \n";
 	}
 	if (select){
-	header+="            ....BIC penality optimization....                      \n";		
+	header+="            ....BIC penalty optimization....                      \n";		
 	}
 	printf("%s\n",header.c_str() );
 	printf("-N         : %s\n", p["-N"].c_str()  );
