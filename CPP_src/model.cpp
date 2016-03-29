@@ -747,7 +747,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 		}
 	}
 	sort_vector(mus, K);
-	for (int k = 0; k < K;k++){ //random seeding, intializ(3) other parameters
+	for (int k = 0; k < K;k++){ //random seeding, initialize(3) other parameters
 		components[k].initialize_bounds(mus[k], 
 			data, K, data->SCALE , 0., topology,foot_print, data->maxX, data->maxX);
 		
