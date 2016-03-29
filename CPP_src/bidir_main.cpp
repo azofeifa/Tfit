@@ -20,7 +20,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//===========================================================================
 	//input files and output directories
 	string forward_bedgraph 	= P->p["-i"]; //forward strand bedgraph file
-	string reverse_bedgraph 	= P->p["-j"]; //reverse strand beddgraph file
+	string reverse_bedgraph 	= P->p["-j"]; //reverse strand bedgraph file
 	string out_file_dir 		= P->p["-o"] ;//out file directory
 	//(2a) read in bedgraph files 
 	map<string, int> chrom_to_ID;
