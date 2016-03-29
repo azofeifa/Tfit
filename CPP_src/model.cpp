@@ -493,7 +493,7 @@ void component::add_stats(double x, double y, int st, double normalize){
 		}
 	}
 }
-//rest running totals and responsibilty terms
+//rest running totals and responsibility terms
 void component::reset(){
 	if (type){
 		bidir.C=0;
