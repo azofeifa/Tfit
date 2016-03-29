@@ -789,7 +789,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 		}
 		
 		//======================================================
-		//E-step, grab all the stats and responsiblities
+		//E-step, grab all the stats and responsibilities
 		ll 	= 0;
 		for (int i =0; i < data->XN;i++){
 			norm_forward=0;
