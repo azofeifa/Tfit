@@ -352,7 +352,7 @@ void component::set_priors(double s_0, double s_1,
 	//Priors on parameters for MAP Estimate
 	ALPHA_0 = s_0, BETA_0 =s_1; //for sigma
 	ALPHA_1 = l_0, BETA_1 =l_1; //for lambda
-	ALPHA_2 = w_0; //for weights, dirchlet
+	ALPHA_2 = w_0; //for weights, Dirichlet
 	ALPHA_3 = strand_0; //for strand probs
 	//bidir.w 	= (r + ALPHA_2) / (N + ALPHA_2*K*3 + K*3) ;
 		
