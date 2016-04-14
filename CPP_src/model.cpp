@@ -352,14 +352,14 @@ void component::set_priors(double s_0, double s_1,
 	//Priors on parameters for MAP Estimate
 	ALPHA_0 = s_0, BETA_0 =s_1; //for sigma
 	ALPHA_1 = l_0, BETA_1 =l_1; //for lambda
-	ALPHA_2 = w_0; //for weights, dirchlet
+	ALPHA_2 = w_0; //for weights, Dirichlet
 	ALPHA_3 = strand_0; //for strand probs
 	//bidir.w 	= (r + ALPHA_2) / (N + ALPHA_2*K*3 + K*3) ;
 		
 	w_thresh= ( ALPHA_2 ) / (N + ALPHA_2*K*3 + K*3 );
 }
 
-//randomally seed the sigma, pi, lambda ws etc...
+//randomly seed the sigma, pi, lambda ws etc...
 void component::initialize_bounds(double mu, segment * data , int K, double scale, double noise_w, 
 	double termination, double fp, double forward_bound, double reverse_bound){//random seeds...
 	foot_print 	= fp;
@@ -447,7 +447,7 @@ double component::evaluate(double x, int st){
 	forward.ri_reverse 	= forward.pdf(x, st);
 	return bidir.ri_reverse + reverse.ri_reverse + forward.ri_reverse;
 }
-//compute the conditional expectations and add to running totatl
+//compute the conditional expectations and add to running total
 void component::add_stats(double x, double y, int st, double normalize){
 	if (type==0){//noise component
 		if (st==1){
@@ -479,7 +479,7 @@ void component::add_stats(double x, double y, int st, double normalize){
 			reverse.r_reverse+=(vl2*y);
 			forward.r_reverse+=(vl3*y);
 		}
-		//now adding all the conditional expections for the convolution
+		//now adding all the conditional expectations for the convolution
 		if (vl > 0 and y > 0){
 			double current_EY 	= bidir.EY(x, st);
 			double current_EY2 	= bidir.EY2(x, st);
@@ -493,7 +493,7 @@ void component::add_stats(double x, double y, int st, double normalize){
 		}
 	}
 }
-//rest running totals and responsibilty terms
+//rest running totals and responsibility terms
 void component::reset(){
 	if (type){
 		bidir.C=0;
@@ -508,7 +508,7 @@ void component::reset(){
 		
 	}
 }
-//used for large responsbility normalization term
+//used for large responsibility normalization term
 double component::get_all_repo(){
 	if (type==1){
 		return bidir.r_forward+bidir.r_reverse+forward.r_forward+reverse.r_reverse;
@@ -747,7 +747,7 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 		}
 	}
 	sort_vector(mus, K);
-	for (int k = 0; k < K;k++){ //random seeding, intializ(3) other parameters
+	for (int k = 0; k < K;k++){ //random seeding, initialize(3) other parameters
 		components[k].initialize_bounds(mus[k], 
 			data, K, data->SCALE , 0., topology,foot_print, data->maxX, data->maxX);
 		
@@ -789,13 +789,13 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 		}
 		
 		//======================================================
-		//E-step, grab all the stats and responsiblities
+		//E-step, grab all the stats and responsibilities
 		ll 	= 0;
 		for (int i =0; i < data->XN;i++){
 			norm_forward=0;
 			norm_reverse=0;
 			
-			for (int k=0; k < K+add; k++){ //computing the responsbility terms
+			for (int k=0; k < K+add; k++){ //computing the responsibility terms
 				if (data->X[1][i]){//if there is actually data point here...
 					norm_forward+=components[k].evaluate(data->X[0][i],1);
 				}

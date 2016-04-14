@@ -7,7 +7,7 @@ using namespace std;
 int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_File * LG){
 	int verbose 	= stoi(P->p["-v"]);
 	LG->write("\ninitializing model module...............................done\n\n",verbose);
-	int threads 	= omp_get_max_threads();//number of openMP threads that are available for use	
+	int threads 	= omp_get_max_threads();//number of OpenMP threads that are available for use	
 	string job_name = P->p["-N"];
 
 	//=======================================================================================
@@ -26,7 +26,7 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 		FSI 	= load::load_intervals_of_interest(interval_file, IDS, P );
 	}
 	LG->write("done\n",verbose);
-	//(1b) now broad cast out the intervals of interest to individual MPI processes
+	//(1b) now broadcast the intervals of interest to individual MPI processes
 	LG->write("sending interval assignments............................",verbose);
 	map<string, vector<segment *> > GG 	= MPI_comm::send_out_single_fit_assignments(FSI, rank, nprocs);
 	LG->write("done\n",verbose);

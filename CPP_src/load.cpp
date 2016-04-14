@@ -398,7 +398,7 @@ string segment_fits::write (){
 //merge segments from loading_intervals
 vector<segment *> merge_segments(vector<segment *> segments, map<int, string>  IDS_first, map<int, string> & IDS, int & T){
 	vector<segment *> new_segments;
-	//uubble sort
+	//bubble sort
 	bool changed 	= true;
 	while (changed){
 		changed = false;

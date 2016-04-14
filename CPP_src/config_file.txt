@@ -22,7 +22,7 @@
 -select 		= 0 #run BIC optimization for MLE from moment estimators
 -bct 			= 1.0 #confidence threshold
 -ns 			= 100 #scaling for numerical stability, would not consider changing
--r_mu 			= 1 #seed EM randomally from the peak finder
+-r_mu 			= 1 #seed EM randomly from the peak finder
 -minK 			= 1
 -maxK 			= 1
 -ALPHA_0 		= 10000 #prior for sigma
