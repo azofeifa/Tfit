@@ -781,10 +781,10 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 		for (int k=0; k < K+add; k++){
 			//components[k].print();
 			components[k].reset();
-			if (components[k].EXIT){
-				converged=false, ll=nINF;
-				return 0;
-			}
+			// if (components[k].EXIT){
+			// 	converged=false, ll=nINF;
+			// 	return 0;
+			// }
 		       
 		}
 		

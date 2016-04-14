@@ -287,7 +287,7 @@ class EMGU:
 		self.alpha_0 				= 1. #symmetric prior for mixing weights
 		self.beta_0 				= 100000. #symmetric prior for strand probabilities
 		self.m_0, self.tau 			= 0, 1 #priors for component mus
-		self.alpha_1, self.beta_1 	= 100, 100 #priors for component sigmas
+		self.alpha_1, self.beta_1 	= 100, 10 #priors for component sigmas
 		self.alpha_2, self.beta_2 	= 1, 1 #priors for component 
 		self.peaks 					= None #prior on where the bidirectionals are from our template/bayes factor analysis
 		self.seed 					= seed
@@ -349,7 +349,8 @@ class EMGU:
 		
 		while t < self.max_it and not converged:
 			self.rvs 		= [c for c in components ]
-			if np.random.uniform(0,1) <0.1:
+			print len(self.rvs)
+			if np.random.uniform(0,1) <0.5:
 				self.draw(X)
 			
 			# for rv in self.rvs:
@@ -394,31 +395,27 @@ class EMGU:
 			#move LLs...unfortunately this is brute - force...
 			
 			prevll 	= ll
-			for c in components:
-				print c
-			print "------------"
 			t+=1
 		self.rvs,self.ll 	= [c for c in components if c.type!="noise"], ll
 	def draw(self, X):
 		assert self.rvs is not None, "need to run fit before drawing"
 		F 			= plt.figure(figsize=(15,10))
-		for c in self.rvs:
-			print c
 		ax 				= F.add_subplot(111)
-		counts,edges 	= np.histogram(X[:,0],weights=X[:,1], normed=1,bins=200)
-		counts2,edges2 	= np.histogram(X[:,0],weights=X[:,2], normed=1,bins=200)
+		counts,edges 	= np.histogram(X[:,0],weights=X[:,1], normed=1,bins=150)
+		counts2,edges2 	= np.histogram(X[:,0],weights=X[:,2], normed=1,bins=150)
 		counts*=0.45
 		counts2*=0.25
 		
-		ax.bar(edges[1:],  counts  , color="blue", edgecolor="blue", alpha=0.5, width=(X[-1,0]-X[0,0])/200)
-		ax.bar(edges[1:], -counts2  , color="red", edgecolor="red", alpha=0.5, width=(X[-1,0]-X[0,0])/200)
+		ax.bar(edges[1:],  counts  , color="blue", edgecolor="blue", alpha=0.5, width=0.25*(X[-1,0]-X[0,0])/150)
+		ax.bar(edges[1:], -counts2  , color="red", edgecolor="red", alpha=0.5, width=0.25*(X[-1,0]-X[0,0])/150)
 		xs 			= np.linspace(X[0,0], X[-1,0], 1000)
-		ys_forward 	= map(lambda x: sum([rv.pdf(x, 1) for rv in self.rvs  ]) , xs) 
-		ys_reverse 	= map(lambda x: -sum([rv.pdf(x, -1) for rv in self.rvs  ]) , xs)
+		ys_forward 	= map(lambda x: sum([rv.pdf(x, 1) for rv in self.rvs if rv.type    ]) , xs) 
+		ys_reverse 	= map(lambda x: -sum([rv.pdf(x, -1) for rv in self.rvs    ]) , xs)
 		
-		ax.plot(xs, ys_forward, linewidth=3.5,  color="black")
-		ax.plot(xs, ys_reverse, linewidth=3.5,  color="black")
-		ax.grid()
+		ax.plot(xs, ys_forward, linewidth=2.5,  color="black")
+		ax.plot(xs, ys_reverse, linewidth=2.5,  color="black")
+		ax.set_xticklabels([int(i) for i in ax.get_xticks()], fontsize=20)
+		ax.set_yticklabels([i for i in ax.get_yticks()], fontsize=20)
 		plt.show()
 	
 
@@ -435,26 +432,28 @@ if __name__ == "__main__":
 	#chr3:15,684,556-15,692,636
 	#chr2:10,420,826-10,462,048
 	WRITE 	= False
+	FILE_NAME 	= "/Users/joazofeifa/region_of_interest.bed"
 	if WRITE:
-	 	X 		=  load.grab_specific_region("chr2",10420826, 10433237, 
-				pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.pos.BedGraph", 
-				neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/DMSO2_3.neg.BedGraph",
+		#chr1:31,214,604-31,223,836, #:212,730,537-212,742,051
+	 	X 		=  load.grab_specific_region("chr1",212730537, 212742051, 
+				pos_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/Nutlin2_3.sorted.pos.BedGraph", 
+				neg_file="/Users/joazofeifa//Lab/gro_seq_files/HCT116/bed_graph_files/Nutlin2_3.sorted.neg.BedGraph",
 				SHOW 	=False, bins=1000)
 	 	X[:,0]-=X[0,0]
 		X[:,0]/=100.
-		FHW 	= open("/Users/joazofeifa/test.bed", "w")
+		FHW 	= open(FILE_NAME, "w")
 		for i in range(X.shape[0]):
 			FHW.write(str(X[i,0]) + "\t" + str(X[i,1]) + "\t" + str(X[i,2]) + "\n")
 		FHW.close()
 	X 	= list()
 
-	with open("/Users/joazofeifa/test.bed") as FH:
+	with open(FILE_NAME) as FH:
 		for line in FH:
 			x,y,z 	= [float(x) for x in line.strip("\n").split("\t")]
 			X.append([x,y,z])
 	X 	= np.array(X)
 
-	clf = EMGU(noise=True, K=3,noise_max=0.1,moveUniformSupport=0,max_it=200, cores=1, 
+	clf = EMGU(noise=True, K=4,noise_max=0.05,moveUniformSupport=0,max_it=200, cores=1, 
 		seed=True )
 	clf.fit(X)
 	clf.draw(X)
