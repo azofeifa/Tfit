@@ -92,48 +92,44 @@ int MPI_comm::gather_all_bidir_predicitions(vector<segment *> all,
 		}
 		//count 	= int(collections.size()) / nprocs;
 		for (int j =1; j < nprocs; j++){
-		  int start 	= j * count;
-		  int stop 	= min(start + count, int(N ));	
-	     
-		  if (j==nprocs-1){
-		    stop 	= N;
-		  }
-		  if (start >= stop){
-		    start 	= stop;
-		  }
-		 
-		 
-		  
-		  
-		  for (int i = 0; i < (stop-start) ; i++){
+
+			int start 	= j * count;
+			int stop 	= min(start + count, int(N ));	
+
+			if (j==nprocs-1){
+				stop 	= N;
+			}
+			if (start >= stop){
+				start 	= stop;
+			}
+
+
+
+			for (int i = 0; i < (stop-start) ; i++){
 				MPI_Recv(&S, 1, MPI_INT, j, i, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-			     
-				
+	
+
 				//MPI_Barrier(MPI_COMM_WORLD);
 				G[all[ start+i ]->chrom] 	= vector<vector<double> >(S);
 				for (int u = 0; u < S; u++ ){
-				 
-					MPI_Recv(&B, 1, mystruct, j, u, MPI_COMM_WORLD,MPI_STATUS_IGNORE);			
-				       
-					//	MPI_Barrier(MPI_COMM_WORLD);
-					G[all[ start+i ]->chrom][u] 	= {B.lower_upper[0],B.lower_upper[1]};
-					bounds2 B2;
-					B2.D[0]=start+i, B2.D[1]=int(B.lower_upper[0]),B2.D[2]=int(B.lower_upper[1]);
-					collections.push_back(B2);
+
+						MPI_Recv(&B, 1, mystruct, j, u, MPI_COMM_WORLD,MPI_STATUS_IGNORE);			
+
+						G[all[ start+i ]->chrom][u] 	= {B.lower_upper[0],B.lower_upper[1]};
+						bounds2 B2;
+						B2.D[0]=start+i, B2.D[1]=int(B.lower_upper[0]),B2.D[2]=int(B.lower_upper[1]);
+						collections.push_back(B2);
+					}
 				}
 			}
-		}
-		
+
 
 	}else  {
-	  int IS = segments.size();
-	  
+	  	int IS = segments.size();
 		for (int i = 0;  i < segments.size();i++ ){
 			int S 	= segments[i]->bidirectional_bounds.size();
 			
 			MPI_Ssend(&S, 1, MPI_INT, 0,i,MPI_COMM_WORLD );
-			//MPI_Barrier(MPI_COMM_WORLD);
-			
 			for (int u=0; u < segments[i]->bidirectional_bounds.size(); u++){				
 				bounds B;
 				B.lower_upper[0] 		= segments[i]->bidirectional_bounds[u][0];
@@ -247,6 +243,30 @@ map<string, vector<segment *> > MPI_comm::send_out_single_fit_assignments(vector
 
 	return GG;
 }
+
+
+vector<double> MPI_comm::send_out_parameters(vector<double> parameters, int rank, int nprocs){
+	vector<double> new_parameters;
+	double * P 	= new double[4];
+	if (rank==0){
+		for (int i = 0 ; i < 4;i++){
+			P[i] 	= parameters[i];
+		}
+		for (int j = 1 ; j < nprocs;j++){
+			MPI_Ssend(&P[0], 4, MPI_DOUBLE, j, 0, MPI_COMM_WORLD);
+		}
+
+	}else{
+		double * P 	= new double[4];
+		MPI_Recv(&P[0], 4, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	}
+	for (int k = 0 ; k < 4; k++){
+		new_parameters.push_back(P[k]);
+	}
+	return new_parameters;
+
+}
+
 
 
 int MPI_comm::get_job_ID(string path, string job_ID, int rank, int nprocs){
@@ -409,6 +429,15 @@ void MPI_comm::wait_on_root(int rank, int nprocs){
 	}else{
 		MPI_Recv(&S, 1, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);	
 	}
+}
+
+
+map<string, vector<segment *> > MPI_comm::convert_segment_vector(vector<segment *> FSI){
+	map<string, vector<segment *>> GG;
+	for (int s = 0 ; s < FSI.size(); s++){
+		GG[FSI[s]->chrom].push_back(FSI[s]);
+	}
+	return GG;
 }
 
 

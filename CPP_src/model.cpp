@@ -133,6 +133,8 @@ EMG::EMG(double MU, double SI, double L, double W, double PI ){
 	l  	= L;
 	w 	= W;
 	pi 	= PI;
+	prev_mu = 0 ;
+	move_fp = 0;
 }
 
 string EMG::print(){
@@ -540,7 +542,7 @@ void component::update_parameters(double N, int K){
 		// 	EXIT 	= true;
 		// 	bidir.w = 0;
 		// }
-		if (abs(bidir.mu-bidir.prev_mu)< 0.001 ){
+		if (abs(bidir.mu-bidir.prev_mu)< 0.01 ){
 			bidir.move_fp 	= true;
 		}
 		else{
@@ -549,7 +551,7 @@ void component::update_parameters(double N, int K){
 		if (bidir.move_fp){
 
 			bidir.foot_print 	= min( max(bidir.C / (r+0.1),0.0) , 2.5);
-			bidir.foot_print 	= floor((bidir.foot_print*10000.0))/10000.0;
+		//	bidir.foot_print 	= floor((bidir.foot_print*10000.0))/10000.0;
 		}
 		//bidir.foot_print 	= 0.0;
 		//now for the forward and reverse strand elongation components
@@ -775,16 +777,17 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	converged 		= false; //has the EM converged?
 	int u 			= 0; //elongation movement ticker
 	double norm_forward, norm_reverse,N; //helper variables
+	//printf("------------------------------------------\n");
 	while (t < max_iterations && not converged){
 		//======================================================
 		//reset old sufficient statistics
 		for (int k=0; k < K+add; k++){
-			//components[k].print();
+			// components[k].print();
 			components[k].reset();
-			// if (components[k].EXIT){
-			// 	converged=false, ll=nINF;
-			// 	return 0;
-			// }
+			if (components[k].EXIT){
+				converged=false, ll=nINF;
+				return 0;
+			}
 		       
 		}
 		

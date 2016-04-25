@@ -86,16 +86,17 @@ namespace load{
 
 
 	vector<segment*> load_bedgraphs_total(string, 
-		string, int , double, string,map<string, int>&,map<int, string>&);
+		string, string, int , double, string,map<string, int>&,map<int, string>&);
 
 
 	void write_out_bidirs(map<string , vector<vector<double> > >, string, string, int ,params *, int);
 
-	vector<segment *> load_intervals_of_interest(string,map<int, string>&, params *);
+	vector<segment *> load_intervals_of_interest(string,map<int, string>&, params *, bool);
 
 
 	void collect_all_tmp_files(string , string, int, int );
-	vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> >  , string , string , int);
+	vector<segment* > insert_bedgraph_to_segment_joint(map<string, vector<segment *> >  , 
+		string , string , string ,int);
 
 	void write_out_models_from_free_mode(map<int, map<int, vector<simple_c_free_mode>  > >,
 		params *,int,map<int, string>, int, string &);

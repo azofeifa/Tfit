@@ -10,6 +10,7 @@
 #include <cctype>
 #include <stdio.h>
 #include <time.h>
+#include <locale>
 #include "split.h"
 #ifdef USING_ICC
 #include <aligned_new>
@@ -26,13 +27,12 @@ params::params(){
 	p["-config"] 	= "";
 	p["-i"] 		= "";
 	p["-j"] 		= "";
+	p["-ij"] 		= "";
 	p["-k"] 		= "";
 	p["-tss"] 		= "";
 	p["-o"] 		= "";
-	p["-q"] 		= "";
 	p["-log_out"] 	= "";
 
-	p["-merge"] 	= "0";
 	p["-pad"] 		= "0";
 	p["-br"] 		= "300";
 	p["-ns"] 		= "100";
@@ -49,14 +49,24 @@ params::params(){
 	p["-elon"] 		= "0";
 	p["-mi"] 		= "2000";
 	p["-r_mu"] 		= "0";
-	
+	//================================================
+	//Hyper parameters	
 	p["-ALPHA_0"] 	= "1";
 	p["-BETA_0"] 	= "1";
 	p["-ALPHA_1"] 	= "1";
 	p["-BETA_1"] 	= "1";
 	p["-ALPHA_2"] 	= "1";
 	p["-ALPHA_3"] 	= "1";
-		
+	//================================================
+	//parameters for template matching
+	p["-lambda"] 		= "200";
+	p["-sigma"] 		= "10";
+	p["-foot_print"] 	= "100";
+	p["-pi"] 			= "0.5";
+	p["-w"] 			= "0.5";
+
+
+
 	
 	N 				= 0;
 	module 			= "";
@@ -64,6 +74,7 @@ params::params(){
 	bidir 			= 0;
 	model 			= 0;
 	select 			= 0;
+	CONFIG 			= 0;
 
 }
 bool is_decimal(const std::string& s){
@@ -76,6 +87,20 @@ bool is_integer(const std::string& s){
 	std::string::const_iterator it = s.begin();
 	while (it != s.end() && std::isdigit(*it)) ++it;
 	return !s.empty() && it == s.end();
+}
+bool isNumeric(const std::string& input) {
+	return std::all_of(input.begin(), input.end(), ::isdigit);
+}
+bool is_number(string s)
+{
+	locale loc;
+	for (int i = 0 ; i < s.size(); i++){
+		if (not (std::isdigit(s[i], loc) or s.substr(i,1) == "."  )){
+			return false;
+		}
+	}
+ 	return true;
+
 }
 
 bool is_path(string FILE){
@@ -90,13 +115,13 @@ bool is_path(string FILE){
 
 vector<string> params::validate_parameters(){
 	vector<string> errors;
-	for (int i = 0; i < 12; i++){
-		if (i <8 and not  is_integer(p[isIntGroup[i]])  ){
+	for (int i = 0; i < 17; i++){
+		if (i <8 and not  is_number(p[isIntGroup[i]])  ){
 			string line = "User provided input for (" + string(isIntGroup[i]) + ") "  ;
 			line+= + "'"+string(p[isIntGroup[i]])+ "'"+ " is not integer valued";
 			errors.push_back(line);
 		}
-		if (not  is_decimal(p[isDecGroup[i]])){
+		if (not  is_number(p[isDecGroup[i]])){
 			string line = "User provided input for (" + string(isDecGroup[i]) + ") ";
 			line+= + "'"+ string(p[isDecGroup[i]] ) + "'" + " is not decimal valued";
 			errors.push_back(line);
@@ -107,15 +132,48 @@ vector<string> params::validate_parameters(){
 				p[isPathGroup[i]] 	= path_FILE+ "/";
 			}
 		}
-		if (i < 8 and not is_path(p[isPathGroup[i]])){
-
-			if (!(bidir and isPathGroup[i] == "-k" ) and (!((bidir or model ) and isPathGroup[i]=="-tss")) and (!((bidir or model ) and isPathGroup[i]=="-q"))    ){
-				string line = "User provided input for (" + string(isPathGroup[i]) + ") ";
-				line+= + "'"+ string(p[isPathGroup[i]]) + "'"  + " path does not exist";
-				errors.push_back(line);
-			}
-		}
+		
 	}
+
+	//want to briefly check paths
+	//out put directory
+	if (p["-o"].empty()){
+		errors.push_back("User did not specify an output path, (-o)");
+
+	}else if(not is_path(p["-o"])){
+		errors.push_back("User specified output path, " +  p["-o"] +", but does not exist (-o)" );
+	}
+	if (!p["-ij"].empty() and (!p["-i"].empty() or !p["-j"].empty() )  ){
+		errors.push_back("User specified both -ij and (-i or -j)");
+	}
+	else if (p["-ij"].empty()){
+		if (p["-j"].empty()){
+			errors.push_back("User did not specify a reverse strand file path or combinded file path, (-j, -ij)");
+		}else if(not is_path(p["-j"])){
+			errors.push_back("User specified reverse strand file path, " +  p["-j"] +", but does not exist (-j)" );
+		}
+		if (p["-i"].empty()){
+			errors.push_back("User did not specify a forward strand file or combinded file, (-i, -ij)");	
+		}else if(not is_path(p["-i"])){
+			errors.push_back("User specified forward strand file path, " +  p["-i"] +", but does not exist (-i)" );
+		}
+	}else if (not is_path(p["-ij"])){
+		errors.push_back("User specified combinded bedgraph file path, " +  p["-ij"] +", but does not exist (-ij)" );
+	}
+	if (p["-log_out"].empty()){
+		p["-log_out"] 	= p["-o"];
+	}else if (not is_path(p["-log_out"] )){
+		errors.push_back("User specified log file out path, " +  p["-ij"] +", but does not exist (-log_out)" );		
+	}
+	if (model == 1 and (p["-k"].empty()) ){
+		errors.push_back("User did not specify bed file of intervals (-k), specific to model module");
+	}else if(model == 1 and not is_path(p["-k"] ) ){
+		errors.push_back("User specified bed file of intervals, " +  p["-k"] +", but does not exist (-k)" );			
+	}
+	if (!p["-tss"].empty() and not is_path(p["-tss"])){
+		errors.push_back("User specified a file for tss bidir filter training, " +  p["-tss"] +", but does not exist (-tss)" );				
+	}
+
 	return errors;
 }
 
@@ -277,8 +335,12 @@ void params::display(int nodes, int cores){
 	}
 	printf("%s\n",header.c_str() );
 	printf("-N         : %s\n", p["-N"].c_str()  );
-	printf("-i         : %s\n", p["-i"].c_str()  );
-	printf("-j         : %s\n", p["-j"].c_str()  );
+	if (not p["-ij"].empty()){
+		printf("-ij        : %s\n", p["-ij"].c_str()  );
+	}else{
+		printf("-i         : %s\n", p["-i"].c_str()  );
+		printf("-j         : %s\n", p["-j"].c_str()  );
+	}
 	printf("-MLE       : %s\n",  p["-MLE"].c_str());
 	printf("-select    : %s\n",  p["-select"].c_str());
 	if (model or MLE){
@@ -362,18 +424,19 @@ void fill_in_config_file(string FILE, params * P, int rank){
 	if (FH){
 		string line;
 		while (getline(FH, line)){
-			if (line.substr(0,1)!= "#" and line.substr(0,1)!= "~" and !line.empty()){
-				string param="", value="";
-				split_config_line(line, param, value);
-				if (!param.empty() and param.substr(0,1)!= "-" and P->p.find(param)==P->p.end()){
-					if (rank == 0){
-						printf("option in config file %s is not valid\n", param.c_str() );
+			if (line.size() > 2){
+				if (line.substr(0,1)!= "#" and line.substr(0,1)!= "~" ){
+					string param="", value="";
+					split_config_line(line, param, value);
+					if (!param.empty() and param.substr(0,1)!= "-" and P->p.find(param)==P->p.end()){
+						if (rank == 0){
+							printf("option in config file %s is not valid\n", param.c_str() );
+						}
+						P->EXIT=1;
+					}else{
+						P->p[param]=value;
 					}
-					P->EXIT=1;
-				}else{
-					P->p[param]=value;
 				}
-			
 			}
 		}
 	}else{
@@ -393,6 +456,9 @@ void fill_in_options(char* argv[],params * P, int rank){
 	while (*argv){
 		if ((*argv)[0] == COM[0]){
 			F 	= string(*argv); 
+			if (F=="-config"){
+				P->CONFIG 	= true;
+			}
 			if ( P->p.find(F) ==P->p.end() ){
 				if (rank == 0){
 					printf("Unknown user option: %s\n", F.c_str() );
@@ -418,6 +484,11 @@ void fill_in_options(char* argv[],params * P, int rank){
 		}
 		argv++;
 	}
+	if (P->CONFIG and P->p["-config"].empty())
+	{
+		printf("User specified config file option but did not specify path\n");
+		P->EXIT 	= true;
+	}
 }
 
 
@@ -428,7 +499,7 @@ int read_in_parameters( char* argv[], params * P, int rank){
 	argv = ++argv;
 	if (not *argv){
 		if (rank==0){
-			printf("No Model found, please specify either bidir, model or select\n");
+			printf("No module found, please specify either bidir, model or select\n");
 		}
 		P->EXIT = 1;
 		return 1;
@@ -453,7 +524,7 @@ int read_in_parameters( char* argv[], params * P, int rank){
 		}
 		else{
 			if (rank == 0){
-				printf("couldn't understand user provided option: %s\n",F.c_str() );
+				printf("couldn't understand user provided module option: %s\n",F.c_str() );
 			}
 			P->EXIT = 1;
 		}

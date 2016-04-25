@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <unistd.h>
 #include <random>
+#include <exception>
 
 #include <stdio.h>
 #include <time.h>
@@ -446,8 +447,12 @@ bool check_ID_name(string & INFO){
 //================================================================================================
 //LOADING from file functions...need to clean this up...
 
+
+
+
+
 vector<segment*> load::load_bedgraphs_total(string forward_strand, 
-	string reverse_strand, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
+	string reverse_strand, string joint_bedgraph, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
 	, map<int, string>& ID_to_chrom){
 	bool FOUND 	= false;
 	if (spec_chrom=="all"){
@@ -455,15 +460,11 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 	}
 	map<string, segment*> 	G;
 	vector<segment*> segments;
-	
-	ifstream FH(forward_strand);
-	ifstream FH2(reverse_strand);
-	if (not FH){
-		cout<<"couldn't open "<<forward_strand<<endl;
-		return segments;
-	}else if (not FH2){
-		cout<<"couldn't open "<<reverse_strand<<endl;
-		return segments;
+	vector<string> FILES;
+	if (forward_strand.empty() and reverse_strand.empty()){
+		FILES 	= {joint_bedgraph};
+	}else if (not forward_strand.empty() and not reverse_strand.empty()){
+		FILES 	= {forward_strand, reverse_strand};
 	}
 	
 	string line, chrom;
@@ -473,59 +474,64 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 	string prevChrom="";
 	segment * S =NULL;
 	bool INSERT 	= false;
-	while (getline(FH, line)){
-		lineArray=splitter(line, "\t");
-		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=abs(stof(lineArray[3]));
-		if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
-			FOUND 		= true;
-			if (chrom.size() < 6){
-				G[chrom] 	= new segment(chrom, start, stop );
-				INSERT 		= true;
-			}else{
-				INSERT 		= false;
+	bool EXIT 		= false;
+	int line_number = 0;
+	for (int u = 0 ; u < FILES.size(); u++){
+		ifstream FH(FILES[u]) ;
+		if (not FH ){
+			printf("couln't open FILE %s\n", FILES[u].c_str());
+		}
+		if (EXIT){
+			break;
+		}
+		while (getline(FH, line)){
+			lineArray=splitter(line, "\t");
+			if (lineArray.size()!=4){
+				EXIT 	= true;
+				printf("\nLine number %d  in file %s was not formatted properly\nPlease see manual\n",line_number, FILES[u].c_str() );
 			}
-		}
-		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
-			break;
-		}
-		if (INSERT){
-			//for (int x = start; x < stop; x++){
+			line_number++;
+			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
+			if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
+				FOUND 		= true;
+				if (chrom.size() < 6){
+					G[chrom] 	= new segment(chrom, start, stop );
+					INSERT 		= true;
+					FOUND 		= true;
+				}else{
+					INSERT 		= false;
+				}
+			}
+			if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
+				break;
+			}
+			if (INSERT){
+				if (u==0){
+					if (coverage > 0){
+						G[chrom]->add2(1, double(stop+start)/2., abs(coverage));
+					}else{
+						G[chrom]->add2(-1, double(stop+start)/2., abs(coverage));						
+					}
+				}else{
+					G[chrom]->add2(-1, double(stop+start)/2., abs(coverage));	
+				}
+			}
+			prevChrom=chrom;
 
-			G[chrom]->add2(1, double(stop+start)/2., coverage);
-			//}
 		}
-		prevChrom=chrom;
-
 	}
-
-
-	prevChrom="";
-	FOUND=false;
-	int c =1;
-	while (getline(FH2, line)){
-		lineArray=splitter(line, "\t");
-		chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=abs(stof(lineArray[3]));
-
-		if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
-			break;
+	if (not EXIT){
+		int c =1;
+		typedef map<string, segment*>::iterator it_type;
+		for (it_type i = G.begin(); i != G.end(); i++){
+			i->second->bin(BINS, scale,false);
+			if (chromosomes.find(i->second->chrom)==chromosomes.end()){
+				chromosomes[i->second->chrom]=c;
+				ID_to_chrom[c] 	= i->second->chrom;
+				c++;
+			}
+			segments.push_back(i->second);
 		}
-		if (G.find(chrom)!= G.end()){
-			G[chrom]->add2(-1,double((stop + start) / 2.), coverage);
-			FOUND= true;
-		}
-		prevChrom=chrom;
-	}
-	typedef map<string, segment*>::iterator it_type;
-	for (it_type i = G.begin(); i != G.end(); i++){
-		i->second->bin(BINS, scale,false);
-		if (chromosomes.find(i->second->chrom)==chromosomes.end()){
-			chromosomes[i->second->chrom]=c;
-			ID_to_chrom[c] 	= i->second->chrom;
-			c++;
-		}
-
-
-		segments.push_back(i->second);
 	}
 	if (not FOUND){
 		segments.clear();
@@ -533,11 +539,12 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 	}
 	return segments;
 }
-vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&  IDS, params * P){
+vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&  IDS, 
+	params * P, bool center){
 	ifstream FH(FILE);
 
 	string spec_chrom 	= P->p["-chr"];
-	int pad 			= stoi(P->p["-pad"]);
+	int pad 			= stoi(P->p["-pad"])+1;
 	int merge 			= stof(P->p["-merge"]);
 
 	vector<segment *> G;
@@ -545,6 +552,7 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 	map<string, vector<segment * > > GS;
 	map<int, string> IDS_first;
 	int T 	= 0;
+	bool EXIT 		= false;
 	if (FH){
 		string line, chrom;
 		int start, stop;
@@ -552,26 +560,44 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 		vector<string> lineArray;
 		string strand; 
 		bool PASSED 	= true;
+
 		while(getline(FH, line)){
 			lineArray=splitter(line, "\t");
-			if (lineArray[0].substr(0,1)!="#" and lineArray.size()>3){
+			if (lineArray[0].substr(0,1)!="#" and lineArray.size()>2){
 				if (lineArray.size() > 3){
 					if (not check_ID_name(lineArray[3]) and PASSED ){
 						PASSED 			= false;
 						printf("\ninterval id in line: %s, contains a | symbol changing to :: -> %s\n",line.c_str(), lineArray[3].c_str() );
-						printf("Will continue to change throughout other occurences....\n");
+						printf("Will continue to change other occurrences....\n");
 
 					}
 					IDS_first[i] 		= lineArray[3];
+				}else{
+					IDS_first[i] 		= "Entry_" + to_string(i+1);	
 				}
 				if (lineArray.size() > 4){
 					strand 		= lineArray[4];
 				}else{
 					strand 		= ".";
 				}
-				chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]) + pad;
+				try{
+					if (not center){
+						chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]) + pad;
+					}else{
+						int x 	= 	((stoi(lineArray[1]) + stoi(lineArray[2])))/2.;
+						start 		= max(x - pad, 0) , stop 	= x + pad;
+						chrom=lineArray[0];
+					}
+				}
+				catch(exception& e){
+					printf("\n\nIssue with file %s at line %d\nPlease consult manual on file format\n\n",FILE.c_str(), i );
+					EXIT=true;
+					GS.clear();
+					break;
+				}
 				if (start < stop){
 					if (spec_chrom=="all" or spec_chrom==chrom){
+
 						segment * S 	= new segment(chrom, start, stop,i,strand);
 						GS[S->chrom].push_back(S);
 					}
@@ -581,28 +607,32 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 		}
 	}else{
 		printf("couldn't open %s for reading\n", FILE.c_str() );
+		EXIT 	= true;
 	}
-	typedef map<string, vector<segment * > >::iterator it_type;
-	if (not merge){
-		IDS 	= IDS_first;
-	}
-	for (it_type c 	= GS.begin(); c!=GS.end(); c++){
-		vector<segment *> m_segs;
-		if (merge){
-			m_segs 	= merge_segments(c->second, IDS_first, IDS, T);
-		}else{
-			m_segs 	= c->second;
+	if (not EXIT){
+		typedef map<string, vector<segment * > >::iterator it_type;
+		if (not merge){
+			IDS 	= IDS_first;
 		}
-		for (int i = 0 ; i < m_segs.size(); i++){
-			G.push_back(m_segs[i]);
+		for (it_type c 	= GS.begin(); c!=GS.end(); c++){
+			vector<segment *> m_segs;
+			if (merge){
+				m_segs 	= merge_segments(c->second, IDS_first, IDS, T);
+			}else{
+				m_segs 	= c->second;
+			}
+			for (int i = 0 ; i < m_segs.size(); i++){
+				G.push_back(m_segs[i]);
+			}
 		}
+	}else{
+		G.clear();
 	}
-
 	return G;
 }
 
 vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segment *> > A , 
-	string forward, string reverse, int rank ){
+	string forward, string reverse, string joint, int rank ){
 	
 	
 	
@@ -620,15 +650,14 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 	string chrom, prevchrom, line;
 	vector<segment *> segments;
 	double center;
-	vector<string> FILES(2);
-	FILES[0]=forward, FILES[1]=reverse;
+	vector<string> FILES;
+	if (forward.empty() and reverse.empty()){
+		FILES 	= {joint};
+	}else if (forward.empty() and reverse.empty()) {
+		FILES 	= {forward, reverse};
+	}
 	string FILE;
-	for (int i =0; i < 2; i++){
-		if (i==0){
-			strand=1;
-		}else{
-			strand=-1;
-		}
+	for (int i =0; i < FILES.size(); i++){
 		FILE=FILES[i];
 		ifstream FH(FILE);
 		if (FH){
@@ -637,11 +666,16 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 				lineArray 	= splitter2(line, "\t");
 				if (lineArray.size()==4){
 					chrom 		= lineArray[0];
-					start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = abs(stod(lineArray[3]));
+					start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+					if (coverage < 0 and i == 0){
+						strand 	= -1;
+					}else if (coverage > 0 or i==1){
+						strand 	= 1;
+					}
 					center 	= (stop + start) /2.;
 					if (NT.find(chrom)!=NT.end()){
 						vector<double> x(2);
-						x[0]=center, x[1] = coverage;
+						x[0]=center, x[1] = abs(coverage);
 						NT[chrom].insert_coverage(x, strand);
 						
 					}

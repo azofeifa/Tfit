@@ -27,12 +27,14 @@ string check_file(string FILE, int i){ //don't want to write over an existing fi
 
 map<int, vector<classifier> > make_classifier_struct_free_model(params * P, segment * data){
 
-	int min_k 	= stoi(P->p["-minK"]);
-	int max_k 	= stoi(P->p["-maxK"]);
-	int rounds 	= stoi(P->p["-rounds"]);
-	int BDS 	= int(data->centers.size());
+	int min_k 		= stoi(P->p["-minK"]);
+	int max_k 		= stoi(P->p["-maxK"]);
+	int rounds 		= stoi(P->p["-rounds"]);
+	int BDS 		= int(data->centers.size());
 	map<int, vector<classifier> > A;
-	A[0].push_back( classifier(0, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
+	double noise   	= abs(data->stop - data->start)*stod(P->p["-max_noise"])/(data->fN + data->rN); //expection of binomal(0.05, n) where 0.05 probability mapping noise
+
+	A[0].push_back( classifier(0, stod(P->p["-ct"]), stoi(P->p["-mi"]), noise, 
 			stod(P->p["-r_mu"]), stod(P->p["-ALPHA_0"]), stod(P->p["-BETA_0"]), stod(P->p["-ALPHA_1"]), 
 			stod(P->p["-BETA_1"]), stod(P->p["-ALPHA_2"]) , stod(P->p["-ALPHA_3"]),0 ));
 	double scale 	= stod(P->p["-ns"]);
@@ -167,6 +169,86 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 	LG->write("100% done\n", verbose);
 	return D;
 }
+
+
+vector<double> compute_average_model(vector<segment *> segments, params * P){
+	//need to compute average model
+	vector<double> parameters;
+	double minX 	= 0;
+	double maxX 	= 0;
+	int test 		= 0;
+	double br 		= stod(P->p["-br"]);
+	double ns 		= stod(P->p["-ns"]);
+	double delta 	= br / ns;
+	for (int s = 0 ; s < segments.size(); s++){
+		if (segments[s]->N){
+			if (segments[s]->maxX > maxX){
+				maxX 	= segments[s]->maxX; //this should only evaluate to true once
+				test++;
+			}
+		}
+	}
+	if (test > 1){
+		printf("\nStrange Error in across_segments::compute_average_model\nIgnoring but please consult tFIT contact info\nThank You\n");
+	}
+	int XN 			= maxX/delta;
+	double ** X 	= new double*[3];
+	double x 		= 0;
+	X[0] 	= new double[XN],X[1] 	= new double[XN],X[2] 	= new double[XN];
+	for (int i = 0 ; i < XN;i++){
+		X[0][i] 		= x,X[1][i] 		= 0,X[2][i] 		= 0 ;
+		x+=delta;
+	}
+
+	for (int s = 0 ; s < segments.size(); s++){
+		double N 	= 0;
+		int j 		= 0;
+		if (segments[s]->rN and segments[s]->fN){
+			for (int i = 0 ; i < segments[s]->XN; i++){
+				while (j < XN and X[0][j] < segments[s]->X[0][i]){
+					j++;
+				}
+				if (j < XN){
+					X[1][j]+=(segments[s]->X[1][i]/segments[s]->fN);
+					X[2][j]+=(segments[s]->X[2][i]/segments[s]->rN);
+				}
+				N+=(segments[s]->X[1][i] + segments[s]->X[2][i] );
+			}
+		}
+
+	}
+	double ll=nINF;
+	classifier best_clf;
+	for (int r = 0 ; r < 5; r++){
+		classifier clf(1, 0.000001, stoi(P->p["-mi"]), 0.3, 
+				stod(P->p["-r_mu"]), 10.0, 10.0, 1.0, 
+				100.0, 200.0 , stod(P->p["-ALPHA_3"]),0 );
+		vector<double> centers 	= {10};
+		segment * s 			= new segment("chrX", 0, maxX );
+		s->X 					= X;
+		s->minX=minX, s->maxX =maxX;
+		s->XN 					= XN;
+		s->SCALE 				= stod(P->p["-ns"]);
+		clf.fit2(s,centers, 0,0);
+		if (clf.ll > ll){
+			ll 			= clf.ll;
+			best_clf 	= clf; 
+		}
+	}	
+
+	parameters 	= {best_clf.components[0].bidir.mu,
+		best_clf.components[0].bidir.si,
+		best_clf.components[0].bidir.l,
+		best_clf.components[0].bidir.foot_print,
+		best_clf.components[0].bidir.pi,
+		best_clf.components[0].bidir.w,
+		best_clf.components[0].forward.w,
+		best_clf.components[0].reverse.w };
+
+
+	return parameters;
+
+}	
 
 
 

@@ -28,5 +28,8 @@ map<int, map<int, vector<simple_c_free_mode>  > >  gather_all_simple_c_free_mode
 
 void wait_on_root(int, int);
 
+vector<double> send_out_parameters(vector<double> , int , int );
+
+map<string, vector<segment *> >  convert_segment_vector(vector<segment *> );
 }
 #endif

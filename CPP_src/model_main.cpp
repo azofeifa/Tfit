@@ -14,6 +14,7 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	//input file paths
 	string forward_bed_graph_file 	= P->p["-i"];
 	string reverse_bed_graph_file 	= P->p["-j"];
+	string joint_bed_graph_file 	= P->p["-ij"];
 	string interval_file 			= P->p["-k"];
 	string out_file_dir 			= P->p["-o"];
 	string spec_chrom 				= P->p["-chr"];
@@ -22,8 +23,12 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	map<int, string> IDS;
 	vector<segment *> FSI;
 	LG->write("loading intervals of interest...........................",verbose);
-	if (rank==0){
-		FSI 	= load::load_intervals_of_interest(interval_file, IDS, P );
+	FSI 	= load::load_intervals_of_interest(interval_file, IDS, P,0 );
+	if (FSI.empty()){
+		if (rank==0){
+			printf("exiting...\n");
+		}
+		return 1;
 	}
 	LG->write("done\n",verbose);
 	//(1b) now broadcast the intervals of interest to individual MPI processes
@@ -36,7 +41,7 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	//(2a) load bedgraph files and insert them into intervals of interest (interval tree...)
 	LG->write("inserting bedgraph data.................................",verbose);
 	vector<segment*> integrated_segments= load::insert_bedgraph_to_segment_joint(GG, 
-		forward_bed_graph_file, reverse_bed_graph_file, rank);
+		forward_bed_graph_file, reverse_bed_graph_file, joint_bed_graph_file, rank);
 	//(2b) for each segment we are going to bin and scale and center, numerical stability
 	LG->write("done\n",verbose);
 	LG->write("binning, centering, scaling.............................",verbose);
@@ -46,8 +51,8 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	//=======================================================================================
 	//(3a) now run template matching for seeding the EM  
 	LG->write("running template matching...............................",verbose);
-	run_global_template_matching(integrated_segments, out_file_dir, 3, 
-			0.0,stod(P->p["-ns"]),stod(P->p["-bct"]), threads,0. ,0);	
+	run_global_template_matching(integrated_segments, out_file_dir, P);	
+
 	LG->write("done\n",verbose);
 	//=======================================================================================
 	//(4a) now going to run the model across all segments
