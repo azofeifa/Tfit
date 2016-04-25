@@ -220,7 +220,7 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 	for (int r = 0 ; r < 5; r++){
 		classifier clf(1, 0.000001, stoi(P->p["-mi"]), 0.3, 
 				stod(P->p["-r_mu"]), 10.0, 10.0, 1.0, 
-				100.0, 200.0 , stod(P->p["-ALPHA_3"]),0 );
+				1.0*segments.size(), 2*segments.size() , stod(P->p["-ALPHA_3"]),0 );
 		vector<double> centers 	= {10};
 		segment * s 			= new segment("chrX", 0, maxX );
 		s->X 					= X;
