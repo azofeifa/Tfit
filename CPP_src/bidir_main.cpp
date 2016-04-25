@@ -60,7 +60,6 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 		LG->write("done\n", verbose);
 		sigma 	= parameters[1], lambda= parameters[2];
 		foot_print= parameters[3], pi= parameters[4], w= parameters[5];
-
 		LG->write("\nAverage Model Parameters\n", verbose);
 		LG->write("-sigma      : " + to_string(sigma*ns)+ "\n", verbose);
 		LG->write("-lambda     : " + to_string(ns/lambda)+ "\n", verbose);
@@ -71,7 +70,6 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 
 
 	}
-
 	P->p["-sigma"] 			= to_string(sigma);
 	P->p["-lambda"] 		= to_string(lambda);
 	P->p["-foot_print"] 	= to_string(foot_print);

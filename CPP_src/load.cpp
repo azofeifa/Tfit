@@ -494,11 +494,11 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
 			if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
 				FOUND 		= true;
-				if (chrom.size() < 6){
+				if (chrom.size() < 6 and u==0){
 					G[chrom] 	= new segment(chrom, start, stop );
 					INSERT 		= true;
 					FOUND 		= true;
-				}else{
+				}else if(chrom.size() > 6){
 					INSERT 		= false;
 				}
 			}
@@ -653,7 +653,7 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 	vector<string> FILES;
 	if (forward.empty() and reverse.empty()){
 		FILES 	= {joint};
-	}else if (forward.empty() and reverse.empty()) {
+	}else if (not forward.empty() and not reverse.empty()) {
 		FILES 	= {forward, reverse};
 	}
 	string FILE;
@@ -667,10 +667,10 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 				if (lineArray.size()==4){
 					chrom 		= lineArray[0];
 					start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
-					if (coverage < 0 and i == 0){
-						strand 	= -1;
-					}else if (coverage > 0 or i==1){
+					if (coverage > 0 and i == 0){
 						strand 	= 1;
+					}else if (coverage < 0 or i==1){
+						strand 	= -1;
 					}
 					center 	= (stop + start) /2.;
 					if (NT.find(chrom)!=NT.end()){

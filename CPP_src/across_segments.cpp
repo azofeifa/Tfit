@@ -199,11 +199,10 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 		X[0][i] 		= x,X[1][i] 		= 0,X[2][i] 		= 0 ;
 		x+=delta;
 	}
-
 	for (int s = 0 ; s < segments.size(); s++){
 		double N 	= 0;
 		int j 		= 0;
-		if (segments[s]->rN and segments[s]->fN){
+		if (segments[s]->rN > 1 and segments[s]->fN > 1){
 			for (int i = 0 ; i < segments[s]->XN; i++){
 				while (j < XN and X[0][j] < segments[s]->X[0][i]){
 					j++;
@@ -215,7 +214,6 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 				N+=(segments[s]->X[1][i] + segments[s]->X[2][i] );
 			}
 		}
-
 	}
 	double ll=nINF;
 	classifier best_clf;

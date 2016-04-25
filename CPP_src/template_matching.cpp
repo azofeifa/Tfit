@@ -199,22 +199,12 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 				densities[i] 	= N_pos ;
 				densities_r[i] 	= N_neg ;
 				
-				// BIC_values[i] 	= BIC(data->X, avgLL, variances, 
-				// 	lambdas, skews, data->X[0][i], i, k, j,  single, foot_res, 
-				// 	densities, densities_r,scale , window, N_pos, N_neg);	
 				double mu 		= (data->X[0][k] + data->X[0][j]) /2.;
-				//double CENTER 	= (mu*100 + data->start);
+			
 
-
-				// BIC_values[i] 	=  BIC2(data->X, avgLL, variances, 
-				// 	lambdas, skews, N_pos,  N_neg, S_pos, 
-			 // 		S_neg, S2_pos, S2_neg, mu, j, k,i, scale );
 				BIC_values[i] 	= BIC3(data->X,  j,  k,  i, N_pos,  N_neg,avgLL, 
 					variances, lambdas, skews,sigma, lambda, foot_print, pi, w);
 
-				// if   (CENTER < 1144764 and CENTER > 1139533 and data->chrom == "chr1"){
-				// 	printf("%f,%f,%f\n", BIC_values[i],CENTER, densities[i],densities_r[i] );
-				// }
 				
 			
 					
@@ -236,11 +226,8 @@ void run_global_template_matching(vector<segment*> segments,
 	double sigma, lambda, foot_print, pi, w;
 	double ct 			= stod(P->p["-bct"]);
 
-	sigma 	= stod(P->p["-sigma"]) , lambda= 1.0/stod(P->p["-lambda"]);
+	sigma 	= stod(P->p["-sigma"]) , lambda= stod(P->p["-lambda"]);
 	foot_print= stod(P->p["-foot_print"]) , pi= stod(P->p["-pi"]), w= stod(P->p["-w"]);
-
-
-
 
 
 
@@ -317,8 +304,7 @@ void run_global_template_matching(vector<segment*> segments,
 		//write out contiguous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
 			
-
-			if (BIC_values[j] >=ct and densities[j] > ef + 2*stdf  and densities_r[j]> er + 2*stdr    ){
+			if (BIC_values[j] >=ct and densities[j] > ef + 0*stdf  and densities_r[j]> er + 0*stdr    ){
 				
 
 				start 		= int(segments[i]->X[0][j]*ns+segments[i]->start - 100);
