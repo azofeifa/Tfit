@@ -448,9 +448,6 @@ bool check_ID_name(string & INFO){
 //LOADING from file functions...need to clean this up...
 
 
-
-
-
 vector<segment*> load::load_bedgraphs_total(string forward_strand, 
 	string reverse_strand, string joint_bedgraph, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
 	, map<int, string>& ID_to_chrom){
