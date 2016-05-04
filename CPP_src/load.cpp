@@ -669,6 +669,7 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 					}else if (coverage < 0 or i==1){
 						strand 	= -1;
 					}
+					printf("%d\n",strand );
 					center 	= (stop + start) /2.;
 					if (NT.find(chrom)!=NT.end()){
 						vector<double> x(2);
