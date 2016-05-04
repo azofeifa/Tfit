@@ -221,6 +221,13 @@ void params::help(){
 	printf("-j        : /path/to/reverse/strand/bedgraph/file\n");
 	printf("              this file should be bedgraph formatted\n");
 	printf("              chromosome[tab]start[tab]stop[tab]coverage[newline]\n");
+	printf("-ij       : /path/to/bedgraph/file\n");
+	printf("              this file should be bedgraph formatted\n");
+	printf("              chromosome[tab]start[tab]stop[tab]coverage[newline]\n");
+	printf("              coverage < 0 is assumed to correspond to reverse strand\n");
+	printf("              coverage > 0 is assumed to correspond to forward strand\n");
+	
+	
 	printf("-k        : /path/to/interval/file\n");
 	printf("              this file should be formatted as a bed file\n");
 	printf("              chromosome[tab]start[tab]stop[newline]\n");

@@ -31,8 +31,8 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//template searching parameters
 	double sigma, lambda, foot_print, pi, w;
 	double ns 	= stod(P->p["-ns"]);
-	sigma 	= stod(P->p["-sigma"])/ns, lambda= ns/stod(P->p["-lambda"]);
-	foot_print= stod(P->p["-foot_print"])/ns, pi= stod(P->p["-pi"]), w= stod(P->p["-w"]);
+	sigma 		= stod(P->p["-sigma"])/ns, lambda= ns/stod(P->p["-lambda"]);
+	foot_print 	= stod(P->p["-foot_print"])/ns, pi= stod(P->p["-pi"]), w= stod(P->p["-w"]);
 
 
 
