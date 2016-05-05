@@ -5,8 +5,8 @@
 -v     	       	      	= 1 #verbose output
 #===========================================================================
 #input file parameters and output directories
--i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+#-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+#-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
 #-ij			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_SRR1105736.fastqbowtie2.sorted.BedGraph
 -k 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
 -tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
