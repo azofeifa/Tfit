@@ -385,6 +385,7 @@ string params::get_header(int ID){
 	header+="#-N           : "+p["-N"]+"\n";
 	header+="#-i           : "+p["-i"]+"\n";
 	header+="#-j           : "+p["-j"]+"\n";
+	header+="#-ij          : "+p["-ij"]+"\n";
 	header+="#-k           : "+p["-k"]+"\n";
 	header+="#-o           : "+p["-o"]+"\n";
 	header+="#-ns          : "+p["-ns"]+"\n";
