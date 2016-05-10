@@ -297,9 +297,6 @@ void run_global_template_matching(vector<segment*> segments,
 		double er 		= segments[i]->rN*( 2*(window*ns)*0.05 /(l*15));
 		double stdf 	= sqrt(ef*(1- (  2*(window*ns)*0.05/(l*15)  ) )  );
 		double stdr 	= sqrt(er*(1- (  2*(window*ns)*0.05 /(l*15) ) )  );
-
-
-		ef 	= 1, er 	= 1;
 		BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,
 			skews, window, sigma, lambda, foot_print, pi, w);
 
