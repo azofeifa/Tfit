@@ -1,6 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math as m
+from matplotlib import rc
+import model
+font = {'family' : 'sans-serif',
+        'weight' : 'normal',
+        'size'   : 22}
+
+rc('font', **font)
 def runOne(mu=0, s=1, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=1000, SHOW=False , bins=200, noise=False, foot_print = 0 ):
 
 	forward 	 = list(np.random.normal(mu+foot_print, s, int(N*we*pie)) + np.random.exponential(l, int(N*we*pie) ))
@@ -74,20 +81,33 @@ def weird_variance(x,y,mu,direct):
 			S+=pow(x[i]-mu,2)*y[i]
 			N+=y[i]
 	return S/N
+def density(xs, wb=0.5, we=0.5):
+	B 	=	model.component_bidir(0.0, 2.0, 1.0/5.0, wb ,0.5, None,foot_print=0)
+	U 	= 	model.component_elongation(0,100, we, 1.0, None, None, None, 0)
+	ysf = [B.pdf(x,1) + U.pdf(x,1)for x in xs]
+	ysr = [-(B.pdf(x,-1) + U.pdf(x,-1))for x in xs]
+	return ysf, ysr
+
 
 if __name__=="__main__":
-	X 	= runOne(mu=0, s=20, l=5, lr=100, ll=-100, we=0.5,wl=0.25, wr=0.25, pie=0.5, pil=0.1, pir=0.9, N=10000, SHOW=False , bins=200, noise=False )
-	mu 	= 0.5*(weighted_mean(X[:,0], X[:,1])+weighted_mean(X[:,0], X[:,2]))
-	l 	= 0.5*(weighted_mean(X[:,0], X[:,1])-weighted_mean(X[:,0], X[:,2]))
-	print mu,l
-	print m.sqrt(weird_variance(X[:,0], X[:,1], mu, 1))
-	print m.sqrt(weird_variance(X[:,0], X[:,2], mu, -1))
-	
-	bins 	= len(X)
-	plt.bar(X[:,0], X[:,1],width = (X[-1,0]- X[0,0]) / bins,alpha=0.2)
-	plt.bar(X[:,0], -X[:,2], color="red",width = (X[-1,0]- X[0,0]) / bins,alpha=0.2)
+	wb=0.5
+	we=0.5
+	X 	= runOne(mu=0, s=2, l=5, lr=100, ll=-100, we=wb,wl=0.0, wr=we, pie=0.5, pil=0.1, pir=0.9, N=1000, SHOW=False , bins=90, noise=False )
+	bins 	= 100.0
 
-	plt.scatter([mu], [0], s=20)
+	xs 	= np.linspace(X[0,0], X[-1,0]+1.0,1000)
+	ysf, ysr 	= density(xs, wb=wb, we=we)
+	F 		= plt.figure()
+	ax 		= F.add_subplot(111)
+	ax.bar(X[:,0], 0.75*X[:,1]/np.sum(X[:,1:]),width = (X[-1,0]- X[0,0]) / len(X), edgecolor="white",alpha=0.5,label="forward strand")
+	ax.bar(X[:,0], -0.75*X[:,2]/np.sum(X[:,1:]), color="red",width = (X[-1,0]- X[0,0]) / len(X), edgecolor="white",alpha=0.5,label="reverse strand")
+	ax.plot(xs, ysf, lw=2.0, color="black", label=r'$p(g|\hat{\Theta}$)')
+	ax.plot(xs, ysr, lw=2.0, color="black")
+	ax.set_xlabel("Relative Genomic Coordinate")
+	ax.set_ylabel("Frequency/Density")
+	ax.legend(loc="best",fontsize=16)
+	ax.set_yticklabels([0.4,0.3,0.2,0.1,0.0,0.1,0.2,0.3,0.4])
+	plt.tight_layout()
 	plt.show()
 
 

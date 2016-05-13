@@ -232,11 +232,14 @@ void run_global_template_matching(vector<segment*> segments,
 
 
 
-
+	bool SCORES 		= not P->p["-scores"].empty();
 
 	ofstream FHW;
 	ofstream FHW_intervals;
 	ofstream FHW_scores;
+	if (SCORES){
+		FHW_scores.open(P->p["-scores"]);
+	}
 	string annotation;
 	int prev, prev_start, stop;
 	int N;
@@ -303,6 +306,10 @@ void run_global_template_matching(vector<segment*> segments,
 		mj 	= 0;
 		//write out contiguous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
+			if (SCORES){
+				FHW_scores<<segments[i]->chrom<<"\t"<<to_string(int(segments[i]->X[0][j-1]*ns+segments[i]->start))<<"\t";
+				FHW_scores<<to_string(int(segments[i]->X[0][j]*ns+segments[i]->start ))<<"\t" <<to_string(BIC_values[j])<<endl;
+			}
 			
 			if (BIC_values[j] >=ct and densities[j] > ef + 0*stdf  and densities_r[j]> er + 0*stdr    ){
 				
