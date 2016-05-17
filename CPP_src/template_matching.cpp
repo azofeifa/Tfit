@@ -63,7 +63,7 @@ double BIC2(double ** X,  double * avgLL, double * variances,double * lambdas,
 	double fp_delta = (fp_b-fp_a) /fp_res;
 	double N 	= N_neg + N_pos;
 	double pi 	= (N_pos) / (N_neg + N_pos);
-	double pi2 	= (N_pos+10000) / (N_neg + N_pos+20000);
+	double pi2 	= (N_pos+100) / (N_neg + N_pos+200);
 	double a 	= X[0][j], b=X[0][k];
 	double uni_ll= LOG(pi/ pow(b-a,1) )*N_pos + LOG((1-pi)/pow(b-a,1))*N_neg;
 	for (int fp = 0; fp < fp_res; fp++){
@@ -117,9 +117,11 @@ double BIC3(double ** X, int j, int k, int i,
 	double best_emg_ll 	= nINF;
 	double 		l = b-a;
 	double best_w 	= 0.0;
+	double pi2 	= (N_pos+100) / (N_neg + N_pos+200);
+
 
 	double emg_ll 	= 0;
-	EMG EMG_clf(X[0][i], sigma, lambda, w, pi  );
+	EMG EMG_clf(X[0][i], sigma, lambda, w, pi2  );
 	EMG_clf.foot_print 	= fp;
 
 	for (int i = j; i < k;i++ ){
@@ -175,11 +177,6 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 			while (j < data->XN and (data->X[0][j] - data->X[0][i]) < -window){
 				N_pos-=data->X[1][j];
 				N_neg-=data->X[2][j];
-				// S_pos-=(data->X[0][j]*data->X[1][j]);
-				// S_neg-=(data->X[0][j]*data->X[2][j]);
-				
-				// S2_pos-=(pow(data->X[0][j],2)*data->X[1][j]);
-				// S2_neg-=(pow(data->X[0][j],2)*data->X[2][j]);
 				
 				j++;
 			}
@@ -187,11 +184,6 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 				N_pos+=data->X[1][k];
 				N_neg+=data->X[2][k];
 
-				// S_pos+=(data->X[0][k]*data->X[1][k]);
-				// S_neg+=(data->X[0][k]*data->X[2][k]);
-
-				// S2_pos+=(pow(data->X[0][k],2)*data->X[1][k]);
-				// S2_neg+=(pow(data->X[0][k],2)*data->X[2][k]);
 				k++;
 			}
 			if (k < data->XN  and j < data->XN and k!=j and N_neg > 0 and N_pos > 0 ){
