@@ -542,7 +542,6 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 
 	string spec_chrom 	= P->p["-chr"];
 	int pad 			= stoi(P->p["-pad"])+1;
-	int merge 			= stof(P->p["-merge"]);
 
 	vector<segment *> G;
 	int ct 	= 1;
@@ -608,16 +607,10 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 	}
 	if (not EXIT){
 		typedef map<string, vector<segment * > >::iterator it_type;
-		if (not merge){
-			IDS 	= IDS_first;
-		}
+		IDS 	= IDS_first;
 		for (it_type c 	= GS.begin(); c!=GS.end(); c++){
 			vector<segment *> m_segs;
-			if (merge){
-				m_segs 	= merge_segments(c->second, IDS_first, IDS, T);
-			}else{
-				m_segs 	= c->second;
-			}
+			m_segs 	= c->second;
 			for (int i = 0 ; i < m_segs.size(); i++){
 				G.push_back(m_segs[i]);
 			}
