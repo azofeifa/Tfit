@@ -1,13 +1,13 @@
 #PBS -S /bin/bash
 
-
+#PBS -N Danko2013_merged
 #PBS -m ae
 #PBS -M joseph.azofeifa@colorado.edu
 
 #PBS -e /Users/azofeifa/qsub_errors/EMG/
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
-#PBS -l walltime=48:00:00
+#PBS -l walltime=12:00:00
 #PBS -l nodes=1:ppn=64
 #PBS -l mem=8gb
 
@@ -22,10 +22,12 @@ module load mpich_3.1.4
 #paths to config and src
 src=/Users/azofeifa/Lab/EMG/CPP_src/EMGU
 config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/config_file.txt
-tmp_log_directory=/Users/azofeifa/EMG_log_files/
+
+
+
 
 #================================================================
 #calling command
 cmd="mpirun -np $PBS_NUM_NODES -hosts ${hostlist}"
-$cmd $src bidir -config $config_file    -i $forward -j $reverse  -o $out_directory -log_out $tmp_log_directory -N $name -tss $genome -scores $scores
+$cmd $src bidir -config $config_file -ij $bg_file  -tss $TSS  -o $out_directory -log_out $tmp_log_directory -N $name
 #================================================================

@@ -1,43 +1,53 @@
 #This is a config file for running the BIDIR module
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
-#/Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.pos.BedGraph
-#/Users/joazofeifa/Downloads/mergeDanko2013_E2_160.sorted.fiveprime.neg.BedGraph
-#/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
-#/Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+~BIDIR #do not change this line
 -N     	       	      	= foot_print_testing #job name
 -v     	       	      	= 1 #verbose output
--i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+#===========================================================================
+#input file parameters and output directories
+#-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+#-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.nneg.BedGraph
+#-ij			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_SRR1105736.fastqbowtie2.sorted.BedGraph
 -k 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
--q 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/DMSO2_3-4_K_models_MLE.tsv
--tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
+-tss 			= /Users/azofeifa/Lab/genome_files/RefSeqHG19.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
--merge 			= 0
--chr 			= all  #specific chromosome
--br 			= 25 #binning resolution do not consider changing
--pad 			= 100
--MLE			= 0 #get Maximum likelihood estimates
+-log_out                = /Users/joazofeifa/Lab/EMG_logs/
+
+#===========================================================================
+#house keeping parameters
+-chr 			= all  #specific chromosome, note chr[N] or all  
+-br 			= 15 #binning resolution do not consider changing
+-pad 			= 1 #how much to add the provided intervals
+-MLE			= 1 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
--bct 			= 0.95 #confidence threshold
--ns 			= 100 #scaling for numerical stability, would not consider changing
--r_mu 			= 1 #seed EM randomally from the peak finder
--minK 			= 1
--maxK 			= 1
--ms_pen			= 1
--ALPHA_0 		= 100 #prior for sigma
--BETA_0 		= 100 #prior for sigma
--ALPHA_1 		= 1 #prior for lambda
--BETA_1 		= 1 #prior for lambda
--ALPHA_0 		= 1 #prior for sigma
--BETA_0 		= 1 #prior for sigma
--ALPHA_1 		= 500 #prior for lambda
--BETA_1 		= 1000 #prior for lambda
+-ns                     = 100 #scaling for numerical stability, would not consider changing
+
+#===========================================================================
+#template matching algorithm parameters
+-bct                    = 1.0 #confidence threshold
+-lambda	  	   	= 200 #base pairs
+-sigma 			= 10  #base pairs
+-pi 			= 0.5 #strand biase
+-w 			= 0.5 #pausing probability
+-foot_print		= 100 #base pairs
+
+#===========================================================================
+#EM algorithm specific parameters
+-r_mu 			= 1 #seed EM randomly from the peak finder
+-minK 			= 1 #min model complexity to consider
+-maxK 			= 1 #
+-rounds                 = 32 #number of random EM initializations
+-ct                     = 0.0001 #EM convergence threshold difference
+-mi                     = 2000 #Number of EM iterations before it is aborted
+-max_noise              = 0.05 #weight of the random/uniform noise component
+#===========================================================================
+#Map Estimation Parameters, note setting to zero recoverse MLE
+#>1 for all is recomended for numerical stability
+-ALPHA_0 		= 10 #prior for sigma
+-BETA_0 		= 10 #prior for sigma
+-ALPHA_1 		= 50 #prior for lambda
+-BETA_1 		= 100 #prior for lambda
 -ALPHA_2 		= 1 #prior for weights
--ALPHA_3 		= 10000 #prior for strand probs
--rounds 		= 100 #number of random EM initializations
--ct 			= 0.01 #EM convergence threshold difference
--mi 			= 5000 #Number of EM iterations before it is aborted
--max_noise		= 0.05 #weight of the random/uniform noise component
--elon 			= 0
--log_out 		= /Users/joazofeifa/Lab/EMG_logs/
+-ALPHA_3 		= 100 #prior for strand probs
+-elon 			= 0 #optimize elongation termination site
 
