@@ -1,7 +1,9 @@
 # Tfit
-Transcription fit (Tfit) implements a mixture model to identify sites of bidirectional transcription in Global Run-On followed by sequencing data. Tfit is separate by two modules: (1) bidir and (2) model. These are invoked as below. 
+Transcription fit (Tfit) implements a mixture model to identify sites of bidirectional transcription in Global Run-On followed by sequencing data. Tfit is separate by two modules: (1) bidir and (2) model. Example output from these modules can be exported to any genome browser.  
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/Example_Snapshot.png)
+
+These are invoked as below.
 
 $Tfit bidir \<list of parameters and flags\>
 
