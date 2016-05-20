@@ -1,0 +1,51 @@
+#This is a config file for running the BIDIR module
+#please contact joseph[dot]azofeifa[at]colorado[dot]edu
+-N     	       	      	= foot_print_testing #job name
+-v     	       	      	= 1 #verbose output
+#===========================================================================
+#input file parameters and output directories
+-i			= #path to forward strand bedgraph file
+-j 	  		= #path to reverse strand bedgraph file
+#-ij			= #path to joint forward/reverse bedgraph file, note: either -i and -j must be specified or only -ij
+-k 			= #path to intervals file if running MODEL module 
+-tss 			= hg19_TSS.bed
+-o 	  		= examples/
+-log_out                = examples/
+#===========================================================================
+#house keeping parameters
+-chr 			= all  #specific chromosome, note chr[N] or all  
+-br 			= 15 #binning resolution do not consider changing
+-pad 			= 2000 #how much to add the provided intervals
+-MLE			= 0 #get Maximum likelihood estimates
+-select 		= 0 #run BIC optimization for MLE from moment estimators
+-ns                     = 100 #scaling for numerical stability, would not consider changing
+
+#===========================================================================
+#template matching algorithm parameters
+-bct                    = 0.75 #confidence threshold
+-lambda	  	   	= 200 #base pairs
+-sigma 			= 10  #base pairs
+-pi 			= 0.5 #strand biase
+-w 			= 0.5 #pausing probability
+-foot_print		= 100 #base pairs
+
+#===========================================================================
+#EM algorithm specific parameters
+-r_mu 			= 1 #seed EM randomly from the peak finder
+-minK 			= 1 #min model complexity to consider
+-maxK 			= 1 #
+-rounds                 = 1 #number of random EM initializations
+-ct                     = 0.0001 #EM convergence threshold difference
+-mi                     = 2000 #Number of EM iterations before it is aborted
+-max_noise              = 0.05 #weight of the random/uniform noise component
+#===========================================================================
+#Map Estimation Parameters, note setting to zero recoverse MLE
+#>1 for all is recomended for numerical stability
+-ALPHA_0 		= 10 #prior for sigma
+-BETA_0 		= 10 #prior for sigma
+-ALPHA_1 		= 50 #prior for lambda
+-BETA_1 		= 100 #prior for lambda
+-ALPHA_2 		= 1 #prior for weights
+-ALPHA_3 		= 100 #prior for strand probs
+-elon 			= 0 #optimize elongation termination site
+

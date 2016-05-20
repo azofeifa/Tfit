@@ -1,0 +1,32 @@
+#This is a config file for running the BIDIR module
+#please contact joseph[dot]azofeifa[at]colorado[dot]edu
+~BIDIR #do not change this line
+-v     	       	      	= 1 #verbose output
+-i			= /Users/azofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph #FStitch forward strand bedgraph
+-j 	  		= /Users/azofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph #FStitch reverse strand bedgraph
+-log_out 		= /Users/azofeifa/EMG_log_files/
+-nf 			= /Users/azofeifa/Lab/genome_files/hg19_no_anntation.bed
+-o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/ #output file directory
+-chr 			= all
+-br 			= 50 #binning resolution do not consider changing
+-window_res 		= 3
+-pad 			= 2000
+-MLE			= 1 #get Maximum likelihood estimates
+-elon 			= 0
+-bct 			= 1.0 #confidence threshold
+-ns 			= 100 #scaling for numerical stability, would not consider changing
+-opt_res 		= 5 #grid search resolution
+-r_mu 			= 1 #seed EM randomally from the peak finder
+-ALPHA_0 		= 100 #prior for sigma
+-BETA_0 		= 100 #prior for sigma
+-ALPHA_1 		= 50 #prior for lambda
+-BETA_1 		= 100 #prior for lambda
+-ALPHA_2 		= 1 #prior for weights
+-ALPHA_3 		= 10 #prior for strand probs
+-rounds 		= 64 #number of random EM initializations
+-ct 			= 0.0001 #EM convergence threshold difference
+-mi 			= 4000 #Number of EM iterations before it is aborted
+-max_noise		= 0.05 #weight of the random/uniform noise component
+-optimize 		= 0 #whether or not we should train on the bed files in the -k dir
+-show_seeds 		= 1 #show the pseudo moment estimators that the MLE will be fit on
+-foot_res 		= 25
