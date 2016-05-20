@@ -1,6 +1,8 @@
 # Tfit
 Transcription fit (Tfit) implements a mixture model to identify sites of bidirectional transcription in Global Run-On followed by sequencing data. Tfit is separate by two modules: (1) bidir and (2) model. These are invoked as below. 
 
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/Example_Snapshot.png)
+
 $Tfit bidir \<list of parameters and flags\>
 
 $Tfit model \<list of parametres and flags\>
@@ -14,6 +16,14 @@ Please note that for both the bidir and model module computation time will decre
 ##System Requirements and Makefile
 
 ##File Formats
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_single_example.png)
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bed_file_example.png)
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/config_file_example.png)
 
 ##Bidir Module and List of Parameters 
 
