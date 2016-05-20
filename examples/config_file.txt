@@ -38,6 +38,7 @@
 -ct                     = 0.0001 #EM convergence threshold difference
 -mi                     = 2000 #Number of EM iterations before it is aborted
 -max_noise              = 0.05 #weight of the random/uniform noise component
+
 #===========================================================================
 #Map Estimation Parameters, note setting to zero recoverse MLE
 #>1 for all is recomended for numerical stability
