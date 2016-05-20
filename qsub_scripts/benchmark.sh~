@@ -1,1 +1,0 @@
-qsub -l nodes=5:ppn=4,walltime=04:00:00,mem=20gb /Users/azofeifa/Lab/EMG/qsub_scripts/
