@@ -1,9 +1,9 @@
 # Tfit
 Transcription fit (Tfit) implements a mixture model to identify sites of bidirectional transcription in Global Run-On followed by sequencing data. Tfit is separate by two modules: (1) bidir and (2) model. These are invoked as below. 
 
-$Tfit bidir <list of parameters and flags>
+$Tfit bidir \<list of parameters and flags\>
 
-$Tfit model <list of parametres and flags>
+$Tfit model \<list of parametres and flags\>
 
 The bidir module will compute local likelihood statistics given a template mixture model (trained either from promoter associated transcription) or specified explicitly by the user (the former is encoraged). This method is fast and will finish in about 10 minutes on a single node single CPU machine. The output will be a bed file corresponding to areas of possible bidirectional transcription. This output is dicussed heavily in later sections
 
@@ -13,6 +13,13 @@ Please note that for both the bidir and model module computation time will decre
 
 ##System Requirements and Makefile
 
+##File Formats
+
+##Bidir Module and List of Parameters 
+
+##Model Module and List of Parameters
+
+##References
 
 
 
