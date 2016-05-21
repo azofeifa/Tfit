@@ -17,7 +17,7 @@
 #house keeping parameters
 -chr 			= all  #specific chromosome, note chr[N] or all  
 -br 			= 15 #binning resolution do not consider changing
--pad 			= 1 #how much to add the provided intervals
+-pad 			= 2000 #how much to add the provided intervals
 -MLE			= 1 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
 -ns                     = 100 #scaling for numerical stability, would not consider changing

@@ -20,8 +20,8 @@ module load mpich_3.1.4
 
 #================================================================
 #paths to config and src
-src=/Users/azofeifa/Lab/EMG/CPP_src/EMGU
-config_file=/Users/azofeifa/Lab/EMG/cpp_config_files/config_file.txt
+src=/Users/azofeifa/Lab/Tfit/src/Tfit
+config_file=/Users/azofeifa/Lab/Tfit/config_files/config_file.txt
 
 
 #================================================================
