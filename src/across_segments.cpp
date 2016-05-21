@@ -42,7 +42,6 @@ map<int, vector<classifier> > make_classifier_struct_free_model(params * P, segm
 		min_k 	= data->counts;
 		max_k 	= data->counts;
 	}
-
 	for (int k =min_k; k <= max_k; k++){
 		for (int r = 0; r < rounds; r++){
 			A[k].push_back(classifier(k, stod(P->p["-ct"]), stoi(P->p["-mi"]), stod(P->p["-max_noise"]), 
@@ -114,14 +113,17 @@ map<int, vector<simple_c_free_mode> > get_max_from_free_mode(map<int, vector<cla
 		component * best_components;
 		double best_ll 	= nINF;
 		bool FOUND 		= false;
+		int best_k 		= 0;
 		for (int r = 0; r < a->second.size(); r++){
 
 			if (A[a->first][r].ll > best_ll){
 				best_ll 			= A[a->first][r].ll;
 				best_components 	= A[a->first][r].components;
+				best_k 				= A[a->first][r].K;
 				FOUND 				= true;
 			}
 		}
+
 		BEST[a->first] 	= transform_free_mode(FOUND, best_ll, best_components, a->first, data, i, forward_N, reverse_N);
 
 	}

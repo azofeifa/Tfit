@@ -1,5 +1,6 @@
-src=/Users/joazofeifa/Lab/EMG/CPP_src/EMGU
-config_file=/Users/joazofeifa/Lab/EMG/CPP_src/config_file.txt
+src=/Users/joazofeifa/Lab/Tfit/src/
+src=/Users/joazofeifa/Lab/Tfit/src/Tfit
+config_file=/Users/joazofeifa/Lab/Tfit/src/config_file.txt
 NP=1
 
 

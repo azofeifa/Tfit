@@ -76,7 +76,7 @@ segment::segment(string chr, int st, int sp, int i, string STR){
 	fN 		= 0;
 	rN 		= 0;
 	minX=st, maxX=sp;
-	counts 	= 0;
+	counts 	= 1;
 	XN 		= 0;
 	ID 		= i;
 	strand 	= STR;

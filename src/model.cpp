@@ -689,7 +689,6 @@ classifier::classifier(){};
 //this IS the EM...estimate away
 int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	 int elon_move ){
-
 	//=========================================================================
 	//compute just a uniform model...no need for the EM
 	if (K == 0){
@@ -716,7 +715,6 @@ int classifier::fit2(segment * data, vector<double> mu_seeds, int topology,
 	random_device rd;
 	mt19937 mt(rd());
 	
-
 	int add 	= noise_max>0;
 	components 	= new component[K+add];
 	//===========================================================================
