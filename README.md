@@ -28,13 +28,13 @@ $make
 
 If the program compilled sucessfuly you should see the below output.
 
-\\=========================================
+\=========================================
 
 GCC version: 5.1.0
 
 ...
 
-=========================================
+"========================================="
 
 successfully compiled
 
