@@ -4,8 +4,10 @@
 -v     	       	      	= 1 #verbose output
 #===========================================================================
 #input file parameters and output directories
--i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
--j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.neg.BedGraph
+#-i			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.pos.BedGraph
+-i			= /Users/joazofeifa/Lab/gro_seq_files/Gardini2014/bedgraph_files/test_SRR1342251.fastqbowtie2.sorted.pos.BedGraph
+-j			= /Users/joazofeifa/Lab/gro_seq_files/Gardini2014/bedgraph_files/test_SRR1342251.fastqbowtie2.sorted.neg.BedGraph
+#-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.nneg.BedGraph
 #-ij			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_SRR1105736.fastqbowtie2.sorted.BedGraph
 -k 			= /Users/joazofeifa/Lab/Article_drafts/Alg_paper/files/intervals_for_elongation_ROC.bed
 -tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
@@ -14,7 +16,7 @@
 -scores			= /Users/joazofeifa/Desktop/prelim_scores.bed
 #===========================================================================
 #house keeping parameters
--chr 			= chr1  #specific chromosome, note chr[N] or all  
+-chr 			= all  #specific chromosome, note chr[N] or all  
 -br 			= 15 #binning resolution do not consider changing
 -pad 			= 2000 #how much to add the provided intervals
 -MLE			= 0 #get Maximum likelihood estimates
@@ -23,7 +25,7 @@
 
 #===========================================================================
 #template matching algorithm parameters
--bct                    = 0.75 #confidence threshold
+-bct                    = 1.0 #confidence threshold
 -lambda	  	   	= 200 #base pairs
 -sigma 			= 10  #base pairs
 -pi 			= 0.5 #strand biase
