@@ -186,6 +186,11 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 
 				k++;
 			}
+			int aa=k < data->XN;
+			int bb=j < data->XN;
+			int cc=N_neg > 0;
+			int dd=N_pos > 0;
+			
 			if (k < data->XN  and j < data->XN and k!=j and N_neg > 0 and N_pos > 0 ){
 				total_density 	= (N_pos / (data->X[0][k] - data->X[0][j])) + (N_neg / (data->X[0][k] - data->X[0][j]));
 				densities[i] 	= N_pos ;

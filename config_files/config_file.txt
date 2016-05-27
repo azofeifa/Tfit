@@ -1,6 +1,5 @@
 #This is a config file for running the BIDIR module
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
-~BIDIR #do not change this line
 -N     	       	      	= foot_print_testing #job name
 -v     	       	      	= 1 #verbose output
 #===========================================================================
@@ -18,7 +17,7 @@
 -chr 			= all  #specific chromosome, note chr[N] or all  
 -br 			= 15 #binning resolution do not consider changing
 -pad 			= 2000 #how much to add the provided intervals
--MLE			= 1 #get Maximum likelihood estimates
+-MLE			= 0 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
 -ns                     = 100 #scaling for numerical stability, would not consider changing
 

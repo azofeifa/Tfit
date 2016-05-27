@@ -468,12 +468,12 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 	int start, stop;
 	double coverage;
 	vector<string> lineArray;
-	string prevChrom="";
 	segment * S =NULL;
-	bool INSERT 	= false;
 	bool EXIT 		= false;
 	int line_number = 0;
 	for (int u = 0 ; u < FILES.size(); u++){
+	  bool INSERT     = false;	  
+	  string prevChrom="";
 		ifstream FH(FILES[u]) ;
 		if (not FH ){
 			printf("couln't open FILE %s\n", FILES[u].c_str());
@@ -491,6 +491,10 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
 			if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
 				FOUND 		= true;
+				if (chrom.size()<6){
+				  INSERT          = true;
+				  FOUND           = true;
+				}
 				if (chrom.size() < 6 and u==0){
 					G[chrom] 	= new segment(chrom, start, stop );
 					INSERT 		= true;
