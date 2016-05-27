@@ -28,14 +28,16 @@ $make
 
 If the program compilled sucessfuly you should see the below output.
 
-\=========================================
+-------------------
 
 GCC version: 5.1.0
 
 ...
 
-\=
+
 successfully compiled
+
+-------------------
 
 
 If your program, did not compile properly it is likely that you do not have the correct dependencies. The three most significant dependencies are listed below. 
