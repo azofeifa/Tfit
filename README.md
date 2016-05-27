@@ -28,45 +28,13 @@ $make
 
 If the program compilled sucessfuly you should see the below output.
 
-=========================================
+/=========================================
 
 GCC version: 5.1.0
 
-main              : done
+...
 
-load              : done
-
-split             : done
-
-model             : done
-
-across_segments   : done
-
-template_matching : done
-
-read_in_parameters: done
-
-model_selection   : done
-
-error_stdo_logging: done
-
-MPI_comm          : done
-
-model_single      : done
-
-density_profiler  : done
-
-bootstrap         : done
-
-bidir_main        : done
-
-model_main        : done
-
-select_main       : done
-
-linking           : done
-
-=========================================
+/=========================================
 
 successfully compiled
 
