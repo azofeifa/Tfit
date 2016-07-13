@@ -101,9 +101,34 @@ Example output from the bidir module,i.e. [-N]_prelim_bidir_hits.bed, is provide
 
 
 ##Model Module and List of Parameters
-Unlike the "bidir" module which utlizes an average or template version of the mixture model to scan the entire genome quickly, the "model" module will attempt to find (by maximum likelihood estimation,MLE) the best set of parameters (sigma,lambda, pi, w, footprint) on a per region of interest basis. Such a routine is especially valuable if it is believed that pausing or strand bias is changing following experimental perturbation. In addition, running the model module on the prelim_bidir_hits.bed file will greatly decrease the number of false positives as the MLE estimates will work accurately reflect the underlying structure of the region of interest rather than a static template model. 
+Unlike the "bidir" module which utlizes an average or template version of the mixture model to scan the entire genome quickly, the "model" module will attempt to find (by maximum likelihood estimation,MLE) the best set of parameters (sigma,lambda, pi, w, footprint) on a per region of interest basis. Such a routine is especially valuable if it is believed that pausing or strand bias is changing following experimental perturbation. In addition, running the model module on the prelim_bidir_hits.bed file will greatly decrease the number of false positives as the MLE estimates will more accurately reflect the underlying structure of the region of interest rather than a static template model. 
 
 In short, MLE estimates are computed by the EM algorithm which is a convergent optimization method found commonly in gaussian mixture modeling and cluster analysis. Given this, the user may specify sets of parameters that are specific to the EM routine such as number of random seeds (-rounds), maximum number of iterations (-mi) and convergence threshold (-ct). A list of criticial and non-critical parameters are given below.   
+
+The critical input parameters are listed below:
+
+1. -i	= \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
+2. -j = \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
+3. -ij= \</path/to/BedGraphFile_joint_strand> (if -i and -j are not specified) “BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combind joint bedgraph file is below. 
+4. -k = \</path/to/bed_file of regions of interest> "bed" file from above, this output may be from _prelim_bidir_hits.bed or other genomic intervals of interest, TF peaks from MACS, RefSeq annotations for genes etc. 
+5. -N = job_name, simple a string
+6. -o = \</path/to/output/directory>
+7. -log_out = \</path/to/logoutput/directory> "As the program runs this file will be updated with progress 
+
+The non-critical input parameters are listed below, these all have default settings.
+
+1. -mink = a [integer value], minimum number of finitie mixtures to consider (default = 1)
+2. -maxk = a [integer value], maximum number of finitie mixtures to consider (default = 1)
+3. -rounds = a [integer value], number of random seeds to the EM (default = 5)
+4. -ct = a [floating point value], convergence threshold where EM haults (default = 0.0001)
+5. -mi = a [integer value],maximum number of EM iterations after which EM will hault (default = 2000)
+
+After the model module has finished, Tfit will output two files in the user specified output directory: [-N]_K_models_MLE.tsv and [-N]_divergent_classifications.bed. 
+
+The first file [-N]_K_models_MLE.tsv gives a detaild account for each interval of interest from -k input parameters, a list for each finite mixture model fits -mink to -maxk, the log-likelihood score, and MLE estimates for the center of the bidirectional transcript (mu), variance in mu (sigma), entry length (lambda), strand bias (pi), distance between bidirectional peaks (foot print) and all the associated mixture weights (basically w). In addition, stats on the number of reads over that interval etc. This can be used for manual Bayesian Information Criterion calculations. An example output of this file where -mink = 1 and -maxk = 10 is given below:
+
+
+
 
 
 ##Chaining the bidir and model module
@@ -111,6 +136,9 @@ In short, MLE estimates are computed by the EM algorithm which is a convergent o
 ##The config file
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/config_file_example.png)
+
+##Utilizing openMP and MPI
+
 
 
 
