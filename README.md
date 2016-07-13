@@ -49,35 +49,20 @@ If your program, did not compile properly it is likely that you do not have the 
 3) MPI (this needs to installed and configured and serves as a wrapper for GCC, please visit https://www.open-mpi.org/faq/)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##File Formats
 
 
-![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bed_file_example.png)
 
-![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/config_file_example.png)
 
 ##Bidir Module
-Bidir module scans across the genome for areas resembling bidirectional transcription by comparing a template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point), -w (pausing probability, how much bidirectional signal to elongation/noise signal), -foot_print (distance between divergent peaks). Neighoring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). 
+Bidir module scans across the genome for areas resembling bidirectional transcription by comparing a template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point), -w (pausing probability, how much bidirectional signal to elongation/noise signal), -foot_print (distance between divergent peaks). Neighoring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). An example of a bed file is provided below:
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bed_file_example.png)
+
 
 Perhaps the most important user input file is the "BedGraph" File corresponding to the forward and reverse strad. This file is simple (chrom[tab]start[tab]stop[tab]coverage[newline]). Importantly, start and stop should be integer valued. Although coveraged can be a float, we recommend this to be an integer as well, i.e. normalization by millions mapped for example may lead to numerical degeneracies in the optimization routine. An example bedgraph file is listed below. 
 
-![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_single_example.png)
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
 
 
 The critical input parameters are listed below:
@@ -91,7 +76,7 @@ The critical input parameters are listed below:
 
 Example of joint forward and reverse strand bedgraph file:
 
-![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_single_example.png)
 
 
 The non-critical input parameters are listed below, these all have default settings.
@@ -119,6 +104,14 @@ Example output from the bidir module,i.e. [-N]_prelim_bidir_hits.bed, is provide
 Unlike the "bidir" module which utlizes an average or template version of the mixture model to scan the entire genome quickly, the "model" module will attempt to find (by maximum likelihood estimation,MLE) the best set of parameters (sigma,lambda, pi, w, footprint) on a per region of interest basis. Such a routine is especially valuable if it is believed that pausing or strand bias is changing following experimental perturbation. In addition, running the model module on the prelim_bidir_hits.bed file will greatly decrease the number of false positives as the MLE estimates will work accurately reflect the underlying structure of the region of interest rather than a static template model. 
 
 In short, MLE estimates are computed by the EM algorithm which is a convergent optimization method found commonly in gaussian mixture modeling and cluster analysis. Given this, the user may specify sets of parameters that are specific to the EM routine such as number of random seeds (-rounds), maximum number of iterations (-mi) and convergence threshold (-ct). A list of criticial and non-critical parameters are given below.   
+
+
+##Chaining the bidir and model module
+
+##The config file
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/config_file_example.png)
+
 
 
 ##References
