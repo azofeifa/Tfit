@@ -97,7 +97,7 @@ $Tfit bidir \<list of parameters and flags\>
 
 Example output from the bidir module,i.e. [-N]_prelim_bidir_hits.bed, is provided below. 
 
-
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/Prelim_Bidir_Example.png)
 
 
 ##Model Module and List of Parameters
@@ -127,6 +127,7 @@ After the model module has finished, Tfit will output two files in the user spec
 
 The first file [-N]_K_models_MLE.tsv gives a detaild account for each interval of interest from -k input parameters, a list for each finite mixture model fits -mink to -maxk, the log-likelihood score, and MLE estimates for the center of the bidirectional transcript (mu), variance in mu (sigma), entry length (lambda), strand bias (pi), distance between bidirectional peaks (foot print) and all the associated mixture weights (basically w). In addition, stats on the number of reads over that interval etc. This can be used for manual Bayesian Information Criterion calculations. An example output of this file where -mink = 1 and -maxk = 10 is given below:
 
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/K_models_example.png)
 
 
 
