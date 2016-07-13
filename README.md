@@ -67,16 +67,15 @@ If your program, did not compile properly it is likely that you do not have the 
 
 ##File Formats
 
-![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bed_file_example.png)
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/config_file_example.png)
 
 ##Bidir Module
-Bidir module utilizes a penalized likelihood ratio (LLR) test to scan across the genome for areas resembling bidirectional transcription. Neighoring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). 
+Bidir module scans across the genome for areas resembling bidirectional transcription by comparing a template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point), -w (pausing probability, how much bidirectional signal to elongation/noise signal), -foot_print (distance between divergent peaks). Neighoring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). 
 
-Perhaps the most important user input file is the "BedGraph" File corresponding to the forward and reverse strad. This file is simple (chrom[tab]start[tab]stop[tab]coverage[newline]). Importantly, start and stop should be integer valued. Although coveraged can be a float, we recommend this to be an integer as well, i.e. normalization by millions mapped for example made lead to numerical degeneracies in the optimization routine. An example bedgraph file is listed below. 
+Perhaps the most important user input file is the "BedGraph" File corresponding to the forward and reverse strad. This file is simple (chrom[tab]start[tab]stop[tab]coverage[newline]). Importantly, start and stop should be integer valued. Although coveraged can be a float, we recommend this to be an integer as well, i.e. normalization by millions mapped for example may lead to numerical degeneracies in the optimization routine. An example bedgraph file is listed below. 
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_single_example.png)
 
@@ -85,9 +84,15 @@ The critical input parameters are listed below:
 
 1. -i	= \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
 2. -j = \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
-3. -N = job_name, simple a string
-4. -o = \</path/to/output/directory>
-5. -log_out = \</path/to/logoutput/directory> "As the program runs this file will be updated with progress 
+3. -ij= \</path/to/BedGraphFile_joint_strand> (if -i and -j are not specified) “BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combind joint bedgraph file is below. 
+4. -N = job_name, simple a string
+5. -o = \</path/to/output/directory>
+6. -log_out = \</path/to/logoutput/directory> "As the program runs this file will be updated with progress 
+
+Example of joint forward and reverse strand bedgraph file:
+
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
+
 
 The non-critical input parameters are listed below, these all have default settings.
 
@@ -101,11 +106,20 @@ The non-critical input parameters are listed below, these all have default setti
 7. -w      = a [floating point value], this is the pausing probability parameter for the EMG density function (default = 0.5)
 8. -foot_print = a [floating point value], this is the foot_print parameter for the EMG density function (default = 50)
 
+After the bidir model finishes a bed file will appear in the user specified output directory called: [-N]_prelim_bidir_hits.bed. This file will contain genomic intervals of interest where divergent transcrpition is likely ocurring. This file may be used for downstream analysis or taken at face value. Last, but not least, the bidir module can be invoked lile below:
+
+$Tfit bidir \<list of parameters and flags\>
+
+Example output from the bidir module,i.e. [-N]_prelim_bidir_hits.bed, is provided below. 
 
 
 
 
 ##Model Module and List of Parameters
+Unlike the "bidir" module which utlizes an average or template version of the mixture model to scan the entire genome quickly, the "model" module will attempt to find (by maximum likelihood estimation,MLE) the best set of parameters (sigma,lambda, pi, w, footprint) on a per region of interest basis. Such a routine is especially valuable if it is believed that pausing or strand bias is changing following experimental perturbation. In addition, running the model module on the prelim_bidir_hits.bed file will greatly decrease the number of false positives as the MLE estimates will work accurately reflect the underlying structure of the region of interest rather than a static template model. 
+
+In short, MLE estimates are computed by the EM algorithm which is a convergent optimization method found commonly in gaussian mixture modeling and cluster analysis. Given this, the user may specify sets of parameters that are specific to the EM routine such as number of random seeds (-rounds), maximum number of iterations (-mi) and convergence threshold (-ct). A list of criticial and non-critical parameters are given below.   
+
 
 ##References
 
