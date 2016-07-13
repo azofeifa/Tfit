@@ -125,11 +125,11 @@ The non-critical input parameters are listed below, these all have default setti
 
 After the model module has finished, Tfit will output two files in the user specified output directory: [-N]_K_models_MLE.tsv and [-N]_divergent_classifications.bed. 
 
-The first file [-N]_K_models_MLE.tsv gives a detaild account for each interval of interest from -k input parameters, a list for each finite mixture model fits -mink to -maxk, the log-likelihood score, and MLE estimates for the center of the bidirectional transcript (mu), variance in mu (sigma), entry length (lambda), strand bias (pi), distance between bidirectional peaks (foot print) and all the associated mixture weights (basically w). In addition, stats on the number of reads over that interval etc. This can be used for manual Bayesian Information Criterion calculations. An example output of this file where -mink = 1 and -maxk = 10 is given below:
+The first file, [-N]_K_models_MLE.tsv, gives a detaild account for each interval of interest from -k input parameters, a list for each finite mixture model fits -mink to -maxk, the log-likelihood score, and MLE estimates for the center of the bidirectional transcript (mu), variance in mu (sigma), entry length (lambda), strand bias (pi), distance between bidirectional peaks (foot print) and all the associated mixture weights (basically w). In addition, stats on the number of reads over that interval etc. This can be used for manual Bayesian Information Criterion calculations. An example output of this file where -mink = 1 and -maxk = 10 is given below:
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/K_models_example.png)
 
-
+The second file,[-N]_divergent_classifications.bed, provides a new bed file, where the center of each bed interval corresponds to the center of the bidirectional peak and the width corresponds the estimated standard deviation around that estimate (essentially sigma + lambda). This again can be used for downstream analysis and comprises the most accurate set of bidirectional prediction centers that Tfit can currently offer. An example output of this file is given below.
 
 
 ##Chaining the bidir and model module
