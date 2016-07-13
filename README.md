@@ -90,6 +90,7 @@ The critical input parameters are listed below:
 5. -log_out = \</path/to/logoutput/directory> "As the program runs this file will be updated with progress 
 
 The non-critical input parameters are listed below, these all have default settings.
+
 1. -tss = \</path/to/bedfile/of/promoter/locations/ (promoter locations are provided for hg19 and mm10 in the annotations/ directory of this repo, it is recommended to optimize your template density function by promoter or TSS associated regions 
 2. -chr = a [string] where the bidir module will only run on specified chromosome (default is "all")
 3. -bct = a [floating point value], this is the LLR threshold, the default and recommended is 1
