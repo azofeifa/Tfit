@@ -150,13 +150,11 @@ $Tfit bidir -config \</path/to/config/file.txt -cores 3
 
 Please keep in mind that if you are running on a single node machine. mpirun will utlizie CPUs and thus the user should take into account overhead of specifying -cores and -np. The default options for -np and -cores are both 1 respecitively. 
 
-If your instituion has a compute cluster, please consult your IT staff about the specific job allocation software. If you are using Torque/Maui where computation resources can be specified by PBS directives. Than the below few commands are sufficient to run Tfit across multiple nodes. 
+If your instituion has a compute cluster, please consult your IT staff about the specific job allocation software. If you are using Torque/Maui where computation resources can be specified by PBS directives, then the below job script is sufficient to run Tfit across multiple nodes. 
 
+![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/JobSubmissionExample.png)
 
-
-
-
-
+Again, this highly system dependent. But openMPI is a well maintained library with lots of resources to help aid in getting Tfit up and running on your compute cluster, please consult https://www.open-mpi.org/faq/ for further reference. 
 
 
 ##Bleading Edge Parameters 
