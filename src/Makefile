@@ -27,10 +27,10 @@ NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o \
 	@cp ${PWD}/Tfit ${PWD}/EMGU
 	@printf "done\n"
 	@echo "========================================="
-	@printf "finished :)\n"
+	@printf "successfully compiled \n\n"
 
 main.o: 
-	@echo "========================================="
+	@echo "\n========================================="
 	@echo "GCC version: "${GCCVERSION}
 	@printf "main              : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/main.cpp 
@@ -108,3 +108,4 @@ clean:
 	@rm -f *.o
 	@rm -f EMGU
 	@rm -f Tfit
+	@echo "\nsuccessfully removed binaries\n"

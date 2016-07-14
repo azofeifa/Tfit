@@ -102,7 +102,6 @@ double get_ll(double ** X, double mu, double w, double pi, double l, int j, int 
 		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
 	}
 	return emg_ll;
-
 }
 
 
@@ -136,21 +135,7 @@ double BIC3(double ** X, int j, int k, int i,
 	avgLL[i] 		= best_emg_ll / N;
 	skews[i][0]  	= 0, skews[i][1]= 0;
 	return emg_ratio;
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 void BIC_template(segment * data, double * avgLL, double * BIC_values, double * densities, double * densities_r,
@@ -308,7 +293,7 @@ void run_global_template_matching(vector<segment*> segments,
 				FHW_scores<<to_string(int(segments[i]->X[0][j]*ns+segments[i]->start ))<<"\t" <<to_string(BIC_values[j])<<endl;
 			}
 			
-			if (BIC_values[j] >=ct and densities[j] > ef + 0*stdf  and densities_r[j]> er + 0*stdr    ){
+			if (BIC_values[j] >=ct and densities[j] > ef + 1*stdf  and densities_r[j]> er + 1*stdr    ){
 				
 
 				start 		= int(segments[i]->X[0][j]*ns+segments[i]->start - 100);

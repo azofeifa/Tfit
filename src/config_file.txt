@@ -13,13 +13,13 @@
 -tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -log_out                = /Users/joazofeifa/Lab/EMG_logs/
--scores			= /Users/joazofeifa/Desktop/prelim_scores.bed
+#-scores			= /Users/joazofeifa/Desktop/prelim_scores.bed
 #===========================================================================
 #house keeping parameters
 -chr 			= all  #specific chromosome, note chr[N] or all  
 -br 			= 15 #binning resolution do not consider changing
 -pad 			= 2000 #how much to add the provided intervals
--MLE			= 0 #get Maximum likelihood estimates
+-MLE			= 1 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
 -ns                     = 100 #scaling for numerical stability, would not consider changing
 

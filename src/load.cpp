@@ -368,10 +368,11 @@ string segment_fits::write (){
 			double mu 	= stod(split_by_comma(params[0], "")[i]);
 			double std 	= stod(split_by_comma(params[1], "")[i]);
 			double lam 	= stod(split_by_comma(params[2], "")[i]);
+			double pi 	= stod(split_by_comma(params[3], "")[i]);
 			double w 	= stod(split_by_comma(split_by_bar(params[5], "")[i] , "" )[0] );
 
 			int start 	= mu - (std + lam), stop = mu + (std+lam);
-			if (std  < 50000 and lam < 20000 and w > 0.05 ){
+			if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.1 and pi < 0.9  ){
 				line+=chrom+"\t" + to_string(start) + "\t" + to_string(stop)+"\t";
 				line+=ID+"|";
 				string ps 	= "";
