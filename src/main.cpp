@@ -22,7 +22,6 @@
 #include "bidir_main.h"
 #include "model_main.h"
 #include "select_main.h"
-#include <aligned_new>
 using namespace std;
 
 int main(int argc, char* argv[]){
