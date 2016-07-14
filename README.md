@@ -3,15 +3,9 @@ Transcription fit (Tfit) implements a finite mixture model to identify sites of 
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/Example_Snapshot.png)
 
-These are invoked as below.
+The bidir module will compute local likelihood statistics given a fixed template mixture model (estimated either from promoter associated transcription) or specified explicitly by the user (the former is encoraged). This method is fast and will finish in about 30 minutes on a single node single CPU machine. The output will be a bed file corresponding to areas of possible bidirectional transcription. This output is dicussed heavily in later sections
 
-$Tfit bidir \<list of parameters and flags\>
-
-$Tfit model \<list of parameters and flags\>
-
-The bidir module will compute local likelihood statistics given a template mixture model (estimated either from promoter associated transcription) or specified explicitly by the user (the former is encoraged). This method is fast and will finish in about 30 minutes on a single node single CPU machine. The output will be a bed file corresponding to areas of possible bidirectional transcription. This output is dicussed heavily in later sections
-
-The model module will compute full MLE estimates of the mixture model at user specified regions of the genome provided as a bed file. This bed file may be the output from the bidir module. It is recomended that users fit MLE estimates to the output of the bidir module as this will greatly decrease false positives. Two files will output from this module: (A) a \<job_name\>_K_models_MLE.tsv and a \<job_name\>_divergent_classifications.bed both containing information regarding the location, spreading, pausing probability and strand probability of bidirectional events. This output is dicussed heavily in later sections. Computation time of this module depends on model complexity bounds. If the user is profiling only for bidirectional transcripts, it is recommended that -mink and -maxk flags be set to 1. In this case, computation take will take around 2-3 hours on a single node, single CPU machine.  
+The model module will compute full MLE estimates of the mixture model at user specified regions of the genome provided as a bed file. This bed file may be the output from the bidir module. It is recomended that users fit MLE estimates to the output of the bidir module as this will decrease false positives. Two files will output from this module: (A) a \<job_name\>_K_models_MLE.tsv and a \<job_name\>_divergent_classifications.bed both containing information regarding the location, spreading, pausing probability and strand probability of bidirectional events. This output is dicussed heavily in later sections. Computation time of this module depends on model complexity bounds. If the user is profiling only for bidirectional transcripts, it is recommended that -mink and -maxk flags be set to 1. In this case, computation take will take around 2-3 hours on a single node, single CPU machine.  
 
 Please note that for both the bidir and model module computation time will decrease linearly with the number of available CPUs. Computation time is discussed throughout the below sections.  
 
@@ -40,7 +34,7 @@ successfully compiled
 -------------------
 
 
-If your program, did not compile properly it is likely that you do not have the correct dependencies. The three most significant dependencies are listed below. 
+If your program, did not compile properly it is likely that you do not have the correct dependencies. The three significant dependencies are listed below. 
 
 1) c++11 (this ships with most recent versions of GCC, please visit https://gcc.gnu.org/install/)
 
@@ -49,18 +43,13 @@ If your program, did not compile properly it is likely that you do not have the 
 3) MPI (this needs to installed and configured and serves as a wrapper for GCC, please visit https://www.open-mpi.org/faq/)
 
 
-##File Formats
-
-
-
-
 ##Bidir Module
-Bidir module scans across the genome for areas resembling bidirectional transcription by comparing a template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point), -w (pausing probability, how much bidirectional signal to elongation/noise signal), -foot_print (distance between divergent peaks). Neighoring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). An example of a bed file is provided below:
+The bidir module scans across the genome for areas resembling bidirectional transcription by comparing a fixed template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point) and -w (pausing probability, how much bidirectional signal to elongation/noise signal). Neighoring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). An example of a bed file is provided below:
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bed_file_example.png)
 
 
-Perhaps the most important user input file is the "BedGraph" File corresponding to the forward and reverse strad. This file is simple (chrom[tab]start[tab]stop[tab]coverage[newline]). Importantly, start and stop should be integer valued. Although coveraged can be a float, we recommend this to be an integer as well, i.e. normalization by millions mapped for example may lead to numerical degeneracies in the optimization routine. An example bedgraph file is listed below. 
+Perhaps the most important user input file is the "BedGraph" File corresponding to the forward and reverse strad. This file is simple (chrom[tab]start[tab]stop[tab]coverage[newline]). Importantly, start and stop should be integer valued. Although coverage can be a float, we recommend this to be an integer as well, i.e. normalization by millions mapped for example may lead to numerical degeneracies in the optimization routine. An example bedgraph file is listed below. 
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
 
@@ -89,9 +78,8 @@ The non-critical input parameters are listed below, these all have default setti
 5. -sigma  = a [floating point value], this is the variance parameter for the EMG density function (default = 10 bp)
 6. -pi     = a [floating point value], this is the strand bias parameter for the EMG density function (default = 0.5)
 7. -w      = a [floating point value], this is the pausing probability parameter for the EMG density function (default = 0.5)
-8. -foot_print = a [floating point value], this is the foot_print parameter for the EMG density function (default = 50)
 
-After the bidir model finishes a bed file will appear in the user specified output directory called: [-N]_prelim_bidir_hits.bed. This file will contain genomic intervals of interest where divergent transcrpition is likely ocurring. This file may be used for downstream analysis or taken at face value. Last, but not least, the bidir module can be invoked lile below:
+After the bidir model finishes a bed file will appear in the user specified output directory called: [-N]_prelim_bidir_hits.bed. This file will contain genomic intervals of interest where divergent transcrpition is likely ocurring. This file may be used for downstream analysis or taken at face value. Last, but not least, the bidir module can be invoked as below:
 
 $Tfit bidir \<list of parameters and flags\>
 
@@ -101,7 +89,7 @@ Example output from the bidir module,i.e. [-N]_prelim_bidir_hits.bed, is provide
 
 
 ##Model Module and List of Parameters
-Unlike the "bidir" module which utlizes an average or template version of the mixture model to scan the entire genome quickly, the "model" module will attempt to find (by maximum likelihood estimation,MLE) the best set of parameters (sigma,lambda, pi, w, footprint) on a per region of interest basis. Such a routine is especially valuable if it is believed that pausing or strand bias is changing following experimental perturbation. In addition, running the model module on the prelim_bidir_hits.bed file will greatly decrease the number of false positives as the MLE estimates will more accurately reflect the underlying structure of the region of interest rather than a static template model. 
+Unlike the "bidir" module which utlizes an average or template version of the mixture model to scan the entire genome quickly, the "model" module will attempt to find (by maximum likelihood estimation, MLE) the best set of parameters (sigma,lambda, pi, w) on a per region of interest basis. Such a routine is especially valuable if it is believed that pausing or strand bias is changing following experimental perturbation. In addition, running the model module on the prelim_bidir_hits.bed file will greatly decrease the number of false positives as the MLE estimates will more accurately reflect the underlying structure of the region of interest rather than a static template model. 
 
 In short, MLE estimates are computed by the EM algorithm which is a convergent optimization method found commonly in gaussian mixture modeling and cluster analysis. Given this, the user may specify sets of parameters that are specific to the EM routine such as number of random seeds (-rounds), maximum number of iterations (-mi) and convergence threshold (-ct). A list of criticial and non-critical parameters are given below.   
 
@@ -134,13 +122,44 @@ The second file,[-N]_divergent_classifications.bed, provides a new bed file, whe
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/Divergent_Example.png)
 
 ##Chaining the bidir and model module
+Discussed thus far, profiling for divergent or bidirectional transcription events may be aschieved by first running the bidir module and then using the output (_prelim_bidir_hits.bed) as input to the model module. For convenience, these modules can be chained and all three files (_prelim_bidir_hits.bed, _divergent_classifications.bed, _K_models_MLE.tsv) will output from one single call. This is invoked like below:
+
+$Tfit bidir -MLE 1 \<list of other parameters and flags\>
 
 ##The config file
+At this point, we have discussed all the necessary parameters to run Tfit. However, specifying each of these on the command line is tedious. To this end, the user may specify a config file. This is invoked like below.
+
+$Tfit bidir -config \</path/to/config/file.txt
+
+An example of the config file is below. 
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/config_file_example.png)
 
-##Utilizing openMP and MPI
+The structure of the config file should remain this way (i.e. "-flag = value"). Statements following a # sign are appropriately ignored.    
 
+Please keep in mind that any parameters specified after the -config flag will overwrite those parameters specified in the -config file. Similarily, any parameters and flags specified before the -config flag will overwrite the config file.
+
+##Utilizing openMP and MPI
+Tfit is written using openMP and MPI to perform massive parrallelization. If your institution has a large compute cluster, than Tfit will operate well across mulitple cores and nodes. To invoke 4 MPI processces run:
+
+$mpirun -np 4 Tfit bidir -config \</path/to/config/file.txt
+
+To invoke Tfit to compute across 3 specific cores or CPUS, invoke.
+
+$Tfit bidir -config \</path/to/config/file.txt -cores 3
+
+Please keep in mind that if you are running on a single node machine. mpirun will utlizie CPUs and thus the user should take into account overhead of specifying -cores and -np. The default options for -np and -cores are both 1 respecitively. 
+
+If your instituion has a compute cluster, please consult your IT staff about the specific job allocation software. If you are using Torque/Maui where computation resources can be specified by PBS directives. Than the below few commands are sufficient to run Tfit across multiple nodes. 
+
+
+
+
+
+
+
+
+##Bleading Edge Parameters 
 
 
 
