@@ -4,11 +4,7 @@
 #include <iostream>
 #include "across_segments.h"
 #include <limits>
-#ifdef USING_ICC
-#include <mathimf.h>
-#else
 #include <math.h>   
-#endif
 #include <errno.h>
 #include "error_stdo_logging.h"
 #include <time.h>  
@@ -26,9 +22,7 @@
 #include "bidir_main.h"
 #include "model_main.h"
 #include "select_main.h"
-#ifdef USING_ICC
 #include <aligned_new>
-#endif
 using namespace std;
 
 int main(int argc, char* argv[]){

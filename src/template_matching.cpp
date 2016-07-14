@@ -13,6 +13,7 @@
 #include <fstream>
 #include <random>
 #include "omp.h"
+#include <math.h> 
 #ifdef USING_ICC
 #include <aligned_new>
 #endif
@@ -128,13 +129,13 @@ double BIC3(double ** X, int j, int k, int i,
 	}
 
 	
-	double emg_ratio 			= (-2*uni_ll + LOG(N)) / (-2*emg_ll + 20*LOG(N));
+	double chi_stat 			= 2*(emg_ll-uni_ll) ;
 
 	variances[i] 	= 1.0;
 	lambdas[i] 		= 1.0;
 	avgLL[i] 		= best_emg_ll / N;
 	skews[i][0]  	= 0, skews[i][1]= 0;
-	return emg_ratio;
+	return chi_stat;
 }
 
 
@@ -198,6 +199,59 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 		}
 	}
 }
+
+double chi_square_density(double x, double k ){
+	double vl 	= (1.0/(pow(2,k/2.)*tgamma(k/2.)   ))*pow(x,(k/2.)-1)*exp(-x/2.);
+	if (isnan(vl) or isinf(vl)){
+		return 0.0;
+	}
+	return vl;
+}
+
+
+vector<vector<double>> compute_chi_square_cumulative_density(int k,double max,double res,double grid_res){
+	//k is the number of degrees of freedom
+	double x 	= 0.0;
+	double pv 	= 0.0;
+	vector<vector<double>> pvs;
+	double a    = chi_square_density(0,k);
+	double trap_res = res/grid_res;
+	while (x < max and  pv <=1.0){
+		double h = (res)/grid_res;				
+		double xk=x;
+		double area 	= chi_square_density(xk,k);
+		for (int j = 1 ; j < grid_res-1;j++){
+			area+=2*chi_square_density(xk,k);
+			xk+=h;
+		}
+		area+=chi_square_density(xk,k);
+		pv+=(h/2.)*area;
+		if (not area){
+			break;
+		}
+		vector<double> row 	= {x,pv};
+		pvs.push_back(row);
+		x+=res;	
+	}
+	vector<double> row 	= {x,1.0};
+	pvs.push_back(row);
+	return pvs;
+}
+
+double get_threshold(vector<vector<double>> pvs,double bct){
+	double N = pvs.size();
+	double S = 0.0;
+	int i = 0;
+	while (i < N and pvs[i][1]< bct){
+
+		i+=1;
+	}
+	if (i < N){
+		return pvs[i][0];
+	}
+	return pvs[i-1][0] ;
+}
+
 
 void run_global_template_matching(vector<segment*> segments, 
 	string out_dir,  params * P){
@@ -263,6 +317,16 @@ void run_global_template_matching(vector<segment*> segments,
 	int mj;
 	int threads  	= omp_get_max_threads();
 	vector<merged> mergees;
+
+
+	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,200,0.01,1000);
+
+	double threshold 			= get_threshold(pvs, ct);
+
+
+
+
+
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
@@ -289,11 +353,14 @@ void run_global_template_matching(vector<segment*> segments,
 		//write out contiguous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
 			if (SCORES){
+				double vl 	= BIC_values[j]/(densities[j]+densities_r[j]);
+				if (isnan(vl)){
+					vl 		= 0;
+				}
 				FHW_scores<<segments[i]->chrom<<"\t"<<to_string(int(segments[i]->X[0][j-1]*ns+segments[i]->start))<<"\t";
-				FHW_scores<<to_string(int(segments[i]->X[0][j]*ns+segments[i]->start ))<<"\t" <<to_string(BIC_values[j])<<endl;
+				FHW_scores<<to_string(int(segments[i]->X[0][j]*ns+segments[i]->start ))<<"\t" <<to_string(vl)<<endl;
 			}
-			
-			if (BIC_values[j] >=ct and densities[j] > ef + 1*stdf  and densities_r[j]> er + 1*stdr    ){
+			if ( BIC_values[j] >=threshold and densities[j] > (ef + 1*stdf)  and densities_r[j]> (er + 1*stdr)    ){
 				
 
 				start 		= int(segments[i]->X[0][j]*ns+segments[i]->start - 100);

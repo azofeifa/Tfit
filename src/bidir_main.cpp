@@ -34,12 +34,10 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	sigma 		= stod(P->p["-sigma"])/ns, lambda= ns/stod(P->p["-lambda"]);
 	foot_print 	= stod(P->p["-foot_print"])/ns, pi= stod(P->p["-pi"]), w= stod(P->p["-w"]);
 
-
-
 	//(2a) read in bedgraph files 
 	map<string, int> chrom_to_ID;
 	map<int, string> ID_to_chrom;
-	vector<double> parameters;
+	vector<double> parameters 	= {sigma, lambda, foot_print,pi, w};
 	if (not tss_file.empty() and rank == 0){
 		vector<segment *> FSI;
 		LG->write("loading TSS intervals...................................",verbose);
@@ -58,24 +56,22 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 		LG->write("Computing Average Model.................................",verbose);
 		parameters  	= compute_average_model(integrated_segments, P);
 		LG->write("done\n", verbose);
-		sigma 	= parameters[1], lambda= parameters[2];
-		foot_print= parameters[3], pi= parameters[4], w= parameters[5];
 		LG->write("\nAverage Model Parameters\n", verbose);
-		LG->write("-sigma      : " + to_string(sigma*ns)+ "\n", verbose);
-		LG->write("-lambda     : " + to_string(ns/lambda)+ "\n", verbose);
-		LG->write("-foot_print : " + to_string(foot_print*ns)+ "\n", verbose);
-		LG->write("-pi         : " + to_string(pi)+ "\n", verbose);
-		LG->write("-w          : " + to_string(w)+ "\n\n", verbose);
+		LG->write("-sigma      : " + to_string(parameters[0]*ns)+ "\n", verbose);
+		LG->write("-lambda     : " + to_string(ns/parameters[1])+ "\n", verbose);
+		LG->write("-foot_print : " + to_string(parameters[2]*ns)+ "\n", verbose);
+		LG->write("-pi         : " + to_string(parameters[3])+ "\n", verbose);
+		LG->write("-w          : " + to_string(parameters[4])+ "\n\n", verbose);
 
 
 
 	}
-	P->p["-sigma"] 			= to_string(sigma);
-	P->p["-lambda"] 		= to_string(lambda);
-	P->p["-foot_print"] 	= to_string(foot_print);
-	P->p["-pi"] 			= to_string(pi);
-	P->p["-w"] 				= to_string(w);
-	MPI_comm::send_out_parameters( parameters, rank, nprocs);
+	parameters 				= MPI_comm::send_out_parameters( parameters, rank, nprocs);
+	P->p["-sigma"] 			= to_string(parameters[0]);
+	P->p["-lambda"] 		= to_string(parameters[1]);
+	P->p["-foot_print"] 	= to_string(parameters[2]);
+	P->p["-pi"] 			= to_string(parameters[3]);
+	P->p["-w"] 				= to_string(parameters[4]);
 
 	LG->write("loading bedgraph files..................................", verbose);
 	vector<segment *> 	segments 	= load::load_bedgraphs_total(forward_bedgraph, reverse_bedgraph, joint_bedgraph,

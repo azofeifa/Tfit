@@ -175,7 +175,6 @@ vector<map<int, vector<simple_c_free_mode> >> run_model_across_free_mode(vector<
 
 vector<double> compute_average_model(vector<segment *> segments, params * P){
 	//need to compute average model
-	vector<double> parameters;
 	double minX 	= 0;
 	double maxX 	= 0;
 	int test 		= 0;
@@ -236,14 +235,15 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 		}
 	}	
 
-	parameters 	= {best_clf.components[0].bidir.mu,
-		best_clf.components[0].bidir.si,
-		best_clf.components[0].bidir.l,
-		best_clf.components[0].bidir.foot_print,
-		best_clf.components[0].bidir.pi,
-		best_clf.components[0].bidir.w,
-		best_clf.components[0].forward.w,
-		best_clf.components[0].reverse.w };
+
+	vector<double> parameters(5);
+
+
+	parameters[0]=	best_clf.components[0].bidir.si;
+	parameters[1]=	best_clf.components[0].bidir.l;
+	parameters[2]=	best_clf.components[0].bidir.foot_print;
+	parameters[3]=	best_clf.components[0].bidir.pi;
+	parameters[4]=	best_clf.components[0].bidir.w;
 
 
 	return parameters;

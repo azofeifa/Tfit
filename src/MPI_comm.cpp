@@ -247,22 +247,23 @@ map<string, vector<segment *> > MPI_comm::send_out_single_fit_assignments(vector
 
 vector<double> MPI_comm::send_out_parameters(vector<double> parameters, int rank, int nprocs){
 	vector<double> new_parameters;
-	double * P 	= new double[4];
+	double * P 	= new double[5];
 	if (rank==0){
-		for (int i = 0 ; i < 4;i++){
+		for (int i = 0 ; i < 5;i++){
 			P[i] 	= parameters[i];
 		}
 		for (int j = 1 ; j < nprocs;j++){
-			MPI_Ssend(&P[0], 4, MPI_DOUBLE, j, 0, MPI_COMM_WORLD);
+			MPI_Ssend(&P[0], 5, MPI_DOUBLE, j, 0, MPI_COMM_WORLD);
 		}
 
 	}else{
-		double * P 	= new double[4];
-		MPI_Recv(&P[0], 4, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&P[0], 5, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		
 	}
-	for (int k = 0 ; k < 4; k++){
+	for (int k = 0 ; k < 5; k++){
 		new_parameters.push_back(P[k]);
 	}
+
 	return new_parameters;
 
 }
