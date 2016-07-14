@@ -1,11 +1,6 @@
 
 #include "load.h"
 #include "model.h"
-#ifdef USING_ICC
-#include <mathimf.h>
-#else
-#include <math.h>   
-#endif
 #include <limits>
 #include <iostream>
 #include <algorithm>
@@ -13,10 +8,7 @@
 #include <fstream>
 #include <random>
 #include "omp.h"
-#include <math.h> 
-#ifdef USING_ICC
-#include <aligned_new>
-#endif
+#include <cmath> 
 using namespace std;
 
 double nINF	=-exp(1000);
