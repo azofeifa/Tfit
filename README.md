@@ -158,6 +158,23 @@ Again, this highly system dependent. But openMPI is a well maintained library wi
 
 
 ##Bleading Edge Parameters 
+Tfit is on going effort in development both in terms of software and additions to the mathematics behind the mixture model inference procedure. Currently, I have two additions to the model that have led to better performance. However unlike the methodolgy we have outlined above, these additions are not published (paper in preperation).  
+
+The first addition is maximum a-posteriori estimation of the parameters lambda, sigma, pi and w. These are achieved in the normal fashion by conjugate priors. These are given below and are only utilized in the "model" module. 
+
+1. -ALPHA_0 prior parameter 1 for sigma (recommended to be set at 1)
+2. -BETA_0 prior parameter 2 for sigma (recommended to be set at 1)
+3. -ALPHA_1 prior parameter 1 for lambda 
+4. -BETA_1 prior parameter 2 for lambda 
+5. -ALPHA_2 symmetric prior on mixing weights (the higher this value the more the algorithm will attempt to components of equal mixing weights, recommended 100)
+6. -ALPHA_3 symmetric prior on the strand bias (the higher this value the more the algorithm will attempt to find bidirectional events with equal strand bias, very useful! recommended 100)
+
+Please note that the priors for sigma and lambda relate to Gamma distribution parameterized shape and rate parameters where the expected value of the gamma is ALPHA_0 /BETA_0 for sigma and ALPHA_1 / BETA_1 for lambda.
+
+The second addition is estimation for the distance between the two radiating peaks of the bidirectional, informally at this point called the foot print parameter. This is currently integrated into the EM algorithm but will be ignored if -foot_print is not invoked or set to zero in either the call to the bidir or model module. 
+
+##Questions and Comments
+Please email me at joseph[dot]azofeifa[at]colorado[dot]edu with questions and comments! Or additionally open an "issue" through the GitHub site. 
 
 
 
