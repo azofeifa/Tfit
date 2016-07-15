@@ -108,4 +108,5 @@ clean:
 	@rm -f *.o
 	@rm -f EMGU
 	@rm -f Tfit
-	@echo "\nsuccessfully removed binaries\n"
+	
+	@printf "\nsuccessfully removed binaries\n\n"
