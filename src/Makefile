@@ -30,7 +30,7 @@ NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o \
 	@printf "successfully compiled \n\n"
 
 main.o: 
-	@echo "\n========================================="
+	@printf "\n========================================="
 	@echo "GCC version: "${GCCVERSION}
 	@printf "main              : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/main.cpp 
