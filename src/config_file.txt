@@ -10,37 +10,33 @@
 -j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.nneg.BedGraph
 #-ij			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_SRR1105736.fastqbowtie2.sorted.BedGraph
 -k 			= /Users/joazofeifa/Lab/Article_drafts/Alg_paper/files/intervals_for_elongation_ROC.bed
-#-tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
+-tss 			= /Users/joazofeifa/Lab/genome_files/hg19_TSS.bed
 -o 	  		= /Users/joazofeifa/Desktop/
 -log_out                = /Users/joazofeifa/Lab/EMG_logs/
--scores			= /Users/joazofeifa/Desktop/prelim_scores.bedgraph
+#-scores			= /Users/joazofeifa/Desktop/prelim_scores.bedgraph
 #===========================================================================
 #house keeping parameters
 -chr 			= all  #specific chromosome, note chr[N] or all  
 -br 			= 15 #binning resolution do not consider changing
--pad 			= 2000 #how much to add the provided intervals
--MLE			= 0 #get Maximum likelihood estimates
--select 		= 0 #run BIC optimization for MLE from moment estimators
--ns                     = 100 #scaling for numerical stability, would not consider changing
+-MLE			= 1 #get Maximum likelihood estimates
 
 #===========================================================================
 #template matching algorithm parameters
+-pad 	  	        = 2000
 -bct                    = 1.0 #confidence threshold
 -lambda	  	   	= 200 #base pairs
 -sigma 			= 10  #base pairs
 -pi 			= 0.5 #strand biase
--w 			= 0.75 #pausing probability
+-w 			= 0.35 #pausing probability
 -foot_print		= 10 #base pairs
 
 #===========================================================================
 #EM algorithm specific parameters
--r_mu 			= 1 #seed EM randomly from the peak finder
 -minK 			= 1 #min model complexity to consider
 -maxK 			= 1 #
 -rounds                 = 4 #number of random EM initializations
 -ct                     = 0.0001 #EM convergence threshold difference
 -mi                     = 2000 #Number of EM iterations before it is aborted
--max_noise              = 0.05 #weight of the random/uniform noise component
 #===========================================================================
 #Map Estimation Parameters, note setting to zero recoverse MLE
 #>1 for all is recomended for numerical stability

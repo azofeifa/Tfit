@@ -62,9 +62,6 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 		LG->write("-foot_print : " + to_string(parameters[2]*ns)+ "\n", verbose);
 		LG->write("-pi         : " + to_string(parameters[3])+ "\n", verbose);
 		LG->write("-w          : " + to_string(parameters[4])+ "\n\n", verbose);
-
-
-
 	}
 	parameters 				= MPI_comm::send_out_parameters( parameters, rank, nprocs);
 	P->p["-sigma"] 			= to_string(parameters[0]);
@@ -91,8 +88,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//===========================================================================
 	//(3a) now going to run the template matching algorithm based on pseudo-
 	//moment estimator and compute BIC ratio (basically penalized LLR)
-
-	LG->write("running moment estimator algorithm......................", verbose);
+	LG->write("running template matching algorithm.....................", verbose);
 	run_global_template_matching(segments, out_file_dir, P);	
 	//(3b) now need to send out, gather and write bidirectional intervals 
 	LG->write("done\n", verbose);

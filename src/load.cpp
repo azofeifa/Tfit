@@ -12,11 +12,7 @@
 #include "across_segments.h"
 #include "model_selection.h"
 #include <cmath>
-#ifdef USING_ICC
-#include <mathimf.h>
-#else
 #include <math.h>   
-#endif
 #include <limits>
 #include <iostream>
 #include <algorithm>
@@ -26,12 +22,7 @@
 
 #include <stdio.h>
 #include <time.h>
-#ifdef USING_ICC
-#include <mathimf.h>
-#include <aligned_new>
-#else
 #include <math.h>   
-#endif
 
 using namespace std;
 //========================================================================
@@ -331,29 +322,34 @@ void node::retrieve_nodes(vector<segment*> & saves){
 
 //================================================================================================
 //a class from loading the K_models formmated file 
-segment_fits::segment_fits(){} //empty con
+segment_fits::segment_fits(){
+} //empty con
 segment_fits::segment_fits(string c, int st, int sp,
  	double n_pos, double n_neg, string id){
 
 	chrom=c, start=st, stop=sp, TSS=0;
 	N 	= n_pos + n_neg, N_pos = n_pos, N_neg = n_neg;
 	ID 	= id;
+	BIC_ratio 	= 0;
 }
 void segment_fits::get_model(double ms_pen){
 	typedef map<int, double>::iterator it_type;
 	int arg;
 	double MIN=INF;
 	double score;
+	double null_score;
 	
 	for (it_type m 	= M.begin(); m != M.end(); m++){
 		if (m->first > 0){
-			score 	= -2*m->second + log(N)*(ms_pen*m->first);
+			score 		= -2*m->second + log(N)*(ms_pen*m->first);
 		}else{
-			score 	= -2*m->second + log(N) ;		
+			score 		= -2*m->second + log(N) ;		
+			null_score 	= -2*m->second + log(N) ;
 		}
 		if (score < MIN){
-			MIN 	= score;
-			arg 	= m->first;
+			MIN 		= score;
+			arg 		= m->first;
+			BIC_ratio 	= null_score/score;
 		}
 	}
 	model 	= arg;
@@ -375,21 +371,22 @@ string segment_fits::write (){
 			if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.1 and pi < 0.9  ){
 				line+=chrom+"\t" + to_string(start) + "\t" + to_string(stop)+"\t";
 				line+=ID+"|";
-				string ps 	= "";
-				for (int m = 0; m < params.size(); m++){
-					vector<string> ks;
-					if (m!=5){
-						ks 	= split_by_comma(params[m], "");
-					}else{
-						ks 	= split_by_bar(params[m], "");	
-					}
-					if (m + 1 < params.size()){
-						ps+=ks[i]+ ",";
-					}else{
-						ps+=ks[i];
-					}
-				}
-				line+=ps+"\n";
+				// string ps 	= "";
+				// for (int m = 0; m < params.size(); m++){
+				// 	vector<string> ks;
+				// 	if (m!=5){
+				// 		ks 	= split_by_comma(params[m], "");
+				// 	}else{
+				// 		ks 	= split_by_bar(params[m], "");	
+				// 	}
+				// 	if (m + 1 < params.size()){
+				// 		ps+=ks[i]+ ",";
+				// 	}else{
+				// 		ps+=ks[i];
+				// 	}
+				// }
+				// line+=ps+"\n";
+				line+=to_string(BIC_ratio)+","+ to_string(N_pos)+","+to_string(N_neg)+"\n";
 			}
 		}
 	}
@@ -754,21 +751,35 @@ vector<segment_fits *> load::load_K_models_out(string FILE){
 //================================================================================================
 //WRITE out to file functions
 
+vector<vector<double>> bubble_sort_alg(vector<vector<double>> X){
+	bool changed 	= true;
+	while (changed){
+		changed = false;
+		for (int i = 1 ; i < X.size(); i++){
+			if (X[i-1][0] > X[i][0]){
+				changed 				= true;
+				vector<double > copy 	= X[i-1];
+				X[i-1] 					= X[i];
+				X[i] 	= copy;
+			}
+		}
+	}
+	return X;
+}
+
 
 void load::write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir, 
 	string job_name,int job_ID, params * P, int noise){
 	typedef map<string , vector<vector<double> > >::iterator it_type;
 	ofstream FHW;
-	if (not noise){
-		FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
-	}else{
-		FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_non_div_txn.bed");	
-	}
-	FHW<<P->get_header(4);
+	FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
+	FHW<<P->get_header(1);
 	int ID 	= 0;
 	for (it_type c = G.begin(); c!=G.end(); c++){
-		for (int i = 0; i < c->second.size(); i++){
-			FHW<<c->first<<"\t"<<to_string(int(c->second[i][0]))<<"\t"<<to_string(int(c->second[i][1]))<<"\tME_"<<to_string(ID)<<endl;
+		vector<vector<double>> data_intervals 	=  bubble_sort_alg(c->second);
+
+		for (int i = 0; i < data_intervals.size(); i++){
+			FHW<<c->first<<"\t"<<to_string(int(data_intervals[i][0]))<<"\t"<<to_string(int(data_intervals[i][1]))<<"\tME_"<<to_string(ID)<<endl;
 			ID++;
 		}
 	}
@@ -785,14 +796,9 @@ void load::write_out_models_from_free_mode(map<int, map<int, vector<simple_c_fre
 	double penality = stof(P->p["-ms_pen"]) ;
 	string out_dir 	= P->p["-o"];
 	ofstream FHW;
-	if (noise==0){
-		file_name 	= out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv";
-		FHW.open(file_name);
-	}else{
-		file_name 	= out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_non_div_txn_K_models_MLE.tsv";
-		FHW.open(file_name);
-	}
-	FHW<<P->get_header(0);
+	file_name 	= out_dir+  P->p["-N"] + "-" + to_string(job_ID)+  "_K_models_MLE.tsv";
+	FHW.open(file_name);
+	FHW<<P->get_header(2);
 	
 	typedef map<int, map<int, vector<simple_c_free_mode>  > >::iterator it_type_1;
 	typedef map<int, vector<simple_c_free_mode>  > ::iterator it_type_2;
@@ -848,8 +854,6 @@ void load::write_out_models_from_free_mode(map<int, map<int, vector<simple_c_fre
 				fp 			= to_string( scale*(*c).ps[11]  );
 				ll 			= to_string((*c).SS[0]);
 				if (ii +1 < NN){
-
-
 					mus+=mu+",";
 					sigmas+=sigma+",";
 					lambdas+=lambda+",";
@@ -883,12 +887,8 @@ void load::write_out_models_from_free_mode(map<int, map<int, vector<simple_c_fre
 }
 void load::write_out_bidirectionals_ms_pen(vector<segment_fits*> fits, params * P, int job_ID, int noise ){
 	ofstream FHW;
-	if (noise){
-		FHW.open(P->p["-o"]+  P->p["-N"] + "-" + to_string(job_ID)+  "_non_div_txn_divergent_classifications.bed");
-	}else{
-		FHW.open(P->p["-o"]+  P->p["-N"] + "-" + to_string(job_ID)+  "_divergent_classifications.bed");	
-	}
-	FHW<<P->get_header(0);
+	FHW.open(P->p["-o"]+  P->p["-N"] + "-" + to_string(job_ID)+  "_divergent_classifications.bed");	
+	FHW<<P->get_header(2);
 	double penality 	= stod(P->p["-ms_pen"]);
 	for (int i = 0; i < fits.size(); i++){
 		fits[i]->get_model(penality);

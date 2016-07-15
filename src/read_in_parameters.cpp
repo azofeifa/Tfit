@@ -261,8 +261,6 @@ void params::help(){
 	printf("              in both the five-prime and three-prime direction (default=1000)\n");
 	printf("-MLE      : (boolean integer) specific to the bidir module, will perform parameter\n");
 	printf("              inference via EM (highly recommended for accuracy)\n");
-	printf("-select   : (boolean integer) specific to the bidir and model module will perform\n");
-	printf("              ROC analysis and run the selection module\n");
 	printf("-ms_pen   : (positive floating) penalty term in BIC criteria for model selection\n");
 	printf("              (default = 1)\n");
 	
@@ -349,64 +347,82 @@ void params::display(int nodes, int cores){
 		printf("-i         : %s\n", p["-i"].c_str()  );
 		printf("-j         : %s\n", p["-j"].c_str()  );
 	}
-	printf("-MLE       : %s\n",  p["-MLE"].c_str());
-	printf("-select    : %s\n",  p["-select"].c_str());
 	if (model or MLE){
 	printf("-k         : %s\n", p["-k"].c_str()  );
 	}
-
-	if (select){
-		printf("-q         : %s\n", p["-q"].c_str());
+	if (not p["-tss"].empty()){
 		printf("-tss       : %s\n", p["-tss"].c_str()  );
 	}
 	printf("-o         : %s\n", p["-o"].c_str()  );
 	printf("-log_out   : %s\n", p["-log_out"].c_str()  );
+	printf("-MLE       : %s\n",  p["-MLE"].c_str());
 	printf("-chr       : %s\n", p["-chr"].c_str());	
 	printf("-br        : %s\n", p["-br"].c_str());	
 	printf("-rounds    : %s\n", p["-rounds"].c_str()  );
-	printf("-elon      : %s\n", p["-elon"].c_str()  );
+	if (stod(p["-elon"])){
+		printf("-elon      : %s\n", p["-elon"].c_str()  );
+	}
 	printf("-pad       : %s\n", p["-pad"].c_str()  );
 	if (!model){
 	printf("-bct       : %s\n", p["-bct"].c_str());
 	}
-	printf("-minK      : %s\n", p["-minK"].c_str());
-	printf("-maxK      : %s\n", p["-maxK"].c_str());
+	if (model){
+		printf("-minK      : %s\n", p["-minK"].c_str());
+		printf("-maxK      : %s\n", p["-maxK"].c_str());
+	}
 	printf("-threads   : %d\n",  cores);
 	printf("-MPI_np    : %d\n",  nodes);
-	printf("Questions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu\n" );
+	printf("\nQuestions/Bugs? joseph[dot]azofeifa[at]colorado[dot]edu\n" );
 	printf("----------------------------------------------------------------\n" );
 	
 }
 
 
 string params::get_header(int ID){
+
 	string header = "";
 	header+="#----------------------------------------------------\n";
 	header+="#Date Time    : "+currentDateTime()+"\n";
 	header+="#-N           : "+p["-N"]+"\n";
-	header+="#-i           : "+p["-i"]+"\n";
-	header+="#-j           : "+p["-j"]+"\n";
-	header+="#-ij          : "+p["-ij"]+"\n";
-	header+="#-k           : "+p["-k"]+"\n";
+	if (p["-ij"].empty()){
+		header+="#-i           : "+p["-i"]+"\n";
+		header+="#-j           : "+p["-j"]+"\n";
+	}else{
+		header+="#-ij          : "+p["-ij"]+"\n";
+	}
+	if (ID!=1){
+		header+="#-k           : "+p["-k"]+"\n";
+	}
 	header+="#-o           : "+p["-o"]+"\n";
-	header+="#-ns          : "+p["-ns"]+"\n";
 	header+="#-br          : "+p["-br"]+"\n";
-	header+="#-bct         : "+p["-bct"]+"\n";
-	header+="#-elon        : "+p["-elon"]+"\n";
-	header+="#-pad         : "+p["-pad"]+"\n";
-	header+="#-minK        : "+p["-minK"]+"\n";
-	header+="#-maxK        : "+p["-maxK"]+"\n";
-	header+="#-ms_pen      : "+p["-ms_pen"]+"\n";
-	header+="#-mi          : "+p["-mi"]+"\n";
-	header+="#-ct          : "+p["-ct"]+"\n";
-	header+="#-rounds      : "+p["-rounds"]+"\n";
-	header+="#-ALPHA_0     : "+p["-ALPHA_0"]+"\n";	
-	header+="#-BETA_0      : "+p["-BETA_0"]+"\n";	
-	header+="#-BETA_1      : "+p["-BETA_1"]+"\n";	
-	header+="#-ALPHA_2     : "+p["-ALPHA_2"]+"\n";	
-	header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
+	if (ID==1){
+		header+="#-bct         : "+p["-bct"]+"\n";
+		header+="#-pad         : "+p["-pad"]+"\n";
+	}
+	if (ID!=1){
+		header+="#-elon        : "+p["-elon"]+"\n";
+		header+="#-minK        : "+p["-minK"]+"\n";
+		header+="#-maxK        : "+p["-maxK"]+"\n";
+		header+="#-mi          : "+p["-mi"]+"\n";
+		header+="#-ct          : "+p["-ct"]+"\n";
+		header+="#-rounds      : "+p["-rounds"]+"\n";
+	}
+	if (ID!=1){
+		header+="#-ALPHA_0     : "+p["-ALPHA_0"]+"\n";	
+		header+="#-BETA_0      : "+p["-BETA_0"]+"\n";	
+		header+="#-BETA_1      : "+p["-BETA_1"]+"\n";	
+		header+="#-ALPHA_2     : "+p["-ALPHA_2"]+"\n";	
+		header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
+	}
+	if (ID==1){
+		header+="#-o           : "+p["-o"]+"\n";
+		header+="#-sigma       : "+to_string(stod(p["-sigma"])*stod(p["-ns"]))+"\n";
+		header+="#-lambda      : "+to_string(stod(p["-ns"])/stod(p["-lambda"]))+"\n";
+		header+="#-foot_print  : "+to_string(stod(p["-foot_print"])*stod(p["-ns"]))+"\n";
+		header+="#-pi          : "+p["-pi"]+"\n";
+		header+="#-w           : "+p["-w"]+"\n";
+	}
 	header+="#----------------------------------------------------\n";
-	
 	return header;
 }
 

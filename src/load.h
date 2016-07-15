@@ -69,6 +69,7 @@ public:
 	map<int, double> M;
 	map<int, string> parameters;
 	int model;
+	double BIC_ratio;
 	string ID;
 	segment_fits();
 	segment_fits(string, int, int, double, double, string);
