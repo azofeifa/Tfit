@@ -194,7 +194,7 @@ void BIC_template(segment * data, double * avgLL, double * BIC_values, double * 
 
 double chi_square_density(double x, double k ){
 	double vl 	= (1.0/(pow(2,k/2.)*tgamma(k/2.)   ))*pow(x,(k/2.)-1)*exp(-x/2.);
-	if (isnan(vl) or isinf(vl)){
+	if (std::isnan(double(vl)) or std::isinf(double(vl))){
 		return 0.0;
 	}
 	return vl;
@@ -346,7 +346,7 @@ void run_global_template_matching(vector<segment*> segments,
 		for (int j = 1; j<segments[i]->XN-1; j++){
 			if (SCORES){
 				double vl 	= BIC_values[j]/(densities[j]+densities_r[j]);
-				if (isnan(vl)){
+				if (std::isnan(double(vl))){
 					vl 		= 0;
 				}
 				FHW_scores<<segments[i]->chrom<<"\t"<<to_string(int(segments[i]->X[0][j-1]*ns+segments[i]->start))<<"\t";
