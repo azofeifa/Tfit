@@ -46,9 +46,11 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 			IDS, P, 1 );
 		map<string, vector<segment *>> GG 	= MPI_comm::convert_segment_vector(tss_intervals);
 		LG->write("done\n", verbose);
-	
+		
+		LG->write("inserting coverage data.................................",verbose);
 		vector<segment*> integrated_segments= load::insert_bedgraph_to_segment_joint(GG, 
 			forward_bedgraph, reverse_bedgraph, joint_bedgraph, rank);
+		LG->write("done\n", verbose);
 		LG->write("Binning/Normalizing TSS intervals.......................",verbose);
 		load::BIN(integrated_segments, stod(P->p["-br"]), stod(P->p["-ns"]),true);	
 		LG->write("done\n", verbose);
@@ -89,9 +91,12 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//(3a) now going to run the template matching algorithm based on pseudo-
 	//moment estimator and compute BIC ratio (basically penalized LLR)
 	LG->write("running template matching algorithm.....................", verbose);
-	run_global_template_matching(segments, out_file_dir, P);	
+	double threshold 	= run_global_template_matching(segments, out_file_dir, P);	
 	//(3b) now need to send out, gather and write bidirectional intervals 
 	LG->write("done\n", verbose);
+	LG->write("\nAt a p-value cut-off of " + P->p["-bct"] + " " + " LLR is " + to_string(threshold) + "\n\n",verbose);
+
+
 	LG->write("scattering predictions to other MPI processes...........", verbose);
 	int total =  MPI_comm::gather_all_bidir_predicitions(all_segments, 
 			segments , rank, nprocs, out_file_dir, job_name, job_ID,P,0);

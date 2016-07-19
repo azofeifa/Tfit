@@ -507,12 +507,18 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
 			if (INSERT){
 				if (u==0){
 					if (coverage > 0){
-						G[chrom]->add2(1, double(stop+start)/2., abs(coverage));
+						for (int xx = start; xx < stop; xx++){
+							G[chrom]->add2(1, double(xx), abs(coverage));
+						}
 					}else{
-						G[chrom]->add2(-1, double(stop+start)/2., abs(coverage));						
+						for (int xx = start; xx < stop; xx++){
+							G[chrom]->add2(-1, xx, abs(coverage));						
+						}
 					}
 				}else{
-					G[chrom]->add2(-1, double(stop+start)/2., abs(coverage));	
+					for (int xx = start; xx < stop; xx++){
+						G[chrom]->add2(-1, xx, abs(coverage));	
+					}
 				}
 			}
 			prevChrom=chrom;
@@ -666,9 +672,11 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 					}
 					center 	= (stop + start) /2.;
 					if (NT.find(chrom)!=NT.end()){
-						vector<double> x(2);
-						x[0]=center, x[1] = abs(coverage);
-						NT[chrom].insert_coverage(x, strand);
+						for (int center_2=start; center_2 < stop; center_2++){
+							vector<double> x(2);
+							x[0]=double(center_2), x[1] = abs(coverage);
+							NT[chrom].insert_coverage(x, strand);
+						}
 						
 					}
 				}

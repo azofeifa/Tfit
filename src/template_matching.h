@@ -8,7 +8,7 @@
 using namespace std;
 vector<double> peak_bidirs(segment * );
 int sample_centers(vector<double>, double);
-void run_global_template_matching(vector<segment*>, 
+double run_global_template_matching(vector<segment*>, 
 	string, params *);
 void noise_global_template_matching(vector<segment*>, double);
 extern double INF;
