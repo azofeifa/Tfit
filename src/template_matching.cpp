@@ -106,6 +106,11 @@ double BIC3(double ** X, int j, int k, int i,
 	double N 		= N_pos + N_neg;
 	double a 	= X[0][j], b=X[0][k];
 	double uni_ll= LOG(pi/  (b-a ) )*N_pos + LOG((1-pi)/ (b-a ))*N_neg;
+
+	double uni_ll_pos= LOG(pi/  (b-a ) )*N_pos;
+	double uni_ll_neg= LOG((1-pi)/  (b-a ) )*N_neg;
+
+
 	double best_emg_ll 	= nINF;
 	double 		l = b-a;
 	double best_w 	= 0.0;
@@ -113,15 +118,22 @@ double BIC3(double ** X, int j, int k, int i,
 
 
 	double emg_ll 	= 0;
-	EMG EMG_clf(X[0][i], sigma, lambda, w, pi2  );
+	EMG EMG_clf(X[0][i], sigma, lambda, w, 0.5  );
 	EMG_clf.foot_print 	= fp;
 
+	double emg_ll_pos 	= 0;
+	double emg_ll_neg 	= 0;
+
 	for (int i = j; i < k;i++ ){
+		emg_ll_pos+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i];
+		emg_ll_neg+=LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
+		
 		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
 	}
 
 	
 	double chi_stat 			= 2*(emg_ll-uni_ll) ;
+//	double chi_stat 			= (emg_ll_pos-uni_ll_pos)+(emg_ll_neg-uni_ll_neg);
 
 	variances[i] 	= 1.0;
 	lambdas[i] 		= 1.0;
@@ -235,7 +247,6 @@ double get_threshold(vector<vector<double>> pvs,double bct){
 	double S = 0.0;
 	int i = 0;
 	while (i < N and pvs[i][1]< bct){
-
 		i+=1;
 	}
 	if (i < N){
@@ -245,7 +256,7 @@ double get_threshold(vector<vector<double>> pvs,double bct){
 }
 
 
-void run_global_template_matching(vector<segment*> segments, 
+double run_global_template_matching(vector<segment*> segments, 
 	string out_dir,  params * P){
 	
 
@@ -311,13 +322,8 @@ void run_global_template_matching(vector<segment*> segments,
 	vector<merged> mergees;
 
 
-	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,200,0.01,1000);
-
-	double threshold 			= get_threshold(pvs, ct);
-
-
-
-
+	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,2000,0.5,10000);
+	double threshold 			= get_threshold(pvs, 1.0-0.001);
 
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
@@ -333,11 +339,11 @@ void run_global_template_matching(vector<segment*> segments,
 		}
 		mergees.clear();
 
-		double l 		=  segments[i]->XN;
-		double ef 		= segments[i]->fN*( 2*(window*ns)*0.05  /(l*15));
-		double er 		= segments[i]->rN*( 2*(window*ns)*0.05 /(l*15));
-		double stdf 	= sqrt(ef*(1- (  2*(window*ns)*0.05/(l*15)  ) )  );
-		double stdr 	= sqrt(er*(1- (  2*(window*ns)*0.05 /(l*15) ) )  );
+		double l 		=  segments[i]->maxX-segments[i]->minX;
+		double ef 		= segments[i]->fN*( 2*(window*ns)*0.05  /(l*ns ));
+		double er 		= segments[i]->rN*( 2*(window*ns)*0.05 /(l*ns ));
+		double stdf 	= sqrt(ef*(1- (  2*(window*ns)*0.05/(l*ns )  ) )  );
+		double stdr 	= sqrt(er*(1- (  2*(window*ns)*0.05 /(l*ns ) ) )  );
 		BIC_template(segments[i], avgLL, BIC_values, densities, densities_r, variances, lambdas,
 			skews, window, sigma, lambda, foot_print, pi, w);
 
@@ -345,14 +351,14 @@ void run_global_template_matching(vector<segment*> segments,
 		//write out contiguous regions of up?
 		for (int j = 1; j<segments[i]->XN-1; j++){
 			if (SCORES){
-				double vl 	= BIC_values[j]/(densities[j]+densities_r[j]);
+			  	double vl 	= BIC_values[j];
 				if (std::isnan(double(vl))){
 					vl 		= 0;
 				}
 				FHW_scores<<segments[i]->chrom<<"\t"<<to_string(int(segments[i]->X[0][j-1]*ns+segments[i]->start))<<"\t";
 				FHW_scores<<to_string(int(segments[i]->X[0][j]*ns+segments[i]->start ))<<"\t" <<to_string(vl)<<endl;
 			}
-			if ( BIC_values[j] >=threshold and densities[j] > (ef + 1*stdf)  and densities_r[j]> (er + 1*stdr)    ){
+			if ( BIC_values[j] >=threshold and densities[j] > (ef + 2*stdf)  and densities_r[j]> (er + 2*stdr)    ){
 				
 
 				start 		= int(segments[i]->X[0][j]*ns+segments[i]->start - 100);
@@ -402,6 +408,7 @@ void run_global_template_matching(vector<segment*> segments,
 
 		scores.clear();
 	}
+	return threshold;
 }
 
 
