@@ -118,7 +118,7 @@ double BIC3(double ** X, int j, int k, int i,
 
 
 	double emg_ll 	= 0;
-	EMG EMG_clf(X[0][i], sigma, lambda, w, 0.5  );
+	EMG EMG_clf(X[0][i], sigma, lambda, w, pi2  );
 	EMG_clf.foot_print 	= fp;
 
 	double emg_ll_pos 	= 0;
@@ -323,7 +323,7 @@ double run_global_template_matching(vector<segment*> segments,
 
 
 	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,2000,0.5,10000);
-	double threshold 			= get_threshold(pvs, 1.0-0.001);
+	double threshold 			= get_threshold(pvs, 1.0-0.00001);
 
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
