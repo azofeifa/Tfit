@@ -133,7 +133,6 @@ double BIC3(double ** X, int j, int k, int i,
 
 	
 	double chi_stat 			= 2*(emg_ll-uni_ll) ;
-//	double chi_stat 			= (emg_ll_pos-uni_ll_pos)+(emg_ll_neg-uni_ll_neg);
 
 	variances[i] 	= 1.0;
 	lambdas[i] 		= 1.0;
@@ -230,7 +229,7 @@ vector<vector<double>> compute_chi_square_cumulative_density(int k,double max,do
 		}
 		area+=chi_square_density(xk,k);
 		pv+=(h/2.)*area;
-		if (not area){
+		if ( area<pow(10,-12) and pv > 0.5 ){
 			break;
 		}
 		vector<double> row 	= {x,pv};
@@ -246,7 +245,7 @@ double get_threshold(vector<vector<double>> pvs,double bct){
 	double N = pvs.size();
 	double S = 0.0;
 	int i = 0;
-	while (i < N and pvs[i][1]< bct){
+	while (i < N and pvs[i][1]< bct){		
 		i+=1;
 	}
 	if (i < N){
@@ -322,9 +321,15 @@ double run_global_template_matching(vector<segment*> segments,
 	vector<merged> mergees;
 
 
+<<<<<<< HEAD
 	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,2000,0.5,10000);
 	double threshold 			= get_threshold(pvs, 1.0-0.0001);
 
+=======
+	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(25,1000,0.1,100000);
+	double threshold 			= get_threshold(pvs, 1.0-0.00001);
+	threshold 					= 500;
+>>>>>>> 9497fe18d97be55c893f550b18a9aed566781c51
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
