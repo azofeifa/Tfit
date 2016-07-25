@@ -321,15 +321,10 @@ double run_global_template_matching(vector<segment*> segments,
 	vector<merged> mergees;
 
 
-<<<<<<< HEAD
-	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,2000,0.5,10000);
-	double threshold 			= get_threshold(pvs, 1.0-0.0001);
 
-=======
-	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(25,1000,0.1,100000);
+	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(25,1000,0.1,10000);
 	double threshold 			= get_threshold(pvs, 1.0-0.00001);
 	threshold 					= 500;
->>>>>>> 9497fe18d97be55c893f550b18a9aed566781c51
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
