@@ -323,7 +323,7 @@ double run_global_template_matching(vector<segment*> segments,
 
 
 	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,2000,0.5,10000);
-	double threshold 			= get_threshold(pvs, 1.0-0.00001);
+	double threshold 			= get_threshold(pvs, 1.0-0.0001);
 
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
@@ -358,7 +358,7 @@ double run_global_template_matching(vector<segment*> segments,
 				FHW_scores<<segments[i]->chrom<<"\t"<<to_string(int(segments[i]->X[0][j-1]*ns+segments[i]->start))<<"\t";
 				FHW_scores<<to_string(int(segments[i]->X[0][j]*ns+segments[i]->start ))<<"\t" <<to_string(vl)<<endl;
 			}
-			if ( BIC_values[j] >=threshold and densities[j] > (ef + 2*stdf)  and densities_r[j]> (er + 2*stdr)    ){
+			if ( BIC_values[j] >=threshold and densities[j] > (ef + 1*stdf)  and densities_r[j]> (er + 1*stdr)    ){
 				
 
 				start 		= int(segments[i]->X[0][j]*ns+segments[i]->start - 100);
