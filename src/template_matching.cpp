@@ -245,9 +245,7 @@ double get_threshold(vector<vector<double>> pvs,double bct){
 	double N = pvs.size();
 	double S = 0.0;
 	int i = 0;
-	while (i < N and pvs[i][1]< bct){
-		printf("%d, %f, %f, %.17f\n",i,N,pvs[i][0],pvs[i][1] );
-		
+	while (i < N and pvs[i][1]< bct){		
 		i+=1;
 	}
 	if (i < N){
@@ -323,8 +321,9 @@ double run_global_template_matching(vector<segment*> segments,
 	vector<merged> mergees;
 
 
-	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(15,1000,0.1,100000);
+	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(25,1000,0.1,100000);
 	double threshold 			= get_threshold(pvs, 1.0-0.00001);
+	threshold 					= 500;
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
