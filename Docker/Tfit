@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# This script was created by Cassidy Thompson of the BioFrontiers IT department as part of a collaboration between BioFroniters IT and the Dowell Lab
+
+#Run Tfit program inside a docker container
+REPOSITORY="biofrontiers/fstitch_tfit"
+TAG="latest"
+
+#Check if tfit image is available, if not then download it.
+image_check="docker images | awk '{print \$1, \$2}' | grep -q '$REPOSITORY $TAG'"
+if ! $(eval $image_check); then
+    echo "Tfit image not found, downloading...."
+    docker pull $REPOSITORY:$TAG 
+fi
+
+#Define available flags and function to check if item is in options array 
+options=("-i" "-j" "-ij" "-o" "-log_out" "-N" "-tss" "-chr" "-bct" "-lambda" "-sigma" "-pi" "-w" "-mink" "-maxk" "-rounds" "-ct" "-mi" "-config" "-k" "-MLE")
+array_contains () {
+    local seeking=$1; shift
+    local in=1
+    for element; do
+        if [[ $element == $seeking ]]; then
+            in=0
+            break
+        fi
+    done
+    return $in
+}
+
+#Define flagged variables from arguments passed to script and allowed flags defined above
+option="undef"
+for arg in "$@"
+do
+    if [ $option != "undef" ]; then
+        printf -v $option "$arg"
+    fi
+    array_contains $arg "${options[@]}" && option=${arg//-} || option=undef
+done
+
+
+#Function for adding flag to tfit command from arguments
+add_tfit_flag() {
+    flag=$1
+    value=$2
+    if [ "$value" != "" ];then
+        tfit_command="$tfit_command $flag $value"
+    fi
+}
+
+#Function for adding flag to tfit command and adapting docker/tfit commands for use with directory flag
+add_directory_flag() {
+    flag=$1
+    directory=$2
+    container_directory=$3
+    if [ "$directory" != "" ];then
+        docker_command="$docker_command -v $directory:/$container_directory"
+        tfit_command="$tfit_command $flag /$container_directory/"
+    fi
+}
+
+#Function for adding flag to tfit command and adapting docker/tfit commands for use with file flag
+add_file_flag() {
+    flag=$1
+    file=$2
+    container_directory=$3
+    if [ "$file" != "" ];then
+        docker_command="$docker_command -v $(dirname $file):/$container_directory"
+        tfit_command="$tfit_command $flag /$container_directory/$(basename $file)"
+    fi
+}
+
+#Construct docker and tfit commands
+docker_command="docker run -ti --name=tfit"
+tfit_module=$1
+tfit_command="Tfit $tfit_module"
+
+#Add -MLE flag if used after bidir module specification
+add_tfit_flag -MLE $MLE
+
+# Set input directories
+add_file_flag -i "$i" i_dir
+add_file_flag -j "$j" j_dir
+add_file_flag -ij "$ij" ij_dir
+
+#Set output directories
+add_directory_flag -o "$o" output
+add_directory_flag -log_out "$log_out" log_out
+
+#Add optional input files
+add_file_flag -config "$config" config
+add_file_flag -tss "$tss" tss_dir
+add_file_flag -k "$k" k_dir
+
+#Add additional required and optional flags if present
+add_tfit_flag -N $N
+add_tfit_flag -chr $chr
+add_tfit_flag -bct $bct
+add_tfit_flag -lambda $lambda
+add_tfit_flag -sigma $sigma
+add_tfit_flag -pi $pi
+add_tfit_flag -w $w
+add_tfit_flag -mink $mink
+add_tfit_flag -maxk $maxk
+add_tfit_flag -rounds $rounds
+add_tfit_flag -ct $ct
+add_tfit_flag -mi $mi
+
+
+# Upon construction, run docker command
+docker_command="$docker_command $REPOSITORY:$TAG $tfit_command" 
+eval $docker_command
+docker stop tfit
+docker rm tfit
+
