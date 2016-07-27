@@ -42,6 +42,16 @@ If your program, did not compile properly it is likely that you do not have the 
 
 3) MPI (this needs to installed and configured and serves as a wrapper for GCC, please visit https://www.open-mpi.org/faq/)
 
+##Running and Installing Through Docker Container
+Running Tfit via a Docker container requires that Docker is installed and running. In Windows and Mac OSX you must run the Docker/Tfit script from the Docker Quickstart Terminal (https://www.docker.com/products/docker-toolbox).
+To run Tfit via docker, simply run the Docker/Tfit script with the same arguments and options as you would use when running the standard Tfit program. This script will check if you have the biofrontiers/fstitch_tfit:latest image and download it if you do not. It will then pass the arguments you provide to the Tfit program inside the container and output the results and logs to the location you specify.
+In order to ensure you are using the latest version of the container, you may run the following command before executing the Tfit script:
+docker pull biofrontiers/fstitch_tfit:latest
+Advanced users may want to build their own Docker images using the provided Dockerfile. To do so, run the following command from within the Docker directory:
+docker build -t [image name] .
+And alter the Docker/Tfit script, changing the REPOSITORY and TAG variables so that they match your built image.
+
+
 
 ##Bidir Module
 The bidir module scans across the genome for areas resembling bidirectional transcription by comparing a fixed template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point) and -w (pausing probability, how much bidirectional signal to elongation/noise signal). Neighboring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). An example of a bed file is provided below:
