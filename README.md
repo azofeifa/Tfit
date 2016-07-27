@@ -44,11 +44,17 @@ If your program, did not compile properly it is likely that you do not have the 
 
 ##Running and Installing Through Docker Container
 Running Tfit via a Docker container requires that Docker is installed and running. In Windows and Mac OSX you must run the Docker/Tfit script from the Docker Quickstart Terminal (https://www.docker.com/products/docker-toolbox).
+
 To run Tfit via docker, simply run the Docker/Tfit script with the same arguments and options as you would use when running the standard Tfit program. This script will check if you have the biofrontiers/fstitch_tfit:latest image and download it if you do not. It will then pass the arguments you provide to the Tfit program inside the container and output the results and logs to the location you specify.
+
 In order to ensure you are using the latest version of the container, you may run the following command before executing the Tfit script:
+
 docker pull biofrontiers/fstitch_tfit:latest
+
 Advanced users may want to build their own Docker images using the provided Dockerfile. To do so, run the following command from within the Docker directory:
+
 docker build -t [image name] .
+
 And alter the Docker/Tfit script, changing the REPOSITORY and TAG variables so that they match your built image.
 
 
