@@ -14,7 +14,7 @@ if ! $(eval $image_check); then
 fi
 
 #Define available flags and function to check if item is in options array 
-options=("-i" "-j" "-ij" "-o" "-log_out" "-N" "-tss" "-chr" "-bct" "-lambda" "-sigma" "-pi" "-w" "-mink" "-maxk" "-rounds" "-ct" "-mi" "-config" "-k" "-MLE")
+options=("-i" "-j" "-ij" "-o" "-log_out" "-N" "-tss" "-chr" "-bct" "-lambda" "-sigma" "-pi" "-w" "-mink" "-maxk" "-rounds" "-ct" "-mi" "-config" "-k" "-MLE" "-br")
 array_contains () {
     local seeking=$1; shift
     local in=1
@@ -104,7 +104,7 @@ add_tfit_flag -maxk $maxk
 add_tfit_flag -rounds $rounds
 add_tfit_flag -ct $ct
 add_tfit_flag -mi $mi
-
+add_tfit_flag -br $br
 
 # Upon construction, run docker command
 docker_command="$docker_command $REPOSITORY:$TAG $tfit_command" 
