@@ -324,7 +324,7 @@ double run_global_template_matching(vector<segment*> segments,
 
 	vector<vector<double>> pvs 	= compute_chi_square_cumulative_density(25,1000,0.1,10000);
 	double threshold 			= get_threshold(pvs, 1.0-0.00001);
-	threshold 					= 500;
+	threshold 					= 1000;
 	//#pragma omp parallel for num_threads(threads)
 	for (int i = 0; i < segments.size(); i++){
 		double * avgLL 			= new double[int(segments[i]->XN)];
