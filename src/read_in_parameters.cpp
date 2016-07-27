@@ -33,8 +33,8 @@ params::params(){
 	p["-o"] 		= "";
 	p["-log_out"] 	= "";
 
-	p["-pad"] 		= "0";
-	p["-br"] 		= "300";
+	p["-pad"] 		= "2000";
+	p["-br"] 		= "25";
 	p["-ns"] 		= "100";
 	p["-minK"] 		= "1";
 	p["-maxK"] 		= "3";
@@ -60,11 +60,11 @@ params::params(){
 	p["-ALPHA_3"] 	= "1";
 	//================================================
 	//parameters for template matching
-	p["-lambda"] 		= "200";
-	p["-sigma"] 		= "10";
-	p["-foot_print"] 	= "100";
+	p["-lambda"] 		= "2000";
+	p["-sigma"] 		= "123";
+	p["-foot_print"] 	= "86";
 	p["-pi"] 			= "0.5";
-	p["-w"] 			= "0.5";
+	p["-w"] 			= "0.33";
 
 
 
