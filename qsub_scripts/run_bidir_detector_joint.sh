@@ -1,15 +1,15 @@
 #PBS -S /bin/bash
 
-#PBS -N Danko2013_merged
+#PBS -N Tfit_Template_Script
 #PBS -m ae
 #PBS -M joseph.azofeifa@colorado.edu
 
 #PBS -e /Users/azofeifa/qsub_errors/EMG/
 #PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
-#PBS -l walltime=12:00:00
-#PBS -l nodes=4:ppn=64
-#PBS -l mem=8gb
+#PBS -l walltime=36:00:00
+#PBS -l nodes=1:ppn=64
+#PBS -l mem=100gb
 
 hostlist=$( cat $PBS_NODEFILE | sort | uniq | tr '\n' ',' | sed -e 's/,$//' )
 # -- OpenMP environment variables --
