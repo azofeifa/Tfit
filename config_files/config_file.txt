@@ -8,7 +8,7 @@
 #-j 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_DMSO2_3.nneg.BedGraph
 #-ij			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/bed_graph_files/test_SRR1105736.fastqbowtie2.sorted.BedGraph
 -k 			= /Users/joazofeifa/Lab/gro_seq_files/HCT116/interval_files/test_intervals.bed
--tss 			= /Users/azofeifa/Lab/genome_files/RefSeqHG19.bed
+-tss 			= /Users/joazofeifa/Lab/genome_files/RefSeqHG19.bed
 -o 	  		= /Users/joazofeifa/Lab/gro_seq_files/HCT116/EMG_out_files/
 -log_out                = /Users/joazofeifa/Lab/EMG_logs/
 
