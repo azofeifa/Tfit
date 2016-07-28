@@ -115,7 +115,7 @@ double BIC3(double ** X, int j, int k, int i,
 	double 		l = b-a;
 	double best_w 	= 0.0;
 	double pi2 	= (N_pos+100) / (N_neg + N_pos+200);
-
+	pi2 	= 0.5;
 
 	double emg_ll 	= 0;
 	EMG EMG_clf(X[0][i], sigma, lambda, w, pi2  );
