@@ -12,7 +12,9 @@ Please note that for both the bidir and model module computation time will decre
 ##System Requirements and Makefile
 Transcription Fit (Tfit) is written in the C/C++ program language that requires GNU compilers 4.7.3 or greater. Tfit uses the popular openMPI framework to perform massive parallelization via multithreading on multiple core, single node systems or multiple core, multiple node compute clusters. 
 
-After cloning this repo, please change directory into /where/you/clone/this/repo/Tfit/src/ and run make.  
+After cloning this repo, please change directory into /where/you/clone/this/repo/Tfit/src/ and run make.  Note: That if you are a University of Colorado user and are running Pando Compute cluster through the BioFrontiers institute you need to module load both GNU compilers and mpich wrapper, i.e. module load gcc_4.9.2, module load mpich_3.1.4!
+
+
 
 $cd  /where/you/clone/this/repo/Tfit/src/
 
