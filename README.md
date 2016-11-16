@@ -81,7 +81,7 @@ The critical input parameters are listed below:
 |------|------|-------------| 
 | -i	| \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
 | -j | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
-| -ij| \</path/to/BedGraphFile_joint_strand> (if -i and -j are not specified) |BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
+| -ij| \</path/to/BedGraphFile_joint_strand> |(if -i and -j are not specified)  BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
 | -N | string | job_name, simple a string
 | -o | \</path/to/output/directory> | where files will output
 | -log_out | \</path/to/logoutput/directory> | As the program runs this file will be updated with progress 
@@ -97,8 +97,12 @@ The non-critical input parameters are listed below, these all have default setti
 |------|------|-------------| 
 | -tss | \</path/to/bedfile/of/promoter/locations/ | (promoter locations are provided for hg19 and mm10 in the annotations/ directory of this repo, it is recommended to optimize your template density function by promoter or TSS associated regions 
 | -chr | string | where the bidir module will only run on specified chromosome (default is "all")
-| -bct | numerical | this is the LLR threshold, the default and recommended is 1
-^^^If TSS is not provided, the user can manually enter the template parameters of interest^^^ 
+| -bct | numerical | this is the LLR threshold, the default and recommended is 1 
+
+If TSS is not provided, the user can manually enter the template parameters of interest. 
+
+| Flag | Type | Description |
+|------|------|-------------| 
 | -lambda | numerical | this is the entry length parameter for the EMG density function (default = 200 bp)   
 | -sigma  | numerical | this is the variance parameter for the EMG density function (default = 10 bp)
 | -pi     | numerical |  this is the strand bias parameter for the EMG density function (default = 0.5)
@@ -106,7 +110,9 @@ The non-critical input parameters are listed below, these all have default setti
 
 After the bidir model finishes a bed file will appear in the user specified output directory called: [-N]_prelim_bidir_hits.bed. This file will contain genomic intervals of interest where divergent transcription is likely occurring. This file may be used for downstream analysis or taken at face value. Last, but not least, the bidir module can be invoked as below:
 
-$Tfit bidir \<list of parameters and flags\>
+```
+$ Tfit bidir \<list of parameters and flags\>
+```
 
 Example output from the bidir module,i.e. [-N]_prelim_bidir_hits.bed, is provided below. 
 
@@ -120,21 +126,25 @@ In short, MLE estimates are computed by the EM algorithm which is a convergent o
 
 The critical input parameters are listed below:
 
-1. -i	= \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
-2. -j = \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
-3. -ij= \</path/to/BedGraphFile_joint_strand> (if -i and -j are not specified) “BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
-4. -k = \</path/to/bed_file of regions of interest> "bed" file from above, this output may be from _prelim_bidir_hits.bed or other genomic intervals of interest, TF peaks from MACS, RefSeq annotations for genes etc. 
-5. -N = job_name, simple a string
-6. -o = \</path/to/output/directory>
-7. -log_out = \</path/to/logoutput/directory> "As the program runs this file will be updated with progress 
+| Flag | Type | Description |
+|------|------|-------------| 
+| -i	| \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
+| -j | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
+| -ij| \</path/to/BedGraphFile_joint_strand> | (if -i and -j are not specified) “BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
+| -k | \</path/to/bed_file of regions of interest> | "bed" file from above, this output may be from \_prelim\_bidir_hits.bed or other genomic intervals of interest, TF peaks from MACS, RefSeq annotations for genes etc. 
+| -N | string | job_name, simple a string
+| -o | \</path/to/output/directory> | where files will be written to
+| -log_out | \</path/to/logoutput/directory> | As the program runs this file will be updated with progress 
 
 The non-critical input parameters are listed below, these all have default settings.
 
-1. -mink = a [integer value], minimum number of finite mixtures to consider (default = 1)
-2. -maxk = a [integer value], maximum number of finite mixtures to consider (default = 1)
-3. -rounds = a [integer value], number of random seeds to the EM (default = 5)
-4. -ct = a [floating point value], convergence threshold where EM halts (default = 0.0001)
-5. -mi = a [integer value],maximum number of EM iterations after which EM will halt (default = 2000)
+| Flag | Type | Description |
+|------|------|-------------| 
+| -mink | integer | minimum number of finite mixtures to consider (default = 1)
+| -maxk | integer | maximum number of finite mixtures to consider (default = 1)
+| -rounds | integer | number of random seeds to the EM (default = 5)
+| -ct | floating | convergence threshold where EM halts (default = 0.0001)
+| -mi | integer | maximum number of EM iterations after which EM will halt (default = 2000)
 
 After the model module has finished, Tfit will output two files in the user specified output directory: [-N]_K_models_MLE.tsv and [-N]_divergent_classifications.bed. 
 
@@ -149,12 +159,16 @@ The second file,[-N]_divergent_classifications.bed, provides a new bed file, whe
 ##Chaining the bidir and model module
 Discussed thus far, profiling for divergent or bidirectional transcription events may be achieved by first running the bidir module and then using the output (_prelim_bidir_hits.bed) as input to the model module. For convenience, these modules can be chained and all three files (_prelim_bidir_hits.bed, _divergent_classifications.bed, _K_models_MLE.tsv) will output from one single call. This is invoked like below:
 
-$Tfit bidir -MLE 1 \<list of other parameters and flags\>
+```
+$ Tfit bidir -MLE 1 \<list of other parameters and flags\>
+```
 
 ##The config file
 At this point, we have discussed all the necessary parameters to run Tfit. However, specifying each of these on the command line is tedious. To this end, the user may specify a config file. This is invoked like below.
 
-$Tfit bidir -config \</path/to/config/file.txt
+```
+$ Tfit bidir -config \</path/to/config/file.txt
+```
 
 An example of the config file is below. 
 
@@ -167,11 +181,15 @@ Please keep in mind that any parameters specified after the -config flag will ov
 ##Utilizing openMP and MPI
 Tfit is written using openMP and MPI to perform massive parallelization. If your institution has a large compute cluster, than Tfit will operate well across multiple cores and nodes. To invoke 4 MPI processes run:
 
-$mpirun -np 4 Tfit bidir -config \</path/to/config/file.txt
+```
+$ mpirun -np 4 Tfit bidir -config \</path/to/config/file.txt
+```
 
 To invoke Tfit to compute across 3 specific cores or CPUS, invoke.
 
-$Tfit bidir -config \</path/to/config/file.txt -cores 3
+```
+$ Tfit bidir -config \</path/to/config/file.txt -cores 3
+```
 
 Please keep in mind that if you are running on a single node machine. mpirun will utilize CPUs and thus the user should take into account overhead of specifying -cores and -np. The default options for -np and -cores are both 1 respectively. 
 
@@ -187,12 +205,14 @@ Tfit is on going effort in development both in terms of software and additions t
 
 The first addition is maximum a-posteriori estimation of the parameters lambda, sigma, pi and w. These are achieved in the normal fashion by conjugate priors. These are given below and are only utilized in the "model" module. 
 
-1. -ALPHA_0 prior parameter 1 for sigma (recommended to be set at 1)
-2. -BETA_0 prior parameter 2 for sigma (recommended to be set at 1)
-3. -ALPHA_1 prior parameter 1 for lambda 
-4. -BETA_1 prior parameter 2 for lambda 
-5. -ALPHA_2 symmetric prior on mixing weights (the higher this value the more the algorithm will attempt to components of equal mixing weights, recommended 100)
-6. -ALPHA_3 symmetric prior on the strand bias (the higher this value the more the algorithm will attempt to find bidirectional events with equal strand bias, very useful! recommended 100)
+| Flag | Type | Description |
+|------|------|-------------| 
+| -ALPHA_0 |prior parameter 1 for sigma (recommended to be set at 1)
+| -BETA_0 |prior parameter 2 for sigma (recommended to be set at 1)
+| -ALPHA_1| prior parameter 1 for lambda 
+| -BETA_1| prior parameter 2 for lambda 
+| -ALPHA_2 |symmetric prior on mixing weights (the higher this value the more the algorithm will attempt to components of equal mixing weights, recommended 100)
+| -ALPHA_3 |symmetric prior on the strand bias (the higher this value the more the algorithm will attempt to find bidirectional events with equal strand bias, very useful! recommended 100)
 
 Please note that the priors for sigma and lambda relate to Gamma distribution parameterized shape and rate parameters where the expected value of the gamma is ALPHA_0 /BETA_0 for sigma and ALPHA_1 / BETA_1 for lambda.
 
@@ -204,7 +224,10 @@ Please email me at joseph[dot]azofeifa[at]colorado[dot]edu with questions and co
 
 
 ##References
+If you find Tfit useful in your analysis please cite:
 
+J. Azofeifa and R. Dowell A generative model for the behavior of RNA polymerase Bioinformatics 2016 
 
+http://bioinformatics.oxfordjournals.org/content/early/2016/09/23/bioinformatics.btw599.abstract
 
 
