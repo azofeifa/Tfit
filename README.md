@@ -15,26 +15,23 @@ Transcription Fit (Tfit) is written in the C/C++ program language that requires 
 After cloning this repo, please change directory into /where/you/clone/this/repo/Tfit/src/ and run make.  Note: That if you are a University of Colorado user and are running Pando Compute cluster through the BioFrontiers institute you need to module load both GNU compilers and mpich wrapper, i.e. module load gcc_4.9.2, module load mpich_3.1.4!
 
 
+```
+$ cd  /where/you/clone/this/repo/Tfit/src/
 
-$cd  /where/you/clone/this/repo/Tfit/src/
+$ make clean
 
-$make clean
-
-$make
+$ make
+```
 
 If the program compiled successfully you should see the below output.
 
+```
 -------------------
-
 GCC version: 5.1.0
-
 ...
-
-
 successfully compiled
-
 -------------------
-
+```
 
 If your program, did not compile properly it is likely that you do not have the correct dependencies. The three significant dependencies are listed below. 
 
@@ -43,6 +40,12 @@ If your program, did not compile properly it is likely that you do not have the 
 2) openmp (this ships with most recent versions of GCC, please visit https://gcc.gnu.org/install/)
 
 3) MPI (this needs to installed and configured and serves as a wrapper for GCC, please visit https://www.open-mpi.org/faq/)
+
+In short, the make file requires the path to mpic++ (install and config openMPI) to be in your PATH. Installing and configuring your gcc compilers will likely be cause for a headache. I found these sites useful
+
+1. https://www.open-mpi.org
+2. https://www.cyberciti.biz/faq/howto-apple-mac-os-x-install-gcc-compiler/
+
 
 ##Running and Installing Through Docker Container
 Running Tfit via a Docker container requires that Docker is installed and running. In Windows and Mac OSX you must run the Docker/Tfit script from the Docker Quickstart Terminal (https://www.docker.com/products/docker-toolbox).
@@ -74,12 +77,14 @@ Perhaps the most important user input file is the "BedGraph" File corresponding 
 
 The critical input parameters are listed below:
 
-1. -i	= \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
-2. -j = \</path/to/BedGraphFile_forward strand> “BedGraph File from above”
-3. -ij= \</path/to/BedGraphFile_joint_strand> (if -i and -j are not specified) “BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
-4. -N = job_name, simple a string
-5. -o = \</path/to/output/directory>
-6. -log_out = \</path/to/logoutput/directory> "As the program runs this file will be updated with progress 
+| Flag | Type | Description |
+|------|------|-------------| 
+| -i	| \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
+| -j | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
+| -ij| \</path/to/BedGraphFile_joint_strand> (if -i and -j are not specified) |BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
+| -N | string | job_name, simple a string
+| -o | \</path/to/output/directory> | where files will output
+| -log_out | \</path/to/logoutput/directory> | As the program runs this file will be updated with progress 
 
 Example of joint forward and reverse strand bedgraph file:
 
@@ -88,14 +93,16 @@ Example of joint forward and reverse strand bedgraph file:
 
 The non-critical input parameters are listed below, these all have default settings.
 
-1. -tss = \</path/to/bedfile/of/promoter/locations/ (promoter locations are provided for hg19 and mm10 in the annotations/ directory of this repo, it is recommended to optimize your template density function by promoter or TSS associated regions 
-2. -chr = a [string] where the bidir module will only run on specified chromosome (default is "all")
-3. -bct = a [floating point value], this is the LLR threshold, the default and recommended is 1
+| Flag | Type | Description |
+|------|------|-------------| 
+| -tss | \</path/to/bedfile/of/promoter/locations/ | (promoter locations are provided for hg19 and mm10 in the annotations/ directory of this repo, it is recommended to optimize your template density function by promoter or TSS associated regions 
+| -chr | string | where the bidir module will only run on specified chromosome (default is "all")
+| -bct | numerical | this is the LLR threshold, the default and recommended is 1
 ^^^If TSS is not provided, the user can manually enter the template parameters of interest^^^ 
-4. -lambda = a [floating point value], this is the entry length parameter for the EMG density function (default = 200 bp)   
-5. -sigma  = a [floating point value], this is the variance parameter for the EMG density function (default = 10 bp)
-6. -pi     = a [floating point value], this is the strand bias parameter for the EMG density function (default = 0.5)
-7. -w      = a [floating point value], this is the pausing probability parameter for the EMG density function (default = 0.5)
+| -lambda | numerical | this is the entry length parameter for the EMG density function (default = 200 bp)   
+| -sigma  | numerical | this is the variance parameter for the EMG density function (default = 10 bp)
+| -pi     | numerical |  this is the strand bias parameter for the EMG density function (default = 0.5)
+| -w      | numerical | this is the pausing probability parameter for the EMG density function (default = 0.5)
 
 After the bidir model finishes a bed file will appear in the user specified output directory called: [-N]_prelim_bidir_hits.bed. This file will contain genomic intervals of interest where divergent transcription is likely occurring. This file may be used for downstream analysis or taken at face value. Last, but not least, the bidir module can be invoked as below:
 
