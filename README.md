@@ -218,6 +218,36 @@ Please note that the priors for sigma and lambda relate to Gamma distribution pa
 
 The second addition is estimation for the distance between the two radiating peaks of the bidirectional, informally at this point called the foot print parameter. This is currently integrated into the EM algorithm but will be ignored if -foot_print is not invoked or set to zero in either the call to the bidir or model module. 
 
+#Advanced HPC usage
+Those using compute cluster may find this below qsub script useful!
+
+
+```bash
+#PBS -S /bin/bash
+
+#PBS -N gTFIv2
+
+
+#PBS -l walltime=72:00:00
+#PBS -l nodes=10:ppn=64
+#PBS -l mem=10gb
+hostlist=$( cat $PBS_NODEFILE | sort | uniq | tr '\n' ',' | sed -e 's/,$//' )
+
+# -- OpenMP environment variables --
+OMP_NUM_THREADS=64
+export OMP_NUM_THREADS
+module load gcc_4.9.2
+module load mpich_3.1.4
+
+cmd="mpirun -np $PBS_NUM_NODES -hosts ${hostlist}"
+src=/path/to/src/Tfit
+
+
+$cmd $src <module> <parameter flags and values>
+
+```
+
+
 ##Questions and Comments
 Please email me at joseph[dot]azofeifa[at]colorado[dot]edu with questions and comments! Or additionally open an "issue" through the GitHub site. 
 
