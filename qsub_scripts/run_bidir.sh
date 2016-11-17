@@ -1,11 +1,8 @@
 #PBS -S /bin/bash
 
-#PBS -N Tfit_Template_Script
+#PBS -N Tfit
 #PBS -m ae
-#PBS -M joseph.azofeifa@colorado.edu
 
-#PBS -e /Users/azofeifa/qsub_errors/EMG/
-#PBS -o /Users/azofeifa/qsub_stdo/EMG/
 
 #PBS -l walltime=36:00:00
 #PBS -l nodes=1:ppn=64
@@ -18,10 +15,12 @@ export OMP_NUM_THREADS
 module load gcc_4.9.2
 module load mpich_3.1.4
 
+
+
 #================================================================
 #paths to config and src
-src=/Users/azofeifa/Lab/Tfit/src/Tfit
-config_file=/Users/azofeifa/Lab/Tfit/config_files/config_file.txt
+src=/path/to/src/Tfit
+config_file=/path/to/config_file.txt
 
 
 #================================================================
