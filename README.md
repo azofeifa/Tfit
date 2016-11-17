@@ -65,7 +65,39 @@ And alter the Docker/Tfit script, changing the REPOSITORY and TAG variables so t
 
 
 ##Bidir Module
-The bidir module scans across the genome for areas resembling bidirectional transcription by comparing a fixed template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point) and -w (pausing probability, how much bidirectional signal to elongation/noise signal). Neighboring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). An example of a bed file is provided below:
+The bidir module scans across the genome for areas resembling bidirectional transcription by comparing a fixed template mixture model (user provided parameters or parameters estimated from promoter regions) to a noise model (uniform distribution) by a Likelihood ratio score (LLR). 
+
+The critical input parameters below:
+
+| Flag | Type | Description |
+|------|------|-------------|
+| -i    | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
+| -j | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
+| -ij| \</path/to/BedGraphFile_joint_strand> |(if -i and -j are not specified)  BedGraph File from above but reverse strand reads are specified by negative coverage values and forw
+ard strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below.
+| -N | string | job_name, simple a string
+| -o | \</path/to/output/directory> | where files will output
+| -log_out | \</path/to/logoutput/directory> | As the program runs this file will be updated with progress
+
+
+The non-critical input parameters are listed below, these all have default settings.
+
+| Flag | Type | Description |
+|------|------|-------------|
+| -tss | \</path/to/bedfile/of/promoter/locations/ | (promoter locations are provided for hg19 and mm10 in the annotations/ directory of this repo, it is recommended to optimize your template density function by promoter or TSS associated regions
+| -chr | string | where the bidir module will only run on specified chromosome (default is "all")
+| -bct | numerical | this is the LLR threshold, the default and recommended is 1
+
+If TSS is not provided, the user can manually enter the template parameters of interest.
+
+| Flag | Type | Description |
+|------|------|-------------|
+| -lambda | numerical | this is the entry length parameter for the EMG density function (default = 200 bp)
+| -sigma  | numerical | this is the variance parameter for the EMG density function (default = 10 bp)
+| -pi     | numerical |  this is the strand bias parameter for the EMG density function (default = 0.5)
+| -w      | numerical | this is the pausing probability parameter for the EMG density function (default = 0.5)
+
+In brief, the template mixture model is parameterized by -lambda (entry length or amount of skew), -sigma (variance in loading, error), -pi (strand bias, probability of forward strand data point) and -w (pausing probability, how much bidirectional signal to elongation/noise signal). Neighboring genomic coordinates where the LLR exceeds some user defined threshold (-bct flag) are joined and are returned as a bed file (chrom[tab]start[tab]stop[newline]). An example of a bed file is provided below:
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bed_file_example.png)
 
@@ -75,38 +107,12 @@ Perhaps the most important user input file is the "BedGraph" File corresponding 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_joint_example.png)
 
 
-The critical input parameters are listed below:
 
-| Flag | Type | Description |
-|------|------|-------------| 
-| -i	| \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
-| -j | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
-| -ij| \</path/to/BedGraphFile_joint_strand> |(if -i and -j are not specified)  BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below. 
-| -N | string | job_name, simple a string
-| -o | \</path/to/output/directory> | where files will output
-| -log_out | \</path/to/logoutput/directory> | As the program runs this file will be updated with progress 
 
 Example of joint forward and reverse strand bedgraph file:
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/bedgraph_single_example.png)
 
-
-The non-critical input parameters are listed below, these all have default settings.
-
-| Flag | Type | Description |
-|------|------|-------------| 
-| -tss | \</path/to/bedfile/of/promoter/locations/ | (promoter locations are provided for hg19 and mm10 in the annotations/ directory of this repo, it is recommended to optimize your template density function by promoter or TSS associated regions 
-| -chr | string | where the bidir module will only run on specified chromosome (default is "all")
-| -bct | numerical | this is the LLR threshold, the default and recommended is 1 
-
-If TSS is not provided, the user can manually enter the template parameters of interest. 
-
-| Flag | Type | Description |
-|------|------|-------------| 
-| -lambda | numerical | this is the entry length parameter for the EMG density function (default = 200 bp)   
-| -sigma  | numerical | this is the variance parameter for the EMG density function (default = 10 bp)
-| -pi     | numerical |  this is the strand bias parameter for the EMG density function (default = 0.5)
-| -w      | numerical | this is the pausing probability parameter for the EMG density function (default = 0.5)
 
 After the bidir model finishes a bed file will appear in the user specified output directory called: [-N]_prelim_bidir_hits.bed. This file will contain genomic intervals of interest where divergent transcription is likely occurring. This file may be used for downstream analysis or taken at face value. Last, but not least, the bidir module can be invoked as below:
 
