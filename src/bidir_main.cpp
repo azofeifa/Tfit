@@ -81,6 +81,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 		return 1;
 	}
 	LG->write("done\n", verbose);
+	//=================================================
 	//(2b) so segments is indexed by inidividual chromosomes, want to broadcast 
 	//to sub-processes and have each MPI call run on a subset of segments
 	vector<segment*> all_segments  	= segments;

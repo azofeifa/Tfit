@@ -367,25 +367,10 @@ string segment_fits::write (){
 			double pi 	= stod(split_by_comma(params[3], "")[i]);
 			double w 	= stod(split_by_comma(split_by_bar(params[5], "")[i] , "" )[0] );
 
-			int start 	= mu - (std + lam), stop = mu + (std+lam);
-			if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.1 and pi < 0.9  ){
+			int start 	= max(mu - (std + lam),0.0), stop = mu + (std+lam);
+			if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.05 and pi < 0.95  ){
 				line+=chrom+"\t" + to_string(start) + "\t" + to_string(stop)+"\t";
 				line+=ID+"|";
-				// string ps 	= "";
-				// for (int m = 0; m < params.size(); m++){
-				// 	vector<string> ks;
-				// 	if (m!=5){
-				// 		ks 	= split_by_comma(params[m], "");
-				// 	}else{
-				// 		ks 	= split_by_bar(params[m], "");	
-				// 	}
-				// 	if (m + 1 < params.size()){
-				// 		ps+=ks[i]+ ",";
-				// 	}else{
-				// 		ps+=ks[i];
-				// 	}
-				// }
-				// line+=ps+"\n";
 				line+=to_string(BIC_ratio)+","+ to_string(N_pos)+","+to_string(N_neg)+"\n";
 			}
 		}
@@ -895,7 +880,7 @@ void load::write_out_models_from_free_mode(map<int, map<int, vector<simple_c_fre
 }
 void load::write_out_bidirectionals_ms_pen(vector<segment_fits*> fits, params * P, int job_ID, int noise ){
 	ofstream FHW;
-	FHW.open(P->p["-o"]+  P->p["-N"] + "-" + to_string(job_ID)+  "_divergent_classifications.bed");	
+	FHW.open(P->p["-o"]+  P->p["-N"] + "-" + to_string(job_ID)+  "_bidir_predictions.bed");	
 	FHW<<P->get_header(2);
 	double penality 	= stod(P->p["-ms_pen"]);
 	for (int i = 0; i < fits.size(); i++){

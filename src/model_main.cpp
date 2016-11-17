@@ -56,7 +56,6 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	LG->write("done\n",verbose);
 	//=======================================================================================
 	//(4a) now going to run the model across all segments
-
 	vector<map<int, vector<simple_c_free_mode> >> FITS 		= run_model_across_free_mode(integrated_segments,
 		 P,LG);
 	//(4b) gather all the model fits

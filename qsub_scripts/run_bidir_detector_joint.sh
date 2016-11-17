@@ -27,5 +27,5 @@ config_file=/Users/azofeifa/Lab/Tfit/config_files/config_file.txt
 #================================================================
 #calling command
 cmd="mpirun -np $PBS_NUM_NODES -hosts ${hostlist}"
-$cmd $src bidir -config $config_file -ij $bg_file  -tss $TSS  -o $out_directory -log_out $tmp_log_directory -N $name
+$cmd $src bidir -config $config_file -ij $bg_file  -tss $TSS -bct $bct  -o $out_directory -log_out $tmp_log_directory -N $name
 #================================================================
