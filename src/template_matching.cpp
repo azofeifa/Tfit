@@ -125,14 +125,12 @@ double BIC3(double ** X, int j, int k, int i,
 	double emg_ll_neg 	= 0;
 
 	for (int i = j; i < k;i++ ){
-		emg_ll_pos+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i];
-		emg_ll_neg+=LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
 		
 		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
 	}
 
 	
-	double chi_stat 			= 2*(emg_ll-uni_ll) ;
+	double chi_stat 			= abs(uni_ll / emg_ll) ;
 
 	variances[i] 	= 1.0;
 	lambdas[i] 		= 1.0;
