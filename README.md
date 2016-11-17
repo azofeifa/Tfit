@@ -73,8 +73,7 @@ The critical input parameters below:
 |------|------|-------------|
 | -i    | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
 | -j | \</path/to/BedGraphFile_forward strand> |BedGraph File from above”
-| -ij| \</path/to/BedGraphFile_joint_strand> |(if -i and -j are not specified)  BedGraph File from above but reverse strand reads are specified by negative coverage values and forw
-ard strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below.
+| -ij| \</path/to/BedGraphFile_joint_strand> |(if -i and -j are not specified)  BedGraph File from above but reverse strand reads are specified by negative coverage values and forward strand reads are specified by positive coverage values, NOTE: either -ij is specified or both -i and -j are specified. An example of this combined joint bedgraph file is below.
 | -N | string | job_name, simple a string
 | -o | \</path/to/output/directory> | where files will output
 | -log_out | \</path/to/logoutput/directory> | As the program runs this file will be updated with progress
