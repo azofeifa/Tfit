@@ -118,21 +118,17 @@ double BIC3(double ** X, int j, int k, int i,
 	pi2 	= 0.5;
 
 	double emg_ll 	= 0;
-	EMG EMG_clf(X[0][i], sigma, lambda, w, pi2  );
+	EMG EMG_clf(X[0][i], sigma, lambda, 1.0, pi2  );
 	EMG_clf.foot_print 	= fp;
 
 	double emg_ll_pos 	= 0;
 	double emg_ll_neg 	= 0;
 
-	for (int i = j; i < k;i++ ){
-		
-		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) + (1.0-w)*pi*(1.0/l) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) + (1.0-w)*(1.0-pi)*(1.0/l) )*X[2][i];
+	for (int i = j; i < k;i++ ){		
+		emg_ll+=LOG(EMG_clf.pdf(X[0][i],1) )*X[1][i] + LOG(EMG_clf.pdf(X[0][i],-1) )*X[2][i];
 	}
-
-	
-	double chi_stat 			= abs(uni_ll / emg_ll) ;
-
-	variances[i] 	= 1.0;
+	double chi_stat 	= abs(uni_ll / emg_ll) ;
+	variances[i] 	        = 1.0;
 	lambdas[i] 		= 1.0;
 	avgLL[i] 		= best_emg_ll / N;
 	skews[i][0]  	= 0, skews[i][1]= 0;
