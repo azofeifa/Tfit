@@ -1,5 +1,5 @@
 # Tfit
-Transcription fit (Tfit) implements a finite mixture model to identify sites of bidirectional or divergent transcription in nascent transcription assays such as Global Run-On (GRO) and Precision Run-on (PRO) followed by sequencing data. Tfit is separated by two modules: (1) bidir and (2) model. Output from these modules can be exported to any genome browser, bed file examples are provided below.  
+Transcription fit (or Tfit) implements a finite mixture model to identify sites of bidirectional or divergent transcription in nascent transcription assays such as Global Run-On (GRO) and Precision Run-on (PRO) followed by sequencing data. Tfit is separated by two modules: (1) bidir and (2) model. Output from these modules can be exported to any genome browser, bed file examples are provided below.  
 
 ![Alt text](https://github.com/azofeifa/Tfit/blob/master/images/Example_Snapshot.png)
 
