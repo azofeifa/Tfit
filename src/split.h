@@ -5,6 +5,7 @@
 #include <string>
 using namespace std;
 
+vector<string> string_split(string , const char);
 vector<string> splitter(string ELE, string D);
 string strip(string ELE, string D);
 string join(vector<string>, string);

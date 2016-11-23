@@ -18,65 +18,62 @@
 using namespace std;
 
 params::params(){
-	p["-N"] 		= "EMG";
-	p["-v"] 		= "1";
-	
-	p["-h"] 		= "";
-	p["--help"] 	= "";
-
-	p["-config"] 	= "";
-	p["-i"] 		= "";
-	p["-j"] 		= "";
-	p["-ij"] 		= "";
-	p["-k"] 		= "";
-	p["-tss"] 		= "";
-	p["-o"] 		= "";
-	p["-log_out"] 	= "";
-
-	p["-pad"] 		= "2000";
-	p["-br"] 		= "25";
-	p["-ns"] 		= "100";
-	p["-minK"] 		= "1";
-	p["-maxK"] 		= "3";
-	p["-rounds"] 	= "10";
-	p["-ct"] 		= "0.0001";
-	p["-bct"] 		= "0.95";
-	p["-ms_pen"] 	= "1";
-	p["-MLE"] 		= "0";
-	p["-select"] 	= "0";
-	p["-max_noise"] = "0.05";
-	p["-chr"] 		= "all";
-	p["-elon"] 		= "0";
-	p["-mi"] 		= "2000";
-	p["-r_mu"] 		= "0";
-	p["-scores"] 	= "";
-	//================================================
-	//Hyper parameters	
-	p["-ALPHA_0"] 	= "1";
-	p["-BETA_0"] 	= "1";
-	p["-ALPHA_1"] 	= "1";
-	p["-BETA_1"] 	= "1";
-	p["-ALPHA_2"] 	= "1";
-	p["-ALPHA_3"] 	= "1";
-	//================================================
-	//parameters for template matching
-	p["-lambda"] 		= "2000";
-	p["-sigma"] 		= "123";
-	p["-foot_print"] 	= "86";
-	p["-pi"] 			= "0.5";
-	p["-w"] 			= "0.33";
-
-
-
-	
-	N 				= 0;
-	module 			= "";
-	EXIT 			= 0;
-	bidir 			= 0;
-	model 			= 0;
-	select 			= 0;
-	CONFIG 			= 0;
-
+  p["-N"] 		= "EMG";
+  p["-v"] 		= "1";
+  
+  p["-h"] 		= "";
+  p["--help"] 	= "";
+  
+  p["-config"] 	= "";
+  p["-i"] 		= "";
+  p["-j"] 		= "";
+  p["-ij"] 		= "";
+  p["-k"] 		= "";
+  p["-tss"] 		= "";
+  p["-o"] 		= "";
+  p["-log_out"] 	= "";
+  p["-FDR"]             = "";
+  p["-pad"] 		= "2000";
+  p["-br"] 		= "25";
+  p["-ns"] 		= "100";
+  p["-minK"] 		= "1";
+  p["-maxK"] 		= "3";
+  p["-rounds"] 	= "10";
+  p["-ct"] 		= "0.0001";
+  p["-bct"] 		= "0.95";
+  p["-ms_pen"] 	= "1";
+  p["-MLE"] 		= "0";
+  p["-select"] 	= "0";
+  p["-max_noise"] = "0.05";
+  p["-chr"] 		= "all";
+  p["-elon"] 		= "0";
+  p["-mi"] 		= "2000";
+  p["-r_mu"] 		= "0";
+  p["-scores"] 	= "";
+  //================================================
+  //Hyper parameters	
+  p["-ALPHA_0"] = "1";
+  p["-BETA_0"] 	= "1";
+  p["-ALPHA_1"] = "1";
+  p["-BETA_1"] 	= "1";
+  p["-ALPHA_2"] = "1";
+  p["-ALPHA_3"] = "1";
+  //================================================
+  //parameters for template matching
+  p["-lambda"] 		= "2000";
+  p["-sigma"] 		= "123";
+  p["-foot_print"] 	= "86";
+  p["-pi"] 			= "0.5";
+  p["-w"] 			= "0.9";
+  
+  
+  N 				= 0;
+  module 			= "";
+  EXIT 			= 0;
+  bidir 			= 0;
+  model 			= 0;
+  select 			= 0;
+  CONFIG 			= 0;
 }
 bool is_decimal(const std::string& s){
    if(s.empty() || std::isspace(s[0]) || std::isalpha(s[0])) return false ;
@@ -415,12 +412,11 @@ string params::get_header(int ID){
 		header+="#-ALPHA_3     : "+p["-ALPHA_3"]+"\n";	
 	}
 	if (ID==1){
-		header+="#-o           : "+p["-o"]+"\n";
-		header+="#-sigma       : "+to_string(stod(p["-sigma"])*stod(p["-ns"]))+"\n";
-		header+="#-lambda      : "+to_string(stod(p["-ns"])/stod(p["-lambda"]))+"\n";
-		header+="#-foot_print  : "+to_string(stod(p["-foot_print"])*stod(p["-ns"]))+"\n";
-		header+="#-pi          : "+p["-pi"]+"\n";
-		header+="#-w           : "+p["-w"]+"\n";
+		header+="#-sigma       : "+ p["-sigma"] +"\n";
+		header+="#-lambda      : "+ p["-lambda"]+"\n";
+		header+="#-foot_print  : "+ p["-foot_print"]+"\n";
+		header+="#-pi          : "+ p["-pi"]+"\n";
+		header+="#-w           : "+ p["-w"]+"\n";
 	}
 	header+="#----------------------------------------------------\n";
 	return header;

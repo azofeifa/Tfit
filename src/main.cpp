@@ -25,41 +25,42 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-	MPI::Init(argc, argv);
-	int nprocs		= MPI::COMM_WORLD.Get_size();
-	int rank 		= MPI::COMM_WORLD.Get_rank();
-    int threads  	= omp_get_max_threads();
+  MPI::Init(argc, argv);
+  int nprocs		= MPI::COMM_WORLD.Get_size();
+  int rank 		= MPI::COMM_WORLD.Get_rank();
+  int threads  	= omp_get_max_threads();
 
-	params * P 	= new params();
-    read_in_parameters(argv, P, rank );
-    if (P->EXIT){
-    	if (rank == 0){
-    		printf("exiting...\n");
-    	}
-    	delete P;
-    	MPI::Finalize();
-    	return 0;
+  params * P 	= new params();
+  read_in_parameters(argv, P, rank );
+  if (P->EXIT){
+    if (rank == 0){
+      printf("exiting...\n");
     }
-	int job_ID 		=  MPI_comm::get_job_ID(P->p["-log_out"], P->p["-N"], rank, nprocs);
-	
-    int verbose 	= stoi(P->p["-v"]);
-    Log_File * LG 	= new  Log_File(rank, job_ID, P->p["-N"], P->p["-log_out"]);
-    if (verbose and rank==0){
-		P->display(nprocs,threads);
-	}
-    if (P->bidir){
-	    bidir_run(P, rank, nprocs, job_ID,LG);
-	}
-	else if (P->model){
-		model_run(P, rank, nprocs,0,job_ID,LG);
-	}else if (P->select){
-		select_run(P, rank, nprocs, job_ID,LG);	
-	}
-	if (rank == 0){
-		load::collect_all_tmp_files(P->p["-log_out"], P->p["-N"], nprocs, job_ID);
-	}
-
-	MPI::Finalize();
-	
-	return 0;
+    delete P;
+    MPI::Finalize();
+    return 0;
+  }
+  int job_ID 		=  MPI_comm::get_job_ID(P->p["-log_out"], P->p["-N"], rank, nprocs);
+  
+  int verbose 	= stoi(P->p["-v"]);
+  Log_File * LG 	= new  Log_File(rank, job_ID, P->p["-N"], P->p["-log_out"]);
+  if (verbose and rank==0){
+    P->display(nprocs,threads);
+    LG->write(P->get_header(1),0);
+  }
+  if (P->bidir){
+    bidir_run(P, rank, nprocs, job_ID,LG);
+  }
+  else if (P->model){
+    model_run(P, rank, nprocs,0,job_ID,LG);
+  }else if (P->select){
+    select_run(P, rank, nprocs, job_ID,LG);	
+  }
+  if (rank == 0){
+    load::collect_all_tmp_files(P->p["-log_out"], P->p["-N"], nprocs, job_ID);
+  }
+  
+  MPI::Finalize();
+  
+  return 0;
 }

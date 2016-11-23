@@ -2,21 +2,13 @@
 #include "model.h"
 #include "load.h"
 #include "template_matching.h"
-#ifdef USING_ICC
-#include <mathimf.h>
-#else
 #include <math.h>   
-#endif
 #include <limits>
 #include <iostream>
 #include <algorithm>
 #include <unistd.h>
 #include <random>
 #include "omp.h"
-#ifdef USING_ICC
-#include <aligned_new>
-#endif
-
 
 //=============================================
 //Helper functions
@@ -144,26 +136,27 @@ string EMG::print(){
 }
 //density function
 double EMG::pdf(double z, int s ){
-	if (w==0){
-		return 0;
+        if (w==0){
+	  return 0.0;
 	}
 	if (s==1){
 		z-=foot_print;
 	}else{
 		z+=foot_print;
 	}
-	double vl 		= (l/2)*(s*2*(mu-z) + l*pow(si,2));
+	double vl 		= (l/2.0)*(s*2*(mu-z) + l*pow(si,2));
 	double p;
 	if (vl > 100){ //potential for overflow, inaccuracies
 		p 			= l*IN((z-mu)/si)*R(l*si - s*((z-mu)/si));
 	}else{
 		p 			= (l/2)*exp(vl)*erfc((s*(mu-z) + l*pow(si ,2) )/(sqrt(2)*si));
 	}
-	vl 				= p*w*pow(pi, max(0, s) )*pow(1.-pi, max(0, -s) );
-	if (checkNumber(vl)){
-		return vl;
+	p     = (l/2)*exp(vl)*erfc((s*(mu-z) + l*pow(si ,2) )/(sqrt(2)*si));
+	p     = p*w*pow(pi, max(0, s) )*pow(1-pi, max(0, -s) );
+	if (p < pow(10,7) and not isnan(float(p)) ){
+	  return p; 
 	}
-	return 0.; 
+	return 0.0;
 }
 //conditional expectation of Y given z_i
 double EMG::EY(double z, int s){

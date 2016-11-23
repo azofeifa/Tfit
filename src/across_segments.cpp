@@ -239,9 +239,9 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 	vector<double> parameters(5);
 
 
-	parameters[0]=	best_clf.components[0].bidir.si;
-	parameters[1]=	best_clf.components[0].bidir.l;
-	parameters[2]=	best_clf.components[0].bidir.foot_print;
+	parameters[0]=	best_clf.components[0].bidir.si*ns;
+	parameters[1]=	ns/best_clf.components[0].bidir.l;
+	parameters[2]=	best_clf.components[0].bidir.foot_print*ns;
 	parameters[3]=	best_clf.components[0].bidir.pi;
 	parameters[4]=	best_clf.components[0].bidir.w;
 
@@ -249,26 +249,3 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 	return parameters;
 
 }	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

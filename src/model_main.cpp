@@ -48,10 +48,15 @@ int model_run(params * P, int rank, int nprocs, double density, int job_ID, Log_
 	load::BIN(integrated_segments, stod(P->p["-br"]), stod(P->p["-ns"]),true);	
 	LG->write("done\n",verbose);
 
+
 	//=======================================================================================
 	//(3a) now run template matching for seeding the EM  
 	LG->write("running template matching...............................",verbose);
-	run_global_template_matching(integrated_segments, out_file_dir, P);	
+	slice_ratio SC;
+	SC.mean = 0.79, SC.std = 0.05; //this dependent on -w 0.9 !!!
+	SC.set_2(stod(P->p["-bct"]));
+	
+	run_global_template_matching(integrated_segments, out_file_dir, P,SC);	
 
 	LG->write("done\n",verbose);
 	//=======================================================================================

@@ -15,14 +15,14 @@ CPP_FLAGS_64  	= -D64_BIT
 GCCVERSION 	= $(shell ${CXX} -dumpversion)
 NU_FIT: main.o load.o split.o model.o across_segments.o template_matching.o \
 	read_in_parameters.o model_selection.o error_stdo_logging.o \
-	MPI_comm.o model_single.o density_profiler.o bootstrap.o bidir_main.o model_main.o select_main.o
+	MPI_comm.o  density_profiler.o bootstrap.o bidir_main.o model_main.o select_main.o FDR.o BIC.o
 	@printf "linking           : "
 	@${CXX} ${CXXFLAGS}  ${PWD}/main.o ${PWD}/load.o ${PWD}/model_selection.o \
 	${PWD}/split.o ${PWD}/model.o ${PWD}/across_segments.o  \
 	${PWD}/template_matching.o ${PWD}/read_in_parameters.o  \
-	${PWD}/MPI_comm.o ${PWD}/model_single.o  \
+	${PWD}/MPI_comm.o   \
 	${PWD}/bootstrap.o ${PWD}/density_profiler.o \
-	${PWD}/bidir_main.o ${PWD}/model_main.o  \
+	${PWD}/bidir_main.o ${PWD}/model_main.o ${PWD}/BIC.o ${PWD}/FDR.o  \
 	${PWD}/select_main.o  ${PWD}/error_stdo_logging.o -o ${EXEC} -lmpi
 	@cp ${PWD}/Tfit ${PWD}/EMGU
 	@printf "done\n"
@@ -39,6 +39,12 @@ error_stdo_logging.o:
 	@printf "error_stdo_logging: "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/error_stdo_logging.cpp 
 	@printf "done\n"
+
+BIC.o:
+	@printf "BIC               : "
+	@${CXX} -c ${CXXFLAGS} ${PWD}/BIC.cpp
+	@printf "done\n"
+
 
 select_main.o:
 	@printf "select_main       : "
@@ -103,10 +109,13 @@ density_profiler.o:
 	@printf "density_profiler  : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/density_profiler.cpp 
 	@printf "done\n"
+FDR.o:
+	@printf "FDR               : "
+	@${CXX} -c ${CXXFLAGS} ${PWD}/FDR.cpp
+	@printf "done\n"
 
 clean:
 	@rm -f *.o
 	@rm -f EMGU
-	@rm -f Tfit
-	
+	@rm -f Tfit	
 	@printf "\nsuccessfully removed binaries\n\n"

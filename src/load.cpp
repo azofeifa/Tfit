@@ -29,223 +29,223 @@ using namespace std;
 //The very very important segment class
 
 segment::segment(string chr, int st, int sp){
-	chrom	= chr;
-	start	= st;
-	stop	= sp;
-	N 		= 0;
-	fN 		= 0;
-	rN 		= 0;
-	minX=st, maxX=sp;
-	counts 	= 1;
-	XN 		= 0;
-	ID 		= 0;
-	strand 	= ".";
-	chrom_ID= 0;
-
+  chrom	= chr;
+  start	= st;
+  stop	= sp;
+  N 		= 0;
+  fN 		= 0;
+  rN 		= 0;
+  minX=st, maxX=sp;
+  counts 	= 1;
+  XN 		= 0;
+  ID 		= 0;
+  strand 	= ".";
+  chrom_ID= 0;
+  
 }
 segment::segment(string chr, int st, int sp, int i){
-	chrom	= chr;
-	start	= st;
-	stop	= sp;
-	fN 		= 0;
-	rN 		= 0;
-	N 		= 0;
-	minX=st, maxX=sp;
-	counts 	= 1;
-	XN 		= 0;
-	ID 		= i;
-	strand 	= ".";
-	chrom_ID= 0;
-
+  chrom	= chr;
+  start	= st;
+  stop	= sp;
+  fN 		= 0;
+  rN 		= 0;
+  N 		= 0;
+  minX=st, maxX=sp;
+  counts 	= 1;
+  XN 		= 0;
+  ID 		= i;
+  strand 	= ".";
+  chrom_ID= 0;
+  
 }
 
 segment::segment(string chr, int st, int sp, int i, string STR){
-	chrom	= chr;
-	start	= st;
-	stop	= sp;
-	N 		= 0;
-	fN 		= 0;
-	rN 		= 0;
-	minX=st, maxX=sp;
-	counts 	= 1;
-	XN 		= 0;
-	ID 		= i;
-	strand 	= STR;
-	chrom_ID= 0;
-
+  chrom	= chr;
+  start	= st;
+  stop	= sp;
+  N 		= 0;
+  fN 		= 0;
+  rN 		= 0;
+  minX=st, maxX=sp;
+  counts 	= 1;
+  XN 		= 0;
+  ID 		= i;
+  strand 	= STR;
+  chrom_ID= 0;
+  
 }
 
 segment::segment(){
-	N 		= 0;
-	fN 		= 0;
-	rN 		= 0;
-	counts 	= 1;
-	XN 		= 0;
-	ID 		= 0;
-	strand 	= ".";
-	chrom_ID= 0;
+  N 		= 0;
+  fN 		= 0;
+  rN 		= 0;
+  counts 	= 1;
+  XN 		= 0;
+  ID 		= 0;
+  strand 	= ".";
+  chrom_ID= 0;
 }
 
 string segment::write_out(){
-	string text 	= ("#" + chrom + ":" + to_string(start) + "-" 
-		+ to_string(stop) + "," + to_string(int(N))+ "\n");
-	return text;
+  string text 	= ("#" + chrom + ":" + to_string(start) + "-" 
+			   + to_string(stop) + "," + to_string(int(N))+ "\n");
+  return text;
 }
 
 
 void segment::add2(int strand, double x, double y){
-	vector<double> v2(2);
-	v2[0] 	= x;
-	v2[1] 	= y;
-	if (forward.empty() && reverse.empty()){
-		minX=x;
-		maxX=x;
-	}else{
-		if (x < minX){
-			minX=x;
-			start=int(x);
-		}
-		if (x > maxX){
-			maxX=x;
-			stop=int(x);
-		}
-	}
-	if (strand == 1){
-		forward.push_back(v2);
-	}else if (strand==-1){
-		reverse.push_back(v2);
-	}
+  vector<double> v2(2);
+  v2[0] 	= x;
+  v2[1] 	= y;
+  if (forward.empty() && reverse.empty()){
+    minX=x;
+    maxX=x;
+  }else{
+    if (x < minX){
+      minX=x;
+      start=int(x);
+    }
+    if (x > maxX){
+      maxX=x;
+      stop=int(x);
+    }
+  }
+  if (strand == 1){
+    forward.push_back(v2);
+  }else if (strand==-1){
+    reverse.push_back(v2);
+  }
 }
 
 
 
 void segment::bin(double delta, double scale, bool erase){
-	X 				= new double*[3];
-	SCALE 			= scale;
-	int BINS;
-	BINS 		= (maxX-minX)/delta;
-	start = minX, stop=maxX;
-	for (int j = 0 ; j < 3;j++){
-		X[j] 		= new double[BINS];
-	}
-	N 				= 0;
-	fN = 0, rN = 0;
-	XN 				= BINS;
-	//===================
-	//populate bin ranges
-	X[0][0] 		= double(minX);
-	X[1][0]=0,X[2][0]=0;
+  X 				= new double*[3];
+  SCALE 			= scale;
+  int BINS;
+  BINS 		= (maxX-minX)/delta;
+  start = minX, stop=maxX;
+  for (int j = 0 ; j < 3;j++){
+    X[j] 		= new double[BINS];
+  }
+  N 				= 0;
+  fN = 0, rN = 0;
+  XN 				= BINS;
+  //===================
+  //populate bin ranges
+  X[0][0] 		= double(minX);
+  X[1][0]=0,X[2][0]=0;
 	
-
-
-
-	for (int i = 1; i < BINS; i++){
-		X[0][i] 	= X[0][i-1] + delta;
-		X[1][i] 	= 0;
-		X[2][i] 	= 0;
-	}
-	// ===================
-	//insert forward strand
-	int j 	=0;
-	//printf("start: %d , stop: %d , bins: %d ,delta: %f, forward: %d, reverse: %d\n", start, stop, BINS, delta, forward.size(), reverse.size() );
-	for (int i = 0 ; i < forward.size(); i++){
-		while (j < BINS and X[0][j] <=forward[i][0]){
-			j++;
-		}
-		if (j < BINS and forward[i][0]<= X[0][j]){
-			X[1][j-1]+=forward[i][1];
-			N+=forward[i][1];
-			fN+=forward[i][1];
-		}
-	}
-	j 	=0;
-	//===================
-	//insert reverse strand
-	for (int i = 0 ; i < reverse.size(); i++){
-		while (j < BINS and X[0][j] <=reverse[i][0]){
-			j++;
-		}
-		if (j < BINS and reverse[i][0]<= X[0][j]){
-			X[2][j-1]+=reverse[i][1];
-			N+=reverse[i][1];
-			rN+=reverse[i][1];
-		}
-	}
-	//===================
-	//scale data down for numerical stability
-	if (scale){
-		for (int i = 0; i < BINS; i ++ ){
-
-			X[0][i] 	= (X[0][i]-minX)/scale;
-			// X[1][i]/=delta;
-			// X[2][i]/=delta;
-		}
-	}
-	//we also want to get rid of those data points that we don't need
-	//i.e. the ones where there is no data coverage values on either the 
-	//forward or reverse strands
-
-	int realN 		= 0;
-	for (int i = 0; i < BINS;i++){
-		if (X[1][i]>0 or X[2][i]>0){
-			realN++;
-		}
-	}
-	if (erase){
-		double ** newX 	= new double*[3];
-		for (int j=0; j<3;j++){
-			newX[j] 	= new double[realN];
-		}
-		j = 0;
-		for (int i = 0; i < BINS; i ++){
-			if (X[1][i]>0 or X[2][i]>0){
-				newX[0][j] 	= X[0][i];
-				newX[1][j] 	= X[1][i];
-				newX[2][j] 	= X[2][i];
-				j++;
-			}
-		}
-		if (realN!=j){
-			printf("WHAT? %d,%d\n", j, realN);
-		}
-		//clear previous memory
-		for (int i = 0; i < 3; i ++){
-			delete X[i];
-		}
-		delete X;
-		X 				= newX;
-		XN 				= realN;
-	}
-	if (scale){
-		if (not centers.empty()){
-			for (int i = 0; i < centers.size(); i++){
-				centers[i]=(centers[i]-minX)/scale;			
-			}
-		}
-		if (not fitted_bidirs.empty() ){
-			for (int fb = 0; fb < fitted_bidirs.size(); fb++){
-				int center 	= fitted_bidirs[fb][0];
-				int std 	= fitted_bidirs[fb][1]*0.5 + (1. /  fitted_bidirs[fb][2]);
-				int a 		= center - std*3;
-				int b 		= center + std*3;
-				
-
-
-				fitted_bidirs[fb][0] = (fitted_bidirs[fb][0] - minX)/scale;
-				fitted_bidirs[fb][1] /= scale;
-				fitted_bidirs[fb][2] *= scale; 
-			}
-		}
-
-		maxX 			= (maxX-minX)/scale;
-		minX 			=0;
-	}
-	double S=0;
-	for (int i = 0; i < XN; i++){
-		S+=X[1][i];
-	}
-	forward.clear();
-	reverse.clear();
+  
+  
+  
+  for (int i = 1; i < BINS; i++){
+    X[0][i] 	= X[0][i-1] + delta;
+    X[1][i] 	= 0;
+    X[2][i] 	= 0;
+  }
+  // ===================
+  //insert forward strand
+  int j 	=0;
+  //printf("start: %d , stop: %d , bins: %d ,delta: %f, forward: %d, reverse: %d\n", start, stop, BINS, delta, forward.size(), reverse.size() );
+  for (int i = 0 ; i < forward.size(); i++){
+    while (j < BINS and X[0][j] <=forward[i][0]){
+      j++;
+    }
+    if (j < BINS and forward[i][0]<= X[0][j]){
+      X[1][j-1]+=forward[i][1];
+      N+=forward[i][1];
+      fN+=forward[i][1];
+    }
+  }
+  j 	=0;
+  //===================
+  //insert reverse strand
+  for (int i = 0 ; i < reverse.size(); i++){
+    while (j < BINS and X[0][j] <=reverse[i][0]){
+      j++;
+    }
+    if (j < BINS and reverse[i][0]<= X[0][j]){
+      X[2][j-1]+=reverse[i][1];
+      N+=reverse[i][1];
+      rN+=reverse[i][1];
+    }
+  }
+  //===================
+  //scale data down for numerical stability
+  if (scale){
+    for (int i = 0; i < BINS; i ++ ){
+      
+      X[0][i] 	= (X[0][i]-minX)/scale;
+      // X[1][i]/=delta;
+      // X[2][i]/=delta;
+    }
+  }
+  //we also want to get rid of those data points that we don't need
+  //i.e. the ones where there is no data coverage values on either the 
+  //forward or reverse strands
+  
+  int realN 		= 0;
+  for (int i = 0; i < BINS;i++){
+    if (X[1][i]>0 or X[2][i]>0){
+      realN++;
+    }
+  }
+  if (erase){
+    double ** newX 	= new double*[3];
+    for (int j=0; j<3;j++){
+      newX[j] 	= new double[realN];
+    }
+    j = 0;
+    for (int i = 0; i < BINS; i ++){
+      if (X[1][i]>0 or X[2][i]>0){
+	newX[0][j] 	= X[0][i];
+	newX[1][j] 	= X[1][i];
+	newX[2][j] 	= X[2][i];
+	j++;
+      }
+    }
+    if (realN!=j){
+      printf("WHAT? %d,%d\n", j, realN);
+    }
+    //clear previous memory
+    for (int i = 0; i < 3; i ++){
+      delete X[i];
+    }
+    delete X;
+    X 				= newX;
+    XN 				= realN;
+  }
+  if (scale){
+    if (not centers.empty()){
+      for (int i = 0; i < centers.size(); i++){
+	centers[i]=(centers[i]-minX)/scale;			
+      }
+    }
+    if (not fitted_bidirs.empty() ){
+      for (int fb = 0; fb < fitted_bidirs.size(); fb++){
+	int center 	= fitted_bidirs[fb][0];
+	int std 	= fitted_bidirs[fb][1]*0.5 + (1. /  fitted_bidirs[fb][2]);
+	int a 		= center - std*3;
+	int b 		= center + std*3;
+	
+	
+	
+	fitted_bidirs[fb][0] = (fitted_bidirs[fb][0] - minX)/scale;
+	fitted_bidirs[fb][1] /= scale;
+	fitted_bidirs[fb][2] *= scale; 
+      }
+    }
+    
+    maxX 			= (maxX-minX)/scale;
+    minX 			=0;
+  }
+  double S=0;
+  for (int i = 0; i < XN; i++){
+    S+=X[1][i];
+  }
+  forward.clear();
+  reverse.clear();
 }
 
 //================================================================================================
@@ -254,70 +254,70 @@ void segment::bin(double delta, double scale, bool erase){
 node::node(){};
 
 node::node(vector<segment * > segments ){
-	center 	= (double(segments[0]->start)  + double(segments[segments.size()-1]->stop)) / 2.;
-	vector<segment * > Left;
-	vector<segment * > Right;
-	left=NULL, right=NULL;
-	for (int i = 0 ; i < segments.size(); i++){
-		if (segments[i]->stop < center){
-			Left.push_back(segments[i]);
-		}
-		else if (segments[i]->start > center){
-			Right.push_back(segments[i]);
-		}
-		else{
-			current.push_back(segments[i]);
-		}
+  center 	= (double(segments[0]->start)  + double(segments[segments.size()-1]->stop)) / 2.;
+  vector<segment * > Left;
+  vector<segment * > Right;
+  left=NULL, right=NULL;
+  for (int i = 0 ; i < segments.size(); i++){
+    if (segments[i]->stop < center){
+      Left.push_back(segments[i]);
+    }
+    else if (segments[i]->start > center){
+      Right.push_back(segments[i]);
+    }
+    else{
+      current.push_back(segments[i]);
+    }
+  }
+  if (Left.size() > 0){
+    left 	= new node(Left);
 	}
-	if (Left.size() > 0){
-		left 	= new node(Left);
-	}
-	if (Right.size() > 0){
-		right 	= new node(Right);
-	}
+  if (Right.size() > 0){
+    right 	= new node(Right);
+  }
 }
 void node::insert_coverage(vector<double> x, int s){
-	for (int i = 0 ; i < current.size(); i++){
-		if (x[0] > current[i]->start and  x[0] < current[i]->stop  ){
-			if (s==1){
-				current[i]->forward.push_back(x);
-			}else{
-				current[i]->reverse.push_back(x);	
-			}
-		}
-	}	
-
-	if (x[0] >= center and right != NULL ){
-		right->insert_coverage(x, s);
-	}
-	if (x[0] <= center and left !=NULL){
-		left->insert_coverage(x,  s);
-	}
+  for (int i = 0 ; i < current.size(); i++){
+    if (x[0] > current[i]->start and  x[0] < current[i]->stop  ){
+      if (s==1){
+	current[i]->forward.push_back(x);
+      }else{
+	current[i]->reverse.push_back(x);	
+      }
+    }
+  }	
+  
+  if (x[0] >= center and right != NULL ){
+    right->insert_coverage(x, s);
+  }
+  if (x[0] <= center and left !=NULL){
+    left->insert_coverage(x,  s);
+  }
 }
 void node::searchInterval(int start, int stop, vector<int>& finds ){
-	for (int i = 0 ; i < current.size(); i++){
-		if (stop > current[i]->start and  start < current[i]->stop  ){
-			finds.push_back(1);
-		}
-	}	
-	if (start >= center and right != NULL ){
-		right->searchInterval(start, stop, finds);
-	}
-	if (stop <= center and left !=NULL){
-		left->searchInterval(start, stop, finds);
-	}	
+  for (int i = 0 ; i < current.size(); i++){
+    if (stop > current[i]->start and  start < current[i]->stop  ){
+      finds.push_back(1);
+    }
+  }	
+  if (start >= center and right != NULL ){
+    right->searchInterval(start, stop, finds);
+  }
+  if (stop <= center and left !=NULL){
+    left->searchInterval(start, stop, finds);
+  }	
 }
 
 void node::retrieve_nodes(vector<segment*> & saves){
-	for (int i = 0; i < current.size(); i++){
-		saves.push_back(current[i]);
-	}
-	if (right!= NULL){
-		right->retrieve_nodes(saves);
-	}
-	if (left != NULL){
-		left->retrieve_nodes(saves);		
-	}
+  for (int i = 0; i < current.size(); i++){
+    saves.push_back(current[i]);
+  }
+  if (right!= NULL){
+    right->retrieve_nodes(saves);
+  }
+  if (left != NULL){
+    left->retrieve_nodes(saves);		
+  }
 }
 
 //================================================================================================
@@ -325,106 +325,106 @@ void node::retrieve_nodes(vector<segment*> & saves){
 segment_fits::segment_fits(){
 } //empty con
 segment_fits::segment_fits(string c, int st, int sp,
- 	double n_pos, double n_neg, string id){
+			   double n_pos, double n_neg, string id){
 
-	chrom=c, start=st, stop=sp, TSS=0;
-	N 	= n_pos + n_neg, N_pos = n_pos, N_neg = n_neg;
-	ID 	= id;
-	BIC_ratio 	= 0;
+  chrom=c, start=st, stop=sp, TSS=0;
+  N 	= n_pos + n_neg, N_pos = n_pos, N_neg = n_neg;
+  ID 	= id;
+  BIC_ratio 	= 0;
 }
 void segment_fits::get_model(double ms_pen){
-	typedef map<int, double>::iterator it_type;
-	int arg;
-	double MIN=INF;
-	double score;
-	double null_score;
-	
-	for (it_type m 	= M.begin(); m != M.end(); m++){
-		if (m->first > 0){
-			score 		= -2*m->second + log(N)*(ms_pen*m->first);
-		}else{
-			score 		= -2*m->second + log(N) ;		
-			null_score 	= -2*m->second + log(N) ;
-		}
-		if (score < MIN){
-			MIN 		= score;
-			arg 		= m->first;
-			BIC_ratio 	= null_score/score;
-		}
-	}
-	model 	= arg;
+  typedef map<int, double>::iterator it_type;
+  int arg;
+  double MIN=INF;
+  double score;
+  double null_score;
+  
+  for (it_type m 	= M.begin(); m != M.end(); m++){
+    if (m->first > 0){
+      score 		= -2*m->second + log(N)*(ms_pen*m->first);
+    }else{
+      score 		= -2*m->second + log(N) ;		
+      null_score 	= -2*m->second + log(N) ;
+    }
+    if (score < MIN){
+      MIN 		= score;
+      arg 		= m->first;
+      BIC_ratio 	= null_score/score;
+    }
+  }
+  model 	= arg;
 }
 string segment_fits::write (){
-	string line 				= "";
-	if (model > 0){
-		string forward_N=to_string(N_pos), reverse_N = to_string(N_neg);
-		vector<string> params 		= split_by_tab(parameters[model], "");
-		for (int i = 0 ; i < model; i++){
-			vector<string> S 	=  split_by_comma(params[0], "");
-			double mu 	= stod(split_by_comma(params[0], "")[i]);
-			double std 	= stod(split_by_comma(params[1], "")[i]);
-			double lam 	= stod(split_by_comma(params[2], "")[i]);
-			double pi 	= stod(split_by_comma(params[3], "")[i]);
-			double w 	= stod(split_by_comma(split_by_bar(params[5], "")[i] , "" )[0] );
-
-			int start 	= max(mu - (std + lam),0.0), stop = mu + (std+lam);
-			if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.05 and pi < 0.95  ){
-				line+=chrom+"\t" + to_string(start) + "\t" + to_string(stop)+"\t";
-				line+=ID+"|";
-				line+=to_string(BIC_ratio)+","+ to_string(N_pos)+","+to_string(N_neg)+"\n";
-			}
-		}
-	}
-	return line;
+  string line 				= "";
+  if (model > 0){
+    string forward_N=to_string(N_pos), reverse_N = to_string(N_neg);
+    vector<string> params 		= split_by_tab(parameters[model], "");
+    for (int i = 0 ; i < model; i++){
+      vector<string> S 	=  split_by_comma(params[0], "");
+      double mu 	= stod(split_by_comma(params[0], "")[i]);
+      double std 	= stod(split_by_comma(params[1], "")[i]);
+      double lam 	= stod(split_by_comma(params[2], "")[i]);
+      double pi 	= stod(split_by_comma(params[3], "")[i]);
+      double w 	= stod(split_by_comma(split_by_bar(params[5], "")[i] , "" )[0] );
+      
+      int start 	= max(mu - (std + lam),0.0), stop = mu + (std+lam);
+      if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.05 and pi < 0.95  ){
+	line+=chrom+"\t" + to_string(start) + "\t" + to_string(stop)+"\t";
+	line+=ID+"|";
+	line+=to_string(BIC_ratio)+","+ to_string(N_pos)+","+to_string(N_neg)+"\n";
+      }
+    }
+  }
+  return line;
 }
 
 //================================================================================================
 //merge segments from loading_intervals
 vector<segment *> merge_segments(vector<segment *> segments, map<int, string>  IDS_first, map<int, string> & IDS, int & T){
-	vector<segment *> new_segments;
+  vector<segment *> new_segments;
 	//bubble sort
-	bool changed 	= true;
-	while (changed){
-		changed = false;
-		for (int i = 1 ; i < segments.size(); i++){
-			if (segments[i-1]->start > segments[i]->start){
-				changed 		= true;
-				segment * copy 	= segments[i-1];
-				segments[i-1] 	= segments[i];
-				segments[i] 	= copy;
-			}
-		}
-	}
+  bool changed 	= true;
+  while (changed){
+    changed = false;
+    for (int i = 1 ; i < segments.size(); i++){
+      if (segments[i-1]->start > segments[i]->start){
+	changed 		= true;
+	segment * copy 	= segments[i-1];
+	segments[i-1] 	= segments[i];
+	segments[i] 	= copy;
+      }
+    }
+  }
 
-	int j = 0, N = segments.size(), i =0;
-	while (j < N){
-		string ID 		= "";
-		segment * S 	= new segment(segments[i]->chrom, 
-			segments[j]->start,segments[j]->stop, T, segments[j]->strand );
-		while (j < N and segments[j]->start < S->stop and segments[j]->stop > S->start ){
-			S->start 	= min(S->start,segments[j]->start);
-			S->stop 	= max(S->stop, segments[j]->stop);
-			ID+=IDS_first[segments[j]->ID] + ",";
-			S->counts+=1;
-			j++;
-		}
-		new_segments.push_back(S);
-		IDS[T] 			= ID.substr(0, ID.size()-1);
-		T+=1;
-	}
-
-	return new_segments;
+  int j = 0, N = segments.size(), i =0;
+  while (j < N){
+    string ID 		= "";
+    segment * S 	= new segment(segments[i]->chrom, 
+				      segments[j]->start,segments[j]->stop, T, segments[j]->strand );
+    while (j < N and segments[j]->start < S->stop and segments[j]->stop > S->start ){
+      S->start 	= min(S->start,segments[j]->start);
+      S->stop 	= max(S->stop, segments[j]->stop);
+      ID+=IDS_first[segments[j]->ID] + ",";
+      S->counts+=1;
+      j++;
+    }
+    new_segments.push_back(S);
+    IDS[T] 			= ID.substr(0, ID.size()-1);
+    T+=1;
+  }
+  
+  return new_segments;
 }
 bool check_ID_name(string & INFO){
-	bool PASSED 	= true;
-	string change 	= "::";
-	for (int i = 0; i < INFO.size(); i++){
-		if (INFO.substr(i,1)=="|"){
-			PASSED 		= false;
-			INFO.replace(i, 1, change);
+  bool PASSED 	= true;
+  string change 	= "::";
+  for (int i = 0; i < INFO.size(); i++){
+    if (INFO.substr(i,1)=="|"){
+      PASSED 		= false;
+      INFO.replace(i, 1, change);
 		}
-	}
-	return PASSED;
+  }
+  return PASSED;
 }
 
 //================================================================================================
@@ -432,186 +432,187 @@ bool check_ID_name(string & INFO){
 
 
 vector<segment*> load::load_bedgraphs_total(string forward_strand, 
-	string reverse_strand, string joint_bedgraph, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
-	, map<int, string>& ID_to_chrom){
-	bool FOUND 	= false;
-	if (spec_chrom=="all"){
+					    string reverse_strand, string joint_bedgraph, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
+					    , map<int, string>& ID_to_chrom){
+  bool FOUND 	= false;
+  if (spec_chrom=="all"){
 		FOUND 	= true;
+  }
+  map<string, segment*> 	G;
+  vector<segment*> segments;
+  vector<string> FILES;
+  if (forward_strand.empty() and reverse_strand.empty()){
+    FILES 	= {joint_bedgraph};
+  }else if (not forward_strand.empty() and not reverse_strand.empty()){
+    FILES 	= {forward_strand, reverse_strand};
+  }
+  
+  string line, chrom;
+  int start, stop;
+  double coverage;
+  vector<string> lineArray;
+  segment * S =NULL;
+  bool EXIT 		= false;
+  int line_number = 0;
+  for (int u = 0 ; u < FILES.size(); u++){
+    bool INSERT     = false;	  
+    string prevChrom="";
+    ifstream FH(FILES[u]) ;
+    if (not FH ){
+      printf("couln't open FILE %s\n", FILES[u].c_str());
+    }
+    if (EXIT){
+      break;
+    }
+    while (getline(FH, line)){
+      //lineArray=splitter(line, "\t");
+      lineArray=string_split(line, '\t');
+      if (lineArray.size()!=4){
+	EXIT 	= true;
+	printf("\nLine number %d  in file %s was not formatted properly\nPlease see manual\n",line_number, FILES[u].c_str() );
+      }
+      line_number++;
+      chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
+      if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
+	FOUND 		= true;
+	if (chrom.size()<6){
+	  INSERT          = true;
+	  FOUND           = true;
 	}
-	map<string, segment*> 	G;
-	vector<segment*> segments;
-	vector<string> FILES;
-	if (forward_strand.empty() and reverse_strand.empty()){
-		FILES 	= {joint_bedgraph};
-	}else if (not forward_strand.empty() and not reverse_strand.empty()){
-		FILES 	= {forward_strand, reverse_strand};
+	if (chrom.size() < 6 and u==0){
+	  G[chrom] 	= new segment(chrom, start, stop );
+	  INSERT 		= true;
+	  FOUND 		= true;
+	}else if(chrom.size() > 6){
+	  INSERT 		= false;
 	}
-	
-	string line, chrom;
-	int start, stop;
-	double coverage;
-	vector<string> lineArray;
-	segment * S =NULL;
-	bool EXIT 		= false;
-	int line_number = 0;
-	for (int u = 0 ; u < FILES.size(); u++){
-	  bool INSERT     = false;	  
-	  string prevChrom="";
-		ifstream FH(FILES[u]) ;
-		if (not FH ){
-			printf("couln't open FILE %s\n", FILES[u].c_str());
-		}
-		if (EXIT){
-			break;
-		}
-		while (getline(FH, line)){
-			lineArray=splitter(line, "\t");
-			if (lineArray.size()!=4){
-				EXIT 	= true;
-				printf("\nLine number %d  in file %s was not formatted properly\nPlease see manual\n",line_number, FILES[u].c_str() );
-			}
-			line_number++;
-			chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
-			if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
-				FOUND 		= true;
-				if (chrom.size()<6){
-				  INSERT          = true;
-				  FOUND           = true;
-				}
-				if (chrom.size() < 6 and u==0){
-					G[chrom] 	= new segment(chrom, start, stop );
-					INSERT 		= true;
-					FOUND 		= true;
-				}else if(chrom.size() > 6){
-					INSERT 		= false;
-				}
-			}
-			if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
-				break;
-			}
-			if (INSERT){
-				if (u==0){
-					if (coverage > 0){
-						for (int xx = start; xx < stop; xx++){
-							G[chrom]->add2(1, double(xx), abs(coverage));
-						}
-					}else{
-						for (int xx = start; xx < stop; xx++){
-							G[chrom]->add2(-1, xx, abs(coverage));						
-						}
-					}
-				}else{
-					for (int xx = start; xx < stop; xx++){
-						G[chrom]->add2(-1, xx, abs(coverage));	
-					}
-				}
-			}
-			prevChrom=chrom;
-
-		}
+      }
+      if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
+	break;
+      }
+      if (INSERT){
+	if (u==0){
+	  if (coverage > 0){
+	    for (int xx = start; xx < stop; xx++){
+	      G[chrom]->add2(1, double(xx), abs(coverage));
+	    }
+	  }else{
+	    for (int xx = start; xx < stop; xx++){
+	      G[chrom]->add2(-1, xx, abs(coverage));						
+	    }
+	  }
+	}else{
+	  for (int xx = start; xx < stop; xx++){
+	    G[chrom]->add2(-1, xx, abs(coverage));	
+	  }
 	}
-	if (not EXIT){
-		int c =1;
-		typedef map<string, segment*>::iterator it_type;
-		for (it_type i = G.begin(); i != G.end(); i++){
-			i->second->bin(BINS, scale,false);
-			if (chromosomes.find(i->second->chrom)==chromosomes.end()){
-				chromosomes[i->second->chrom]=c;
-				ID_to_chrom[c] 	= i->second->chrom;
-				c++;
-			}
-			segments.push_back(i->second);
-		}
-	}
-	if (not FOUND){
-		segments.clear();
-		printf("couldn't find chromosome %s in bedgraph files\n", spec_chrom.c_str());
-	}
-	return segments;
+      }
+      prevChrom=chrom;
+      
+    }
+  }
+  if (not EXIT){
+    int c =1;
+    typedef map<string, segment*>::iterator it_type;
+    for (it_type i = G.begin(); i != G.end(); i++){
+      i->second->bin(BINS, scale,false);
+      if (chromosomes.find(i->second->chrom)==chromosomes.end()){
+	chromosomes[i->second->chrom]=c;
+	ID_to_chrom[c] 	= i->second->chrom;
+	c++;
+      }
+      segments.push_back(i->second);
+    }
+  }
+  if (not FOUND){
+    segments.clear();
+    printf("couldn't find chromosome %s in bedgraph files\n", spec_chrom.c_str());
+  }
+  return segments;
 }
 vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&  IDS, 
-	params * P, bool center){
-	ifstream FH(FILE);
+						  params * P, bool center){
+  ifstream FH(FILE);
+  
+  string spec_chrom 	= P->p["-chr"];
+  int pad 	        = stoi(P->p["-pad"])+1;
+  
+  vector<segment *> G;
+  int ct 	= 1;
+  map<string, vector<segment * > > GS;
+  map<int, string> IDS_first;
+  int T 	= 0;
+  bool EXIT 		= false;
+  if (FH){
+    string line, chrom;
+    int start, stop;
+    int 	i = 0;
+    vector<string> lineArray;
+    string strand; 
+    bool PASSED 	= true;
 
-	string spec_chrom 	= P->p["-chr"];
-	int pad 			= stoi(P->p["-pad"])+1;
-
-	vector<segment *> G;
-	int ct 	= 1;
-	map<string, vector<segment * > > GS;
-	map<int, string> IDS_first;
-	int T 	= 0;
-	bool EXIT 		= false;
-	if (FH){
-		string line, chrom;
-		int start, stop;
-		int 	i = 0;
-		vector<string> lineArray;
-		string strand; 
-		bool PASSED 	= true;
-
-		while(getline(FH, line)){
-			lineArray=splitter(line, "\t");
-			if (lineArray[0].substr(0,1)!="#" and lineArray.size()>2){
-				if (lineArray.size() > 3){
-					if (not check_ID_name(lineArray[3]) and PASSED ){
-						PASSED 			= false;
-						printf("\ninterval id in line: %s, contains a | symbol changing to :: -> %s\n",line.c_str(), lineArray[3].c_str() );
-						printf("Will continue to change other occurrences....\n");
-
-					}
-					IDS_first[i] 		= lineArray[3];
-				}else{
-					IDS_first[i] 		= "Entry_" + to_string(i+1);	
-				}
-				if (lineArray.size() > 4){
-					strand 		= lineArray[4];
-				}else{
-					strand 		= ".";
-				}
-				try{
-					if (not center){
-						chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]) + pad;
-					}else{
-						int x 	= 	((stoi(lineArray[1]) + stoi(lineArray[2])))/2.;
-						start 		= max(x - pad, 0) , stop 	= x + pad;
-						chrom=lineArray[0];
-					}
-				}
-				catch(exception& e){
-					printf("\n\nIssue with file %s at line %d\nPlease consult manual on file format\n\n",FILE.c_str(), i );
-					EXIT=true;
-					GS.clear();
-					break;
-				}
-				if (start < stop){
-					if (spec_chrom=="all" or spec_chrom==chrom){
-
-						segment * S 	= new segment(chrom, start, stop,i,strand);
-						GS[S->chrom].push_back(S);
-					}
-					i++;
-				}
-			}
-		}
+    while(getline(FH, line)){
+      //lineArray=splitter(line, "\t");
+      lineArray=string_split(line, '\t');
+      if (lineArray[0].substr(0,1)!="#" and lineArray.size()>2){
+	if (lineArray.size() > 3){
+	  if (not check_ID_name(lineArray[3]) and PASSED ){
+	    PASSED 			= false;
+	    printf("\ninterval id in line: %s, contains a | symbol changing to :: -> %s\n",line.c_str(), lineArray[3].c_str() );
+	    printf("Will continue to change other occurrences....\n");
+	    
+	  }
+	  IDS_first[i] 		= lineArray[3];
 	}else{
-		printf("couldn't open %s for reading\n", FILE.c_str() );
-		EXIT 	= true;
+	  IDS_first[i] 		= "Entry_" + to_string(i+1);	
 	}
-	if (not EXIT){
-		typedef map<string, vector<segment * > >::iterator it_type;
-		IDS 	= IDS_first;
-		for (it_type c 	= GS.begin(); c!=GS.end(); c++){
-			vector<segment *> m_segs;
-			m_segs 	= c->second;
-			for (int i = 0 ; i < m_segs.size(); i++){
-				G.push_back(m_segs[i]);
-			}
-		}
+	if (lineArray.size() > 4){
+	  strand 		= lineArray[4];
 	}else{
-		G.clear();
+	  strand 		= ".";
 	}
-	return G;
+	try{
+	  if (not center){
+	    chrom=lineArray[0], start=max(stoi(lineArray[1])-pad, 0), stop=stoi(lineArray[2]) + pad;
+	  }else{
+	    int x 	= 	((stoi(lineArray[1]) + stoi(lineArray[2])))/2.;
+	    start 		= max(x - pad, 0) , stop 	= x + pad;
+	    chrom=lineArray[0];
+	  }
+	}
+	catch(exception& e){
+	  printf("\n\nIssue with file %s at line %d\nPlease consult manual on file format\n\n",FILE.c_str(), i );
+	  EXIT=true;
+	  GS.clear();
+	  break;
+	}
+	if (start < stop){
+	  if (spec_chrom=="all" or spec_chrom==chrom){	    
+	    segment * S 	= new segment(chrom, start, stop,i,strand);
+	    GS[S->chrom].push_back(S);
+	  }
+	  i++;
+	}
+      }
+    }
+  }else{
+    printf("couldn't open %s for reading\n", FILE.c_str() );
+    EXIT 	= true;
+  }
+  if (not EXIT){
+    typedef map<string, vector<segment * > >::iterator it_type;
+    IDS 	= IDS_first;
+    for (it_type c 	= GS.begin(); c!=GS.end(); c++){
+      vector<segment *> m_segs;
+      m_segs 	= c->second;
+      for (int i = 0 ; i < m_segs.size(); i++){
+	G.push_back(m_segs[i]);
+      }
+    }
+  }else{
+    G.clear();
+  }
+  return G;
 }
 
 vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segment *> > A , 
@@ -619,125 +620,126 @@ vector<segment* > load::insert_bedgraph_to_segment_joint(map<string, vector<segm
 	
 	
 	
-	map<string, node> NT;
-	typedef map<string, vector<segment *> >::iterator it_type_5;
-	for(it_type_5 c = A.begin(); c != A.end(); c++) {
-		NT[c->first] 	= node(c->second);
+  map<string, node> NT;
+  typedef map<string, vector<segment *> >::iterator it_type_5;
+  for(it_type_5 c = A.begin(); c != A.end(); c++) {
+    NT[c->first] 	= node(c->second);
+  }
+  int start, stop, N, j;
+  double coverage;
+  N 	= 0,j 	= 0;
+  int strand;
+  int o_st, o_sp;
+  vector<string> lineArray;
+  string chrom, prevchrom, line;
+  vector<segment *> segments;
+  double center;
+  vector<string> FILES;
+  if (forward.empty() and reverse.empty()){
+    FILES 	= {joint};
+  }else if (not forward.empty() and not reverse.empty()) {
+    FILES 	= {forward, reverse};
+  }
+  string FILE;
+  for (int i =0; i < FILES.size(); i++){
+    FILE=FILES[i];
+    ifstream FH(FILE);
+    if (FH){
+      prevchrom="";
+      while (getline(FH, line)){
+	//lineArray 	= splitter2(line, "\t");
+	lineArray       = string_split(line, '\t');
+	if (lineArray.size()==4){
+	  chrom 		= lineArray[0];
+	  start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
+	  if (coverage > 0 and i == 0){
+	    strand 	= 1;
+	  }else if (coverage < 0 or i==1){
+	    strand 	= -1;
+	  }
+	  center 	= (stop + start) /2.;
+	  if (NT.find(chrom)!=NT.end()){
+	    for (int center_2=start; center_2 < stop; center_2++){
+	      vector<double> x(2);
+	      x[0]=double(center_2), x[1] = abs(coverage);
+	      NT[chrom].insert_coverage(x, strand);
+	    }
+	    
+	  }
 	}
-	int start, stop, N, j;
-	double coverage;
-	N 	= 0,j 	= 0;
-	int strand;
-	int o_st, o_sp;
-	vector<string> lineArray;
-	string chrom, prevchrom, line;
-	vector<segment *> segments;
-	double center;
-	vector<string> FILES;
-	if (forward.empty() and reverse.empty()){
-		FILES 	= {joint};
-	}else if (not forward.empty() and not reverse.empty()) {
-		FILES 	= {forward, reverse};
+	else{
+	  printf("\n***error in line: %s, not bedgraph formatted\n", line.c_str() );
+	  segments.clear();
+	  return segments;
 	}
-	string FILE;
-	for (int i =0; i < FILES.size(); i++){
-		FILE=FILES[i];
-		ifstream FH(FILE);
-		if (FH){
-			prevchrom="";
-			while (getline(FH, line)){
-				lineArray 	= splitter2(line, "\t");
-				if (lineArray.size()==4){
-					chrom 		= lineArray[0];
-					start=stoi(lineArray[1]),stop=stoi(lineArray[2]), coverage = stod(lineArray[3]);
-					if (coverage > 0 and i == 0){
-						strand 	= 1;
-					}else if (coverage < 0 or i==1){
-						strand 	= -1;
-					}
-					center 	= (stop + start) /2.;
-					if (NT.find(chrom)!=NT.end()){
-						for (int center_2=start; center_2 < stop; center_2++){
-							vector<double> x(2);
-							x[0]=double(center_2), x[1] = abs(coverage);
-							NT[chrom].insert_coverage(x, strand);
-						}
-						
-					}
-				}
-				else{
-					printf("\n***error in line: %s, not bedgraph formatted\n", line.c_str() );
-					segments.clear();
-					return segments;
-				}
-			}
-			FH.close();
-			
-		}else{
-			cout<<"could not open forward bedgraph file: "<<FILE<<endl;
-			segments.clear();
-			return segments;
-		}
-	}
-	//now we want to get all the intervals and make a vector<segment *> again...
-	vector<segment *>NS;
-	typedef map<string, node>::iterator it_type_6;
-	for (it_type_6 c = NT.begin(); c!=NT.end(); c++){
-		c->second.retrieve_nodes(NS);
-	}
-
-	return NS;
+      }
+      FH.close();
+      
+    }else{
+      cout<<"could not open forward bedgraph file: "<<FILE<<endl;
+      segments.clear();
+      return segments;
+    }
+  }
+  //now we want to get all the intervals and make a vector<segment *> again...
+  vector<segment *>NS;
+  typedef map<string, node>::iterator it_type_6;
+  for (it_type_6 c = NT.begin(); c!=NT.end(); c++){
+    c->second.retrieve_nodes(NS);
+  }
+  
+  return NS;
 }
 vector<segment_fits *> load::load_K_models_out(string FILE){
-	ifstream FH(FILE);
-	string line;
-	segment_fits * S = NULL;
-	int complexity;
-	double ll;
-	string chrom;
-	int start,stop;
-	vector<segment_fits *> segment_fits_all;	
-	if (FH){
-		while (getline(FH, line)){
-			if (line.substr(0,1)!= "#" and line.substr(0,1)==">"){
-				if (S!=NULL){
-					segment_fits_all.push_back(S);
-				}
-				line 							= line.substr(1,line.size()-1);
-
-				vector<string> bar_split 		= split_by_bar(line, "");
-				vector<string> comma_split 		= split_by_comma(bar_split[2], "");
-				vector<string> colon_split 		= split_by_colon(bar_split[1], "");
-				vector<string> dash_split 		= split_by_dash(colon_split[1], "");
-				chrom = colon_split[0], start 	= stoi(dash_split[0]) ,stop = stoi(dash_split[1]) ;
-				S 		= new segment_fits(chrom,start,
-				 stop, stod(comma_split[0]), stod(comma_split[1]), bar_split[0] );
-
-			}else if (line.substr(0,1)=="~" and S!=NULL){
-				line 	= line.substr(1,line.size()-1);
-				vector<string> tab_split 		= split_by_tab(line, "");
-				vector<string> comma_split 		= split_by_comma(tab_split[0], "");
-				complexity 	= stoi(comma_split[0]), ll 	= stod(comma_split[1]);
-				S->M[complexity]=ll;
-				string parameters 	= "";
-				for (int i = 1; i < tab_split.size(); i++){
-					if (i+1 < tab_split.size()){
-						parameters+=tab_split[i]+"\t";
-					}else{
-						parameters+=tab_split[i];
-					}
-				}
-				S->parameters[complexity] 	= parameters;
-				
-			}
-		}
-		if (S!=NULL){
-			segment_fits_all.push_back(S);		
-		}
-	}else{
-		printf("couldn't open %s...strange error\n", FILE.c_str() );
+  ifstream FH(FILE);
+  string line;
+  segment_fits * S = NULL;
+  int complexity;
+  double ll;
+  string chrom;
+  int start,stop;
+  vector<segment_fits *> segment_fits_all;	
+  if (FH){
+    while (getline(FH, line)){
+      if (line.substr(0,1)!= "#" and line.substr(0,1)==">"){
+	if (S!=NULL){
+	  segment_fits_all.push_back(S);
 	}
-	return segment_fits_all;
+	line 							= line.substr(1,line.size()-1);
+	
+	vector<string> bar_split 		= split_by_bar(line, "");
+	vector<string> comma_split 		= split_by_comma(bar_split[2], "");
+	vector<string> colon_split 		= split_by_colon(bar_split[1], "");
+	vector<string> dash_split 		= split_by_dash(colon_split[1], "");
+	chrom = colon_split[0], start 	= stoi(dash_split[0]) ,stop = stoi(dash_split[1]) ;
+	S 		= new segment_fits(chrom,start,
+					   stop, stod(comma_split[0]), stod(comma_split[1]), bar_split[0] );
+	
+      }else if (line.substr(0,1)=="~" and S!=NULL){
+	line 	= line.substr(1,line.size()-1);
+	vector<string> tab_split 		= split_by_tab(line, "");
+	vector<string> comma_split 		= split_by_comma(tab_split[0], "");
+	complexity 	= stoi(comma_split[0]), ll 	= stod(comma_split[1]);
+	S->M[complexity]=ll;
+	string parameters 	= "";
+	for (int i = 1; i < tab_split.size(); i++){
+	  if (i+1 < tab_split.size()){
+	    parameters+=tab_split[i]+"\t";
+	  }else{
+	    parameters+=tab_split[i];
+	  }
+	}
+	S->parameters[complexity] 	= parameters;
+	
+      }
+    }
+    if (S!=NULL){
+      segment_fits_all.push_back(S);		
+    }
+  }else{
+    printf("couldn't open %s...strange error\n", FILE.c_str() );
+  }
+  return segment_fits_all;
 }
 
 
@@ -762,21 +764,22 @@ vector<vector<double>> bubble_sort_alg(vector<vector<double>> X){
 
 
 void load::write_out_bidirs(map<string , vector<vector<double> > > G, string out_dir, 
-	string job_name,int job_ID, params * P, int noise){
-	typedef map<string , vector<vector<double> > >::iterator it_type;
-	ofstream FHW;
-	FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
-	FHW<<P->get_header(1);
-	int ID 	= 0;
-	for (it_type c = G.begin(); c!=G.end(); c++){
-		vector<vector<double>> data_intervals 	=  bubble_sort_alg(c->second);
-
-		for (int i = 0; i < data_intervals.size(); i++){
-			FHW<<c->first<<"\t"<<to_string(int(data_intervals[i][0]))<<"\t"<<to_string(int(data_intervals[i][1]))<<"\tME_"<<to_string(ID)<<endl;
-			ID++;
-		}
-	}
-	FHW.close();
+			    string job_name,int job_ID, params * P, int noise){
+  typedef map<string , vector<vector<double> > >::iterator it_type;
+  ofstream FHW;
+  FHW.open(out_dir+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed");
+  FHW<<P->get_header(1);
+  int ID 	= 0;
+  for (it_type c = G.begin(); c!=G.end(); c++){
+    vector<vector<double>> data_intervals 	=  bubble_sort_alg(c->second);
+    
+    for (int i = 0; i < data_intervals.size(); i++){
+      FHW<<c->first<<"\t"<<to_string(int(data_intervals[i][0]))<<"\t"<<to_string(int(data_intervals[i][1]))<<"\tME_"<<to_string(ID)<<"\t";
+      FHW<<to_string(data_intervals[i][2] )+"," + to_string(int(data_intervals[i][3] )) + "," + to_string(int(data_intervals[i][4]) )<<endl; 
+      ID++;
+    }
+  }
+  FHW.close();
 }
 
 
