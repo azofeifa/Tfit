@@ -106,7 +106,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	  LG->write("threshold            : "+to_string(SC.threshold) + "\n\n" ,verbose );
 	}
 	else{
-	  SC.mean = 0.79, SC.std = 0.05; //this dependent on -w 0.9 !!!
+	  SC.mean = 0.81, SC.std = 0.05; //this dependent on -w 0.9 !!!
 	  SC.set_2(stod(P->p["-bct"]));
 	}
 	//=================================================

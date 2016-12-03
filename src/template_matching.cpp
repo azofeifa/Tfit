@@ -126,7 +126,7 @@ bool check_hit(double a, double b, double c, double x, double y, double z){
 double run_global_template_matching(vector<segment*> segments, 
 				    string out_dir,  params * P, slice_ratio SC){
 	
-  double CTT                    = 3; //filters for low coverage regions
+  double CTT                    = 5; //filters for low coverage regions
 
   double ns 			= stod(P->p["-ns"]);
   double window 		= stod(P->p["-pad"])/ns;
