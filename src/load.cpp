@@ -470,6 +470,7 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
       if (lineArray.size()!=4){
 	EXIT 	= true;
 	printf("\nLine number %d  in file %s was not formatted properly\nPlease see manual\n",line_number, FILES[u].c_str() );
+	break;
       }
       line_number++;
       chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
