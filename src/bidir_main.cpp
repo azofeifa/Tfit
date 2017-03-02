@@ -106,9 +106,15 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	  LG->write("threshold            : "+to_string(SC.threshold) + "\n\n" ,verbose );
 	}
 	else{
-	  SC.mean = 0.81, SC.std = 0.05; //this dependent on -w 0.9 !!!
+	  SC.mean = 0.78, SC.std = 0.08; //this dependent on -w 0.9 !!!
 	  SC.set_2(stod(P->p["-bct"]));
 	}
+
+	//================================================
+	//computing this SC via multiple times of the EM
+	//run, should probably write something to combind
+	//them all; i.e. MPI
+
 	//=================================================
 	//(2b) so segments is indexed by inidividual chromosomes, want to broadcast 
 	//to sub-processes and have each MPI call run on a subset of segments

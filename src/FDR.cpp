@@ -185,7 +185,6 @@ double slice_ratio::pvalue(double y){
 }
 
 slice_ratio get_slice(vector<segment *> segments, int N, double CC, params * P){
-
   double sigma, lambda, fp, pi, w, window, pval_threshold,ns;
  
   window        = stod(P->p["-pad"]), ns=stod(P->p["-ns"]) ;
@@ -227,16 +226,23 @@ slice_ratio get_slice(vector<segment *> segments, int N, double CC, params * P){
       
       double val =  BIC3(data->X,  j,  k,  c, N_pos,  N_neg, sigma , lambda, fp , pi, w);
       if (val >0 ){
-        XY[n]=val;
+        XY[n]=val,CovN[n]=N_pos+N_neg;
       }
     }
   }
-  double S1=0.0, S2=0.0, TT=0.0;
-  for (int n = 0 ; n < CovN.size();n++){
-    if (CovN[n]>0){
-      S1+=CovN[n], S2+=pow(CovN[n],2), TT+=1; 
-    }
+  string job_name    = P->p["-N"];
+  string log_out_dir = P->p["-log_out"];
+  ofstream FHW;
+  FHW.open(log_out_dir+job_name+"_random_BIC_ratios.csv");
+  FHW<<"ratio,N\n";
+  for (int i = 0 ; i < XY.size();i++){
+    FHW<<to_string(XY[i])+","+to_string(CovN[i]) <<endl;
   }
+  FHW.close();
+  
+  
+
+
   //---------------
   for (int n = 0 ; n < XY.size(); n++){
     if (min_x < 0 or XY[n] < min_x ){

@@ -25,7 +25,6 @@ double BIC3(double ** X, int j, int k, int i,
     }
   }
   double emg_ratio        = (-2*uni_ll + LOG(N)) / (-2*emg_ll + 20*LOG(N))  ;
-  //printf("%f,%f,%f, %f, %f,%f,%f\n", sigma, lambda, w, pi2, fp, emg_ratio, l);
   return emg_ratio;
 }
 
