@@ -119,7 +119,7 @@ void segment::add2(int strand, double x, double y){
 
 
 
-void segment::bin(double delta, double scale, bool erase){
+void segment::bin(double delta, double scale, int erase){
   X 				= new double*[3];
   SCALE 			= scale;
   int BINS;
@@ -383,12 +383,12 @@ string segment_fits::write (){
 vector<segment *> merge_segments(vector<segment *> segments, map<int, string>  IDS_first, map<int, string> & IDS, int & T){
   vector<segment *> new_segments;
 	//bubble sort
-  bool changed 	= true;
+  int changed 	= 1;
   while (changed){
-    changed = false;
+    changed = 0;
     for (int i = 1 ; i < segments.size(); i++){
       if (segments[i-1]->start > segments[i]->start){
-	changed 		= true;
+	changed 		= 1;
 	segment * copy 	= segments[i-1];
 	segments[i-1] 	= segments[i];
 	segments[i] 	= copy;
@@ -415,12 +415,12 @@ vector<segment *> merge_segments(vector<segment *> segments, map<int, string>  I
   
   return new_segments;
 }
-bool check_ID_name(string & INFO){
-  bool PASSED 	= true;
+int check_ID_name(string & INFO){
+  int PASSED 	= 1;
   string change 	= "::";
   for (int i = 0; i < INFO.size(); i++){
     if (INFO.substr(i,1)=="|"){
-      PASSED 		= false;
+      PASSED 		= 0;
       INFO.replace(i, 1, change);
 		}
   }
@@ -434,9 +434,9 @@ bool check_ID_name(string & INFO){
 vector<segment*> load::load_bedgraphs_total(string forward_strand, 
 					    string reverse_strand, string joint_bedgraph, int BINS, double scale, string spec_chrom, map<string, int>& chromosomes
 					    , map<int, string>& ID_to_chrom){
-  bool FOUND 	= false;
+  int FOUND 	= 0;
   if (spec_chrom=="all"){
-		FOUND 	= true;
+		FOUND 	= 1;
   }
   map<string, segment*> 	G;
   vector<segment*> segments;
@@ -452,10 +452,10 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
   double coverage;
   vector<string> lineArray;
   segment * S =NULL;
-  bool EXIT 		= false;
+  int EXIT 		= 0;
   int line_number = 0;
   for (int u = 0 ; u < FILES.size(); u++){
-    bool INSERT     = false;	  
+    int INSERT     = 0;	  
     string prevChrom="";
     ifstream FH(FILES[u]) ;
     if (not FH ){
@@ -468,24 +468,24 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
       //lineArray=splitter(line, "\t");
       lineArray=string_split(line, '\t');
       if (lineArray.size()!=4){
-	EXIT 	= true;
+	EXIT 	= 1;
 	printf("\nLine number %d  in file %s was not formatted properly\nPlease see manual\n",line_number, FILES[u].c_str() );
 	break;
       }
       line_number++;
       chrom=lineArray[0], start=stoi(lineArray[1]), stop=stoi(lineArray[2]), coverage=(stof(lineArray[3]));
       if (chrom != prevChrom and (chrom==spec_chrom or spec_chrom=="all")  )  {
-	FOUND 		= true;
+	FOUND 		= 1;
 	if (chrom.size()<6){
-	  INSERT          = true;
-	  FOUND           = true;
+	  INSERT          = 1;
+	  FOUND           = 1;
 	}
 	if (chrom.size() < 6 and u==0){
 	  G[chrom] 	= new segment(chrom, start, stop );
-	  INSERT 		= true;
-	  FOUND 		= true;
+	  INSERT 		= 1;
+	  FOUND 		= 1;
 	}else if(chrom.size() > 6){
-	  INSERT 		= false;
+	  INSERT 		= 0;
 	}
       }
       if (FOUND and chrom!= spec_chrom and spec_chrom!= "all"){
@@ -516,7 +516,7 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
     int c =1;
     typedef map<string, segment*>::iterator it_type;
     for (it_type i = G.begin(); i != G.end(); i++){
-      i->second->bin(BINS, scale,false);
+      i->second->bin(BINS, scale,0);
       if (chromosomes.find(i->second->chrom)==chromosomes.end()){
 	chromosomes[i->second->chrom]=c;
 	ID_to_chrom[c] 	= i->second->chrom;
@@ -532,7 +532,7 @@ vector<segment*> load::load_bedgraphs_total(string forward_strand,
   return segments;
 }
 vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&  IDS, 
-						  params * P, bool center){
+						  params * P, int center){
   ifstream FH(FILE);
   
   string spec_chrom 	= P->p["-chr"];
@@ -543,14 +543,14 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
   map<string, vector<segment * > > GS;
   map<int, string> IDS_first;
   int T 	= 0;
-  bool EXIT 		= false;
+  int EXIT 		= 0;
   if (FH){
     string line, chrom;
     int start, stop;
     int 	i = 0;
     vector<string> lineArray;
     string strand; 
-    bool PASSED 	= true;
+    int PASSED 	= 1;
 
     while(getline(FH, line)){
       //lineArray=splitter(line, "\t");
@@ -558,7 +558,7 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
       if (lineArray[0].substr(0,1)!="#" and lineArray.size()>2){
 	if (lineArray.size() > 3){
 	  if (not check_ID_name(lineArray[3]) and PASSED ){
-	    PASSED 			= false;
+	    PASSED 			= 0;
 	    printf("\ninterval id in line: %s, contains a | symbol changing to :: -> %s\n",line.c_str(), lineArray[3].c_str() );
 	    printf("Will continue to change other occurrences....\n");
 	    
@@ -583,7 +583,7 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
 	}
 	catch(exception& e){
 	  printf("\n\nIssue with file %s at line %d\nPlease consult manual on file format\n\n",FILE.c_str(), i );
-	  EXIT=true;
+	  EXIT=1;
 	  GS.clear();
 	  break;
 	}
@@ -598,7 +598,7 @@ vector<segment*> load::load_intervals_of_interest(string FILE, map<int, string>&
     }
   }else{
     printf("couldn't open %s for reading\n", FILE.c_str() );
-    EXIT 	= true;
+    EXIT 	= 1;
   }
   if (not EXIT){
     typedef map<string, vector<segment * > >::iterator it_type;
@@ -748,12 +748,12 @@ vector<segment_fits *> load::load_K_models_out(string FILE){
 //WRITE out to file functions
 
 vector<vector<double>> bubble_sort_alg(vector<vector<double>> X){
-	bool changed 	= true;
+	int changed 	= 1;
 	while (changed){
-		changed = false;
+		changed = 0;
 		for (int i = 1 ; i < X.size(); i++){
 			if (X[i-1][0] > X[i][0]){
-				changed 				= true;
+				changed 				= 1;
 				vector<double > copy 	= X[i-1];
 				X[i-1] 					= X[i];
 				X[i] 	= copy;
@@ -896,7 +896,7 @@ void load::write_out_bidirectionals_ms_pen(vector<segment_fits*> fits, params * 
 
 //================================================================================================
 //misc.
-void load::BIN(vector<segment*> segments, int BINS, double scale, bool erase){
+void load::BIN(vector<segment*> segments, int BINS, double scale, int erase){
 	for (int i = 0 ; i < segments.size() ; i ++){
 		if (segments[i]->forward.size() > 0 or segments[i]->reverse.size() > 0 ){
 			segments[i]->bin(BINS, scale, erase);

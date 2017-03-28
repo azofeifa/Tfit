@@ -1,0 +1,44 @@
+Application out and error file for processes: 0
+#----------------------------------------------------
+#Date Time    : 03/28/2017 16:05:42
+#-N           : foot_print_testing
+#-ij          : /Users/joazofeifa/Lab//Tfit/examples/test_ij_joint.BedGraph
+#-o           : /Users/joazofeifa/Lab//Tfit/examples/
+#-br          : 15
+#-bct         : 0.1
+#-pad         : 2000
+#-sigma       : 10
+#-lambda      : 200
+#-foot_print  : 100
+#-pi          : 0.5
+#-w           : 0.5
+#----------------------------------------------------
+
+initializing bidir module...............................done
+loading bedgraph files..................................done
+slicing segments........................................done
+running template matching algorithm.....................done
+scattering predictions to other MPI processes...........done
+
+There were 207 prelimary bidirectional predictions
+
+clearing allocated segment memory.......................done
+
+initializing model module...............................done
+
+loading intervals of interest...........................done
+sending interval assignments............................done
+inserting bedgraph data.................................done
+binning, centering, scaling.............................done
+running template matching...............................done
+(EM) running model across provided intervals...........
+5%,10%,15%,21%,26%,31%,37%,42%,47%,53%,58%,63%,69%,74%,79%,85%,90%,95%,100% done
+gathering all model fits................................done
+writing out results (MLE)...............................done
+loading results (MLE)...................................done
+writing out results (model selection)...................done
+
+exiting model module....................................done
+
+exiting bidir module....................................done
+

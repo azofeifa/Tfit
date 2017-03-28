@@ -123,7 +123,6 @@ map<int, vector<simple_c_free_mode> > get_max_from_free_mode(map<int, vector<cla
 				FOUND 				= true;
 			}
 		}
-
 		BEST[a->first] 	= transform_free_mode(FOUND, best_ll, best_components, a->first, data, i, forward_N, reverse_N);
 
 	}
@@ -247,5 +246,4 @@ vector<double> compute_average_model(vector<segment *> segments, params * P){
 
 
 	return parameters;
-
 }	

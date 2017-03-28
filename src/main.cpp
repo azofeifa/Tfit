@@ -25,9 +25,11 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-  MPI::Init(argc, argv);
-  int nprocs		= MPI::COMM_WORLD.Get_size();
-  int rank 		= MPI::COMM_WORLD.Get_rank();
+  int rank, nprocs;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank); 
+  MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+  
   int threads  	= omp_get_max_threads();
 
   params * P 	= new params();
@@ -37,7 +39,7 @@ int main(int argc, char* argv[]){
       printf("exiting...\n");
     }
     delete P;
-    MPI::Finalize();
+    MPI_Finalize();
     return 0;
   }
   int job_ID 		=  MPI_comm::get_job_ID(P->p["-log_out"], P->p["-N"], rank, nprocs);
@@ -60,7 +62,7 @@ int main(int argc, char* argv[]){
     load::collect_all_tmp_files(P->p["-log_out"], P->p["-N"], nprocs, job_ID);
   }
   
-  MPI::Finalize();
+  MPI_Finalize();
   
   return 0;
 }

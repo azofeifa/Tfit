@@ -31,7 +31,7 @@ public:
 	segment(string, int , int, int,string);
 	segment();
 	string write_out();
-	void bin(double, double, bool);
+	void bin(double, double, int);
 	void add2(int, double, double);
 	double N;
 	double fN;
@@ -83,7 +83,7 @@ namespace load{
 
 	vector<segment_fits *> label_tss(string , vector<segment_fits *>   );
 
-	void BIN(vector<segment*>, int, double, bool);
+	void BIN(vector<segment*>, int, double, int);
 
 
 	vector<segment*> load_bedgraphs_total(string, 
@@ -92,7 +92,7 @@ namespace load{
 
 	void write_out_bidirs(map<string , vector<vector<double> > >, string, string, int ,params *, int);
 
-	vector<segment *> load_intervals_of_interest(string,map<int, string>&, params *, bool);
+	vector<segment *> load_intervals_of_interest(string,map<int, string>&, params *, int);
 
 
 	void collect_all_tmp_files(string , string, int, int );
