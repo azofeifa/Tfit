@@ -8,27 +8,28 @@
 -j 	  		= #path to reverse strand bedgraph file
 -ij			= #path to joint forward/reverse bedgraph file, note: either -i and -j must be specified or only -ij
 -k 			= /Users/joazofeifa/Lab/Tfit/examples/foot_print_testing-10_prelim_bidir_hits.bed #path to intervals file if running MODEL module 
-#-tss 			= hg19_TSS.bed
 -o 	  		= examples/
 -log_out                = examples/
+
 #===========================================================================
 #house keeping parameters
 -chr 			= all  #specific chromosome, note chr[N] or all  
--br 			= 15 #binning resolution do not consider changing
+-br 			= 25 #binning resolution do not consider changing
 -pad 			= 2000 #how much to add the provided intervals
--MLE			= 1 #get Maximum likelihood estimates
+-MLE			= 0 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
 -ns                     = 100 #scaling for numerical stability, would not consider changing
 
 #===========================================================================
 #template matching algorithm parameters
--bct                    = 0.1 #confidence threshold
--lambda	  	   	= 200 #base pairs
--sigma 			= 10  #base pairs
+-bct                    = 0.0001 #confidence threshold
+-lambda	  	   	= 3000 #base pairs
+-sigma 			= 100  #base pairs
 -pi 			= 0.5 #strand biase
 -w 			= 0.5 #pausing probability
 -foot_print		= 100 #base pairs
-
+-pad 			= 1000 #base pairs
+-FDR 			= 0 #[0,1]
 #===========================================================================
 #EM algorithm specific parameters
 -r_mu 			= 1 #seed EM randomly from the peak finder

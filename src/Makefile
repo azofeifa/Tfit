@@ -7,7 +7,7 @@
 CXX             = mpic++
 CXXFLAGS        = -static-libstdc++ -static-libgcc  -Wno-unused-variable -Wno-non-virtual-dtor -std=c++11 -fopenmp -Wno-write-strings -Wno-literal-suffix -D_GLIBCXX_USE_CXX11_ABI=0
 EXEC            = ${PWD}/Tfit
-ARCH  		= getconf LONG_BIT
+ARCH  			 = getconf LONG_BIT
 
 CPP_FLAGS_32  	= -D32_BIT
 CPP_FLAGS_64  	= -D64_BIT
@@ -57,7 +57,7 @@ model_main.o:
 	@printf "done\n"
 
 bidir_main.o:
-	@printf "bidir_main        : "
+	@printf "biPWD_main        : "
 	@${CXX} -c ${CXXFLAGS} ${PWD}/bidir_main.cpp 
 	@printf "done\n"
 

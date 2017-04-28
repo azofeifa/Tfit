@@ -55,6 +55,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 		vector<segment*> integrated_segments= load::insert_bedgraph_to_segment_joint(GG, 
 			forward_bedgraph, reverse_bedgraph, joint_bedgraph, rank);
 		LG->write("done\n", verbose);
+
 		LG->write("Binning/Normalizing TSS intervals.......................",verbose);
 		load::BIN(integrated_segments, stod(P->p["-br"]), stod(P->p["-ns"]),true);	
 		LG->write("done\n", verbose);
@@ -106,7 +107,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	  LG->write("threshold            : "+to_string(SC.threshold) + "\n\n" ,verbose );
 	}
 	else{
-	  SC.mean = 0.78, SC.std = 0.08; //this dependent on -w 0.9 !!!
+	  SC.mean = 0.6, SC.std = 0.001; //this dependent on -w 0.9 !!!
 	  SC.set_2(stod(P->p["-bct"]));
 	}
 
