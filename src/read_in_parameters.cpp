@@ -40,6 +40,7 @@ params::params(){
   p["-maxK"] 		= "3";
   p["-rounds"] 	= "10";
   p["-ct"] 		= "0.0001";
+  p["-CTT"]             = "2";
   p["-bct"] 		= "0.95";
   p["-ms_pen"] 	= "1";
   p["-MLE"] 		= "0";

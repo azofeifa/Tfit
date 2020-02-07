@@ -120,18 +120,17 @@ bool check_hit(double a, double b, double c, double x, double y, double z) {
 double run_global_template_matching(vector<segment*> segments,
                                     string out_dir,  params * P, slice_ratio SC) {
 
-   double CTT                    = 5; //filters for low coverage regions
+  double CTT                    = stod(P->p["-CTT"]); //filters for low coverage regions
+  double ns                     = stod(P->p["-ns"]);
+  double window                 = stod(P->p["-pad"]) / ns;
+  double sigma, lambda, foot_print, pi, w;
+  double ct                     = stod(P->p["-bct"]);
+  sigma   = stod(P->p["-sigma"]) / ns , lambda = ns / stod(P->p["-lambda"]);
+  foot_print = stod(P->p["-foot_print"]) / ns , pi = stod(P->p["-pi"]), w = stod(P->p["-w"]);
 
-   double ns                     = stod(P->p["-ns"]);
-   double window                 = stod(P->p["-pad"]) / ns;
-   double sigma, lambda, foot_print, pi, w;
-   double ct                     = stod(P->p["-bct"]);
-   sigma   = stod(P->p["-sigma"]) / ns , lambda = ns / stod(P->p["-lambda"]);
-   foot_print = stod(P->p["-foot_print"]) / ns , pi = stod(P->p["-pi"]), w = stod(P->p["-w"]);
+  bool SCORES     = not P->p["-scores"].empty();
 
-   bool SCORES     = not P->p["-scores"].empty();
-
-   ofstream FHW_scores;
+  ofstream FHW_scores;
 
    if (SCORES) {
       FHW_scores.open(P->p["-scores"]);
@@ -147,16 +146,14 @@ double run_global_template_matching(vector<segment*> segments,
       double * densities_r  = new double[int(segments[i]->XN)];
 
       double l    =  segments[i]->maxX - segments[i]->minX;
-      double ef     = segments[i]->fN * ( 2 * (window * ns) * 0.05  / (l * ns ));
-      double er     = segments[i]->rN * ( 2 * (window * ns) * 0.05 / (l * ns ));
-      double stdf   = sqrt(ef * (1 - (  2 * (window * ns) * 0.05 / (l * ns )  ) )  );
-      double stdr   = sqrt(er * (1 - (  2 * (window * ns) * 0.05 / (l * ns ) ) )  );
+      double ef     = segments[i]->fN * ( 2 * (window)   / (l));
+      double er     = segments[i]->rN * ( 2 * (window)   / (l));
       BIC_template(segments[i],  BIC_values, densities, densities_r, window, sigma, lambda, foot_print, pi, w);
       double start = -1, rN = 0.0 , rF = 0.0, rR = 0.0, rB = 0.0;
       vector<vector<double>> HITS;
       for (int j = 1; j < segments[i]->XN - 1; j++) {
          bool HIT = check_hit(BIC_values[j], densities[j], 
-            densities_r[j], SC.threshold, ef + CTT * stdf, er + CTT * stdr  );
+            densities_r[j], ct, ef + CTT * ef, er + CTT * er  );
          if (SCORES) {
             double vl   = BIC_values[j];
             if (std::isnan(double(vl)) or std::isinf(double(vl))) {

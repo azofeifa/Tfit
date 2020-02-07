@@ -378,8 +378,7 @@ string segment_fits::write () {
          int start   = max(mu - (std + lam), 0.0), stop = mu + (std + lam);
          if (std  < 5000 and lam < 20000 and w > 0.05 and pi > 0.05 and pi < 0.95  ) {
             line += chrom + "\t" + to_string(start) + "\t" + to_string(stop) + "\t";
-            line += ID + "|";
-            line += to_string(BIC_ratio) + "," + to_string(N_pos) + "," + to_string(N_neg) + "\n";
+            line += ID + "\n";
          }
       }
    }
@@ -776,15 +775,14 @@ void load::write_out_bidirs(map<string , vector<vector<double> > > G, string out
                             string job_name, int job_ID, params * P, int noise) {
    typedef map<string , vector<vector<double> > >::iterator it_type;
    ofstream FHW;
-   FHW.open(out_dir + job_name + "-" + to_string(job_ID) + "_prelim_bidir_hits.bed");
+   FHW.open(out_dir + job_name + ".prelim_bidir_hits.bed");
    FHW << P->get_header(1);
-   int ID  = 0;
+   int ID  = 1;
    for (it_type c = G.begin(); c != G.end(); c++) {
       vector<vector<double>> data_intervals   =  bubble_sort_alg(c->second);
 
       for (int i = 0; i < data_intervals.size(); i++) {
-         FHW << c->first << "\t" << to_string(int(data_intervals[i][0])) << "\t" << to_string(int(data_intervals[i][1])) << "\tME_" << to_string(ID) << "\t";
-         FHW << to_string(data_intervals[i][2] ) + "," + to_string(int(data_intervals[i][3] )) + "," + to_string(int(data_intervals[i][4]) ) << endl;
+         FHW << c->first << "\t" << to_string(int(data_intervals[i][0])) << "\t" << to_string(int(data_intervals[i][1])) << "\tME_" << to_string(ID) << "\n";
          ID++;
       }
    }
@@ -801,7 +799,7 @@ void load::write_out_models_from_free_mode(map<int, map<int, vector<simple_c_fre
    double penality = stof(P->p["-ms_pen"]) ;
    string out_dir  = P->p["-o"];
    ofstream FHW;
-   file_name   = out_dir +  P->p["-N"] + "-" + to_string(job_ID) +  "_K_models_MLE.tsv";
+   file_name   = out_dir +  P->p["-N"]  +  ".K_models_MLE.tsv";
    FHW.open(file_name);
    FHW << P->get_header(2);
 
@@ -892,7 +890,7 @@ void load::write_out_models_from_free_mode(map<int, map<int, vector<simple_c_fre
 }
 void load::write_out_bidirectionals_ms_pen(vector<segment_fits*> fits, params * P, int job_ID, int noise ) {
    ofstream FHW;
-   FHW.open(P->p["-o"] +  P->p["-N"] + "-" + to_string(job_ID) +  "_bidir_predictions.bed");
+   FHW.open(P->p["-o"] +  P->p["-N"]  +  ".bidir_predictions.bed");
    FHW << P->get_header(2);
    double penality   = stod(P->p["-ms_pen"]);
    for (int i = 0; i < fits.size(); i++) {

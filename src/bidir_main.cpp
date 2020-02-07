@@ -36,7 +36,6 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	double ns 	= stod(P->p["-ns"]);
 	sigma 		= stod(P->p["-sigma"]), lambda= stod(P->p["-lambda"]);
 	foot_print 	= stod(P->p["-foot_print"]), pi= stod(P->p["-pi"]), w= stod(P->p["-w"]);
-
 	//(2a) read in bedgraph files 
 	map<string, int> chrom_to_ID;
 	map<int, string> ID_to_chrom;
@@ -153,7 +152,7 @@ int bidir_run(params * P, int rank, int nprocs, int job_ID, Log_File * LG){
 	//(4) if MLE option was provided than need to run the model_main::run()
 	//
 	if (stoi(P->p["-MLE"])){
-		P->p["-k"] 	= P->p["-o"]+ job_name+ "-" + to_string(job_ID)+ "_prelim_bidir_hits.bed";
+		P->p["-k"] 	= P->p["-o"]+ job_name+ ".prelim_bidir_hits.bed";
 		model_run(P, rank, nprocs,0, job_ID, LG);
 		
 	}

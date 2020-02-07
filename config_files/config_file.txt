@@ -1,35 +1,35 @@
 #This is a config file for running the BIDIR module
 #please contact joseph[dot]azofeifa[at]colorado[dot]edu
--N     	       	      	= foot_print_testing #job name
--v     	       	      	= 1 #verbose output
+#-N     	       	      	= foot_print_testing #job name
+#-v     	       	      	= 1 #verbose output
 #===========================================================================
 #input file parameters and output directories
--i			= /path/to/
--j 	  		= /path/to/
--ij			= /path/to/
--k 			= /path/to/
--tss 			= /path/to/
--o 	  		= /path/to/
--log_out                = /path/to/
+#-i			= /path/to/
+#-j 	  		= /path/to/
+#-ij			= /path/to/
+#-k 			= /path/to/
+#-tss 			= /path/to/
+#-o 	  		= /path/to/
+#-log_out                = /path/to/
 
 #===========================================================================
 #house keeping parameters
 -chr 			= all  #specific chromosome, note chr[N] or all  
--br 			= 15 #binning resolution do not consider changing
--pad 			= 2000 #how much to add the provided intervals
--MLE			= 0 #get Maximum likelihood estimates
+-br 			= 25 #binning resolution do not consider changing
+-pad 			= 1500 #how much to add the provided intervals
+-MLE			= 1 #get Maximum likelihood estimates
 -select 		= 0 #run BIC optimization for MLE from moment estimators
 -ns                     = 100 #scaling for numerical stability, would not consider changing
 
 #===========================================================================
 #template matching algorithm parameters
--bct                    = 1.0 #confidence threshold
--lambda	  	   	= 200 #base pairs
--sigma 			= 10  #base pairs
+-bct                    = 0.4 #confidence threshold
+-lambda	  	   	= 367 #base pairs
+-sigma 			= 407  #base pairs
 -pi 			= 0.5 #strand biase
--w 			= 0.5 #pausing probability
--foot_print		= 100 #base pairs
-
+-w 			= 0.85 #pausing probability
+-foot_print		= 25 #base pairs
+-CTT 			= 0.0005
 #===========================================================================
 #EM algorithm specific parameters
 -r_mu 			= 1 #seed EM randomly from the peak finder
